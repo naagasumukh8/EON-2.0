@@ -1,0 +1,41 @@
+---
+title: Cursor Background Agents
+tagline: Spawn agents in a remote Ubuntu VM that clones the repo, makes changes, opens a PR, and pings you.
+attribution: Cursor
+tier: tool
+autonomous: true
+canonical_url: https://docs.cursor.com/en/background-agent
+requires: Cursor Pro plan
+setup_command: |
+  # In Cursor:
+  # 1. Open the command palette
+  # 2. "Run agent in background"
+  # 3. Describe the task
+  # 4. Review the resulting PR
+
+  # Or assign a Linear issue to Cursor (Aug 2025+ integration).
+when_to_use: Codebase-wide chores (typos, doc updates, small refactors), accessibility passes, predictable bug fixes.
+when_not_to_use: Tasks requiring live debugging or step-by-step user input, you only see the final PR.
+tags: [cursor, background-agent, vm, async]
+use_cases: [building-features, bug-fixing]
+sources:
+  - title: Cursor, Background Agent
+    author: Cursor
+    url: https://docs.cursor.com/en/background-agent
+    year: 2025
+  - title: Cursor Background Agents (Steve Kinney course)
+    author: Steve Kinney
+    url: https://stevekinney.com/courses/ai-development/cursor-background-agents
+    year: 2025
+related:
+  antiPatterns: [cookie-clicker-mode-passive-supervision]
+  practices: [sandbox-for-autonomous-runs, non-interactive-mode-for-ci]
+  tools: [cursor]
+  workflows: [codex-cloud, devin, claude-code-github-action]
+---
+
+The agent runs on a remote Ubuntu VM that Cursor provisions for you. It clones the repo through your GitHub connection, works on its own branch, and the only artifacts you ever see are the PR and a transcript. Environment setup lives in `.cursor/environment.json`: install commands, dev servers, anything the VM needs before the agent starts. Get that file right once and every future agent inherits a working machine.
+
+Triggering is the interesting part. Besides the command palette, you can launch agents from Slack or by assigning a Linear issue to Cursor, which quietly turns the issue tracker into a dispatch queue for the chores nobody volunteers for: typo sweeps, doc updates, mechanical refactors.
+
+There is no mid-run steering, so the gate is whatever CI runs on the branch. A background agent pointed at a repo with weak CI is just a slower way to write bugs.

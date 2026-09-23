@@ -1,0 +1,41 @@
+---
+title: Antfarm - YAML agent teams + auto-Ralph
+tagline: TypeScript CLI that ships canned agent-team workflows defined in YAML+Markdown, then auto-runs Ralph loops on each user story.
+attribution: Ryan Carson
+tier: tool
+autonomous: true
+canonical_url: https://github.com/snarktank/antfarm
+upstream:
+  repo: snarktank/antfarm
+  ref: main
+  paths:
+    - README.md
+    - AGENTS.md
+setup_command: |
+  antfarm workflow run feature-dev "Add OAuth login with GitHub"
+  antfarm dashboard
+when_to_use: You want repeatable, auditable agent workflows declared in plain YAML, with role separation and built-in verification.
+when_not_to_use: One-off tasks where the YAML overhead exceeds the actual work.
+tags: [multi-agent, yaml, claw, ralph, openclaw]
+use_cases: [building-features]
+sources:
+  - title: snarktank/antfarm
+    author: Ryan Carson (snarktank)
+    url: https://github.com/snarktank/antfarm
+    year: 2025
+  - title: Antfarm announce thread
+    author: Ryan Carson
+    url: https://x.com/ryancarson/status/2020943085426049213
+    year: 2025
+related:
+  patterns: [orchestrator-workers, ralph-wiggum-loop, venutian-antfarm]
+  practices: [custom-slash-commands]
+  tools: [claude-code]
+  workflows: [ralph-wiggum-loop, jr-structured-ralph]
+loop:
+  trigger: "User stories (YAML)"
+  steps:
+    - "Run Ralph loop per story"
+  gate: "Story done?"
+  exit: "Ship"
+---

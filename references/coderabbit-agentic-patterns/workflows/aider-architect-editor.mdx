@@ -1,0 +1,44 @@
+---
+title: Aider - Architect + Editor split
+tagline: A reasoning model writes the solution; a cheap editor model translates it into specific diffs.
+attribution: Paul Gauthier (Aider)
+tier: tool
+canonical_url: https://aider.chat/docs/usage/modes.html
+upstream:
+  repo: Aider-AI/aider
+  ref: main
+  paths:
+    - aider/website/docs/usage/modes.md
+setup_command: |
+  aider --architect-model o1 \
+        --editor-model deepseek-coder \
+        --editor-edit-format editor-diff
+  # Inside aider:
+  # /mode architect  , plan
+  # /mode code       , apply
+when_to_use: Complex multi-file edits where reasoning and patch-formatting are different cost / skill levels.
+when_not_to_use: Single-file simple edits where one model is enough and split-mode adds latency.
+tags: [aider, architect-editor, two-model, terminal]
+inputs:
+  - "A multi-file task"
+  - "Aider CLI installed"
+  - "Two model endpoints (architect + editor)"
+review_gate: {trust: human-only, standards: lint-typecheck, merge: human-gate, description: "Architect plan reviewed by human; editor diff goes through standard PR review."}
+checkpoints: [{phase: after-plan, description: "Human approves architect plan before editor begins"}]
+use_cases: [building-features, refactoring]
+sources:
+  - title: Aider, Modes
+    author: Paul Gauthier
+    url: https://aider.chat/docs/usage/modes.html
+    year: 2024
+  - title: Architect + Editor result on the polyglot benchmark
+    author: Paul Gauthier
+    url: https://aider.chat/2024/09/26/architect.html
+    year: 2024
+related:
+  patterns: [plan-and-execute]
+  practices: [use-plan-mode-for-multi-file-changes]
+  glossary: [plan-mode, plan-and-execute]
+  tools: [aider]
+  workflows: [cline-plan-and-act, plan-approval-gate]
+---

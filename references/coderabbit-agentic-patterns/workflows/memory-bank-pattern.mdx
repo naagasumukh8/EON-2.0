@@ -1,0 +1,75 @@
+---
+title: Memory-bank pattern
+tagline: A directory of markdown files the agent reads at session start and writes to at session end. Working memory between runs.
+attribution: Convergent pattern (Cline Memory Bank, Beads, claude.md, AGENTS.md)
+tier: snippet
+autonomous: false
+canonical_url: https://docs.cline.bot/prompting/cline-memory-bank
+when_to_use: Multi-day projects, long-running sessions, anywhere the agent needs to "remember" decisions, conventions, or partial progress across runs.
+when_not_to_use: Single-session tasks; ephemeral exploration; codebases small enough to fit in one context window.
+tags: [memory, persistence, context, between-sessions]
+use_cases: [bug-fixing, building-features]
+inputs:
+  - "A `memory-bank/` directory at the repo root (or wherever the convention lives)"
+  - "Starter markdown files: `context.md`, `decisions.md`, `progress.md`, etc."
+  - "An AGENTS.md instruction to read memory at start, update at end"
+  - "A convention for which files are append-only vs editable"
+review_gate:
+  trust: human-only
+  standards: not-addressed
+  merge: not-addressed
+  description: "Memory-bank content isn't code; humans review it the same way they review docs."
+checkpoints:
+  - phase: session-start
+    description: Agent reads memory-bank/ files before any other work
+  - phase: session-end
+    description: Agent updates memory-bank/ with what it learned, before stopping
+sources:
+  - title: Cline Memory Bank
+    url: https://docs.cline.bot/prompting/cline-memory-bank
+    year: 2024
+  - title: Beads, the external-memory pattern
+    url: https://github.com/steveyegge/beads
+    year: 2025
+related:
+  patterns: [context-window-auto-compaction]
+  antiPatterns: [context-poisoning, context-distraction]
+  practices: [beads-external-memory-for-cross-session-continuity, claude-continue-resume]
+  glossary: [beads-memory-system, attention-budget]
+  workflows: [cline-memory-bank, agent-skills]
+draft: false
+---
+
+The agent's working memory between sessions. A directory of markdown files lives at the repo root; the agent reads them before doing anything and updates them before stopping. The directory survives across runs, models, and humans.
+
+The canonical structure (varies by team, but the shape is convergent):
+
+```text
+memory-bank/
+  context.md          # what we're building and why
+  decisions.md        # architectural choices and their reasons
+  progress.md         # what's done, what's in flight, what's blocked
+  patterns.md         # conventions specific to this codebase
+  open-questions.md   # things to resolve later
+```
+
+The instruction in `AGENTS.md`:
+
+```markdown
+## Memory bank
+
+Before starting any task: read all files in `memory-bank/`. They are
+your context for this codebase across sessions.
+
+Before stopping: update `progress.md` with what you did, what's left,
+and any new open questions. Update `decisions.md` if you made an
+architectural choice.
+```
+
+Memory-bank works because context windows aren't memory; they're scratch space. The pattern moves *durable* knowledge (decisions, conventions, in-flight tasks) into files the agent treats as authoritative on every load. Each session starts fresh but oriented.
+
+**Use for** multi-day projects, long features, post-incident contexts, anywhere you'd otherwise re-explain the same things at the start of every conversation.
+
+**Avoid for** quick one-shots and ephemeral exploration. Memory-bank overhead is real; files have to be maintained, and the agent has to be trusted to update them honestly.
+
+Tool-specific implementations: [`cline-memory-bank`](/workflows/cline-memory-bank) (Cline's named version), the Beads pattern, and any team's `docs/CONTEXT.md` + `AGENTS.md` combo doing the same job.

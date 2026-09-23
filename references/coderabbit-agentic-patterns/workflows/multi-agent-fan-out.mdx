@@ -1,0 +1,68 @@
+---
+title: Multi-agent fan-out
+tagline: Split a task into N independent subtasks, run them in parallel, merge the results.
+attribution: Convergent pattern (LangGraph, CrewAI, AutoGen, Claude Sub-Agents)
+tier: snippet
+autonomous: false
+canonical_url: https://www.anthropic.com/research/building-effective-agents
+when_to_use: Tasks that decompose cleanly into parallel subtasks (applying a refactor across N files, writing tests for N modules, investigating N hypotheses).
+when_not_to_use: Tasks where step N depends on step N-1's output; tasks where the subtasks would step on each other's files.
+tags: [parallel, multi-agent, fan-out, decomposition]
+use_cases: [building-features, test-generation, refactoring, migrations, code-archaeology]
+inputs:
+  - "A parent task that decomposes into independent subtasks"
+  - "An orchestrator/supervisor prompt that does the decomposition"
+  - "Worker prompts that handle each subtask"
+  - "A merge step that reconciles parallel outputs (often the orchestrator)"
+review_gate:
+  trust: tool-assisted
+  standards: lint-typecheck
+  merge: human-gate
+  description: "Orchestrator reviews worker outputs; human approves the merged result before merge."
+checkpoints:
+  - phase: after-decomposition
+    description: Human optionally reviews the subtask breakdown before workers fire
+  - phase: after-merge
+    description: Orchestrator's merged result reviewed before PR opens
+sources:
+  - title: Building effective agents (Anthropic)
+    url: https://www.anthropic.com/research/building-effective-agents
+    year: 2024
+  - title: LangGraph multi-agent supervisor
+    url: https://langchain-ai.github.io/langgraph/agents/multi-agent/
+    year: 2024
+related:
+  patterns: [worktree-fanout]
+  antiPatterns: [context-confusion, autonomous-loop-runaway]
+  practices: [parallel-sessions-in-worktrees]
+  glossary: [agent-fleet-agent-cluster]
+  workflows: [split-and-merge-fanout, langgraph-supervisor, crewai-process, autogen-group-chat]
+draft: false
+---
+
+The decomposition pattern. A coordinator (orchestrator, supervisor, parent agent) reads the task, splits it into N independent subtasks, dispatches them to N workers in parallel, then merges the results into a single deliverable.
+
+Three things make fan-out work where it works:
+
+1. **Independence.** The subtasks must not depend on each other's intermediate state. If subtask 3 needs subtask 1's output, you've serialized the work; fan-out gives you no parallelism.
+2. **Isolation.** Each worker gets its own context window. They can't see each other's notes, scratch space, or partial results. The orchestrator is the only one with the global view.
+3. **Mergeability.** The subtask outputs have to be reconcilable. A refactor across N files is mergeable; debating which framework to use across N agents is not.
+
+```text
+ORCHESTRATOR prompt:
+  Decompose this task into 3-7 independent subtasks. Each subtask
+  must be doable without knowing what the others are doing. Output
+  the subtask list. Then dispatch.
+
+WORKER prompt (one per subtask):
+  Do exactly this subtask, nothing else. Output only the result.
+
+ORCHESTRATOR (merge phase):
+  Reconcile these N outputs into a single deliverable.
+```
+
+**Use for** at-scale refactors, parallel test generation, debugging-by-hypothesis (each worker tests one hypothesis), batched dependency upgrades across N repos.
+
+**Avoid for** sequential reasoning, tightly-coupled changes (two workers editing the same file), or tasks where global context matters per-worker.
+
+Tool-specific implementations: [`split-and-merge-fanout`](/workflows/split-and-merge-fanout) (Claude Code), [`langgraph-supervisor`](/workflows/langgraph-supervisor) (LangGraph), [`crewai-process`](/workflows/crewai-process) (CrewAI), [`autogen-group-chat`](/workflows/autogen-group-chat) (AutoGen).

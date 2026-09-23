@@ -1,0 +1,35 @@
+---
+title: Devin - Long-running session agent
+tagline: End-to-end autonomous SDE in a cloud VM with browser, shell, and editor; one chat-style session runs hours-to-days unattended.
+attribution: Cognition Labs
+tier: tool
+autonomous: true
+canonical_url: https://devin.ai/
+requires: Devin subscription (≥ $500 / mo)
+setup_command: |
+  # In the Devin web UI or Slack integration:
+  # State the goal once, in a single prompt:
+  "Build feature X end-to-end, branch, code, tests, PR.
+   Ping me on red CI or blocker."
+  # Walk away. Review the resulting PR.
+when_to_use: Long async work where you'd otherwise context-switch repeatedly, predictable bug fixes, dependency upgrades, well-specified features.
+when_not_to_use: Tasks that require live debugging or per-step human judgment, Devin runs opaque mid-session.
+tags: [devin, cognition, async, session-agent]
+use_cases: [building-features]
+sources:
+  - title: Devin (Cognition Labs)
+    author: Cognition Labs
+    url: https://devin.ai/
+    year: 2024
+related:
+  antiPatterns: [cookie-clicker-mode-passive-supervision, yolo-mode-in-production]
+  practices: [sandbox-for-autonomous-runs, human-in-loop-checkpoints]
+  tools: [devin]
+  workflows: [cursor-background-agents, codex-cloud]
+---
+
+Cognition shipped Devin in March 2024 and it drew equal parts awe and debunking videos. The product that survived that cycle is narrower and more useful than the launch demo: dependency upgrades, predictable bug fixes, well-specified features that nobody on the team wants to context-switch into.
+
+The catch is opacity. Mid-session, Devin is a black box that occasionally asks questions in Slack. Everything you would normally steer interactively has to live in the brief: acceptance criteria, test commands, what "done" means. Cognition's own onboarding advice points the same direction: treat it like a new junior engineer and hand it small, well-specified tasks, with the PR review carrying the full weight of the review gate.
+
+Sessions are metered in agent compute units (ACUs), so an underspecified task that wanders for hours costs real money on top of the review time.

@@ -1,0 +1,38 @@
+---
+title: OpenAI Agents SDK - Handoffs
+tagline: Each agent exposes transfer_to_X tools; the next response is owned by whichever agent is handed control.
+attribution: OpenAI
+tier: tool
+canonical_url: https://openai.github.io/openai-agents-python/handoffs/
+upstream:
+  repo: openai/openai-agents-python
+  ref: main
+  paths:
+    - docs/handoffs.md
+setup_command: |
+  pip install openai-agents
+
+  # Python:
+  from agents import Agent, Runner
+  refund = Agent(name="Refund Agent", instructions="...")
+  triage = Agent(name="Triage", handoffs=[refund])
+  Runner.run(triage, "I want my money back")
+when_to_use: Specialist should own the next turn, not just help in the background.
+when_not_to_use: When you need a single observable trace through one agent, handoffs split it.
+tags: [openai, sdk, handoffs, multi-agent]
+use_cases: [building-features]
+sources:
+  - title: OpenAI Agents SDK, Handoffs
+    author: OpenAI
+    url: https://openai.github.io/openai-agents-python/handoffs/
+    year: 2025
+  - title: OpenAI Swarm (educational predecessor)
+    author: OpenAI
+    url: https://github.com/openai/swarm
+    year: 2024
+related:
+  patterns: [routing, orchestrator-workers]
+  glossary: [agent-fleet-agent-cluster]
+  tools: [openai-agents-sdk]
+  workflows: [langgraph-supervisor, crewai-process]
+---

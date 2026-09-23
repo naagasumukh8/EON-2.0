@@ -1,0 +1,74 @@
+---
+title: Compound Engineering - Plan / Work / Assess / Compound
+tagline: Each feature ends by writing the next loop's seed docs, so every iteration lowers future cost.
+attribution: Kieran Klaassen + Dan Shipper (Every)
+tier: framework
+autonomous: true
+canonical_url: https://every.to/chain-of-thought/compound-engineering-how-every-codes-with-agents
+upstream:
+  repo: EveryInc/compound-engineering-plugin
+  ref: main
+  paths:
+    - README.md
+    - AGENTS.md
+    - CLAUDE.md
+setup_command: |
+  # Install the plugin (Claude Code):
+  /plugins install EveryInc/compound-engineering-plugin
+
+  # Cursor and Codex CLI users, see the plugin's per-tool install
+  # paths in `.claude-plugin/`, `.cursor-plugin/`, `.codex-plugin/`.
+
+  # Then run the loop:
+  /ce-brainstorm   "feature idea"
+  /ce-plan
+  /ce-code         # 14 parallel reviewers run during this
+  /ce-compound     # capture learnings into AGENTS.md / CLAUDE.md
+when_to_use: Long-lived product codebases where you want each iteration to lower future cost.
+when_not_to_use: Throwaway prototypes, the compound step pays off only across many iterations.
+tags: [loop, plan-act, claude-code, plugin, cursor, codex]
+use_cases: [building-features, code-review, spec-authoring]
+sources:
+  - title: Compound Engineering, How Every codes with agents
+    author: Dan Shipper, Kieran Klaassen
+    url: https://every.to/chain-of-thought/compound-engineering-how-every-codes-with-agents
+    year: 2025
+  - title: EveryInc/compound-engineering-plugin
+    author: Every
+    url: https://github.com/EveryInc/compound-engineering-plugin
+    year: 2025
+related:
+  patterns: [compounding-engineering-loop, evaluator-optimizer]
+  practices: [compounding-loop, write-lean-claude-md-agents-md]
+  glossary: [compounding-engineering]
+  tools: [claude-code, cursor, codex-cli]
+  workflows: [plan-approval-gate, piv-loop]
+loop:
+  trigger: "Feature"
+  steps:
+    - "Build feature"
+    - "Write next seed docs"
+  gate: "Done?"
+  exit: "Ship"
+---
+
+A four-step loop, **Plan → Work → Assess → Compound**, invented at Every (the team behind Cora) and shipped as an open-source plugin for Claude Code, Cursor, and Codex. The differentiator is the final step: every iteration ends by writing docs that seed the next iteration, so the codebase gets *easier* to modify over time rather than harder.
+
+The published recipe spends 80% of agent time on plan and review, only 20% on work and compound. Slash commands shipped in the plugin:
+
+```
+/ce-brainstorm "feature idea"
+/ce-plan
+/ce-code            # 14 parallel reviewers run during this
+/ce-code-review
+/ce-doc-review
+/ce-compound        # capture learnings into AGENTS.md / CLAUDE.md
+```
+
+The plugin contains 26 specialized agents, 23 commands, and 13 skills. The 14-reviewer fan-out during `/ce-code` covers security, performance, architecture, accessibility, and other concerns in parallel.
+
+**Use for** long-lived product codebases, especially solo or small-team product engineering where you want each PR to lower the cost of the next.
+
+**Avoid for** throwaway prototypes, the compound step is the whole point and only pays off across many iterations.
+
+The naming originated from Dan Shipper and Kieran Klaassen's Every Inc. team, who run five products with mostly solo engineering teams using this loop. Every published the plugin as open source under MIT in October 2025.

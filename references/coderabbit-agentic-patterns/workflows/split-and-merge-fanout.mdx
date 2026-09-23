@@ -1,0 +1,47 @@
+---
+title: Split-and-merge fan-out (Claude Code subagents)
+tagline: Parent agent issues N parallel Task tool calls in a single message; each subagent gets a fresh context; results merge.
+attribution: Anthropic
+tier: tool
+canonical_url: https://docs.claude.com/en/docs/claude-code/sub-agents
+upstream:
+  repo: anthropics/claude-code
+  ref: main
+  paths: []
+setup_command: |
+  # Inside Claude Code, single message to the parent agent:
+  Spawn one subagent per file in src/api/*.ts. Each subagent's only job:
+  return a JSON report { file, issues:[], suggestions:[] }.
+  After all reports return, synthesize a single prioritized fix list.
+when_to_use: File-by-file or concern-by-concern work where each chunk fits in a fresh context window.
+when_not_to_use: Sequential dependencies between subtasks, fan-out can't pass information sideways between siblings.
+tags: [claude-code, subagents, fanout, multi-agent]
+inputs:
+  - "A task that decomposes into parallel subtasks"
+  - "Claude Code with parallel sub-agents"
+review_gate: {trust: tool-assisted, standards: lint-typecheck, merge: human-gate, description: "Parent agent reviews worker outputs; human reviews merged result."}
+checkpoints: [{phase: after-decomposition, description: "Parent agent verifies decomposition before dispatching"}, {phase: after-merge, description: "Merged output reviewed before PR opens"}]
+use_cases: [building-features, refactoring, migrations, code-archaeology]
+sources:
+  - title: Sub-agents (Claude Code docs)
+    author: Anthropic
+    url: https://docs.claude.com/en/docs/claude-code/sub-agents
+    year: 2025
+  - title: Code Agent Orchestra
+    author: Addy Osmani
+    url: https://addyosmani.com/blog/code-agent-orchestra/
+    year: 2025
+related:
+  patterns: [sub-agent-fanout-for-investigation, parallelization-sectioning-voting, orchestrator-workers]
+  antiPatterns: [subagent-over-spawn]
+  practices: [use-subagents-for-investigation, fan-out-across-files]
+  glossary: [subagent, agent-fleet-agent-cluster]
+  tools: [claude-code, claude-agent-sdk]
+  workflows: [jr-structured-ralph]
+---
+
+The mechanics matter: the parent issues all Task calls in a single message, which is what makes them run in parallel instead of one after another. Each subagent starts with a fresh context window, does its slice, and returns one final report. Siblings never see each other's work. Claude Code runs up to about ten concurrently and queues the rest.
+
+Fresh context per worker is the real payoff. A 40-file review in one long session degrades as the window fills; forty subagents each reviewing one file stay sharp the whole way. The cost is that the parent's merge step becomes the quality bottleneck. It has to dedupe, rank, and reconcile reports it did not watch being produced.
+
+Two disciplines keep it honest. Make workers return structured output (JSON, not prose) so the merge stays mechanical. And have the parent verify the decomposition before dispatching, because a bad split wastes every token downstream.

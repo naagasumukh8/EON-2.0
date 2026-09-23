@@ -1,0 +1,105 @@
+---
+title: Garry Tan's gstack - sprint-as-skills
+tagline: 23 Claude Code slash commands that play specialist roles, CEO, designer, eng manager, reviewer, QA, release engineer. Think → Plan → Build → Review → Test → Ship → Reflect.
+attribution: Garry Tan
+tier: framework
+canonical_url: https://github.com/garrytan/gstack
+requires: Claude Code (primary). Also runs on Codex CLI, OpenCode, Cursor, Factory Droid, Slate, Kiro, Hermes, GBrain via `./setup --host <name>`.
+upstream:
+  repo: garrytan/gstack
+  ref: main
+  paths:
+    - README.md
+setup_command: |
+  # In Claude Code, paste this (the agent does the install):
+  Install gstack: run `git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/.claude/skills/gstack && cd ~/.claude/skills/gstack && ./setup`
+
+  # Or for a non-Claude agent (Codex, Cursor, OpenCode, Factory, Kiro, Hermes):
+  git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/gstack
+  cd ~/gstack && ./setup --host codex      # swap host as needed
+
+  # 5-step Quick Start, try this before anything else:
+  /office-hours          # describe what you're building; agent interrogates
+  /plan-ceo-review       # strategic scope challenge
+  # (build your feature)
+  /review                # multi-aspect code review
+  /qa https://staging    # opens a real browser, clicks through flows
+  /ship                  # tests, PR, deploy
+when_to_use: You're a solo founder, founding engineer, or small team and you want a structured sprint per feature, not a blank prompt every session. Especially good for production work where review + QA + security are non-negotiable.
+when_not_to_use: One-line bug fixes, quick scripts, or anywhere the 30-second install + 7-phase sprint overhead exceeds the work itself.
+tags: [garry-tan, gstack, claude-code, sprint, multi-role, slash-commands, mit]
+use_cases: [building-features]
+sources:
+  - title: garrytan/gstack
+    author: Garry Tan
+    url: https://github.com/garrytan/gstack
+    year: 2026
+  - title: Karpathy on No Priors podcast (referenced in README)
+    author: Andrej Karpathy
+    url: https://fortune.com/2026/03/21/andrej-karpathy-openai-cofounder-ai-agents-coding-state-of-psychosis-openclaw/
+    year: 2026
+  - title: On the LOC Controversy
+    author: Garry Tan
+    url: https://github.com/garrytan/gstack/blob/main/docs/ON_THE_LOC_CONTROVERSY.md
+    year: 2026
+related:
+  patterns: [orchestrator-workers, spec-driven-development-kiro-style, writer-reviewer-two-session, plan-execute-verify-commit]
+  antiPatterns: [cookie-clicker-mode-passive-supervision, one-shotting]
+  practices: [custom-slash-commands, spec-driven-workflow, human-in-loop-checkpoints, verify-everything]
+  glossary: [slash-command-custom-command, agent-fleet-agent-cluster]
+  tools: [claude-code, codex-cli, cursor, kiro]
+  workflows: [compound-engineering-plugin, spec-kit-specify, nwave-seven-waves, piv-loop]
+---
+
+A full sprint-as-skills framework by Garry Tan (YC President). 23 opinionated Claude Code slash commands that play specialist roles, CEO, designer, eng manager, reviewer, QA lead, security officer, release engineer. Each command is a Markdown file; nothing is magic. MIT licensed, 93k+ stars.
+
+The thesis is that *prompting alone* leaves too much on the table. Structured *roles* per sprint phase produce shippable PRs from a single developer.
+
+## The sprint
+
+The commands run in the order a sprint runs:
+
+> **Think → Plan → Build → Review → Test → Ship → Reflect**
+
+Each phase feeds the next. `/office-hours` writes the design doc that `/plan-ceo-review` reads. `/plan-eng-review` writes the test plan that `/qa` picks up. `/review` catches bugs that `/ship` verifies are fixed. Nothing falls through the cracks because every step knows what came before it.
+
+## 5-step Quick Start
+
+Don't try all 23 commands at once. The README explicitly says:
+
+1. **Install gstack** (30 seconds, paste the install command into Claude Code)
+2. **`/office-hours`**, describe what you're building, let the agent interrogate the pain points
+3. **`/plan-ceo-review`**, strategic scope challenge on any feature idea
+4. **`/review`**, multi-aspect code review on any branch with changes
+5. **`/qa https://staging`**, real browser, real clicks, finds and fixes the bugs your linter can't
+
+> "Stop there. You'll know if this is for you."
+
+## The eight most-used commands
+
+| Command | Specialist | What they do |
+|---|---|---|
+| `/office-hours` | Product partner | 6 forcing questions; surfaces what you're really building |
+| `/plan-ceo-review` | CEO | Strategic scope challenge, 4 scope modes |
+| `/plan-eng-review` | Eng manager | ASCII diagrams, state machines, test matrix |
+| `/design-consultation` | Designer | Catches AI slop in UI work |
+| `/review` | Senior reviewer | Multi-aspect code review with auto-fix |
+| `/qa` | QA lead | Opens a real browser, clicks through, finds bugs |
+| `/cso` | Security officer | OWASP + STRIDE audit |
+| `/ship` | Release engineer | Tests, PR, deploy |
+
+(Full catalog of 23 commands + 8 power tools in the README.)
+
+**Use for** founders and tech leads who want a structured sprint per feature, with rigorous review + QA + release automation. The opinionation is the point, gstack assumes you want production-quality output, not a brainstorming buddy.
+
+**Avoid for** one-line fixes or throwaway scripts. The install + 7-phase sprint overhead overshoots the work.
+
+## Why it works
+
+Three structural choices the README hammers home:
+
+- **Roles, not prompts.** Each command IS a specialist; there's no "be a CEO and review this" prompt-engineering. The role is baked into the command markdown.
+- **Skills hand off.** Output of one skill is input to the next. No re-explaining context across phases.
+- **Real verification.** `/review` finds bugs, `/qa` clicks through a browser, `/cso` runs security audits. Verification isn't an afterthought, it's a phase.
+
+gstack is opinionated by design. You can fork and adapt the individual `.md` files; the install is `git clone` + run `setup`, nothing vendored, nothing proprietary.

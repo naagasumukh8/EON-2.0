@@ -1,0 +1,85 @@
+---
+title: Agent Skills - production-grade SDLC for coding agents
+tagline: 7 slash commands mapping the development lifecycle, /spec → /plan → /build → /test → /review → /code-simplify → /ship. Skills auto-activate based on what you're doing.
+attribution: Addy Osmani
+tier: framework
+canonical_url: https://github.com/addyosmani/agent-skills
+requires: Claude Code (primary). Also runs on Gemini CLI and OpenCode via .gemini/ and .opencode/ configs.
+upstream:
+  repo: addyosmani/agent-skills
+  ref: main
+  paths:
+    - README.md
+    - CLAUDE.md
+    - AGENTS.md
+setup_command: |
+  # Claude Code (recommended):
+  # 1. Clone or paste the .claude-plugin/ directory into your project, or
+  # 2. Use the one-line install from the README
+
+  # Then in Claude Code, use the 7 lifecycle commands:
+  /spec               # Define what to build, spec before code
+  /plan               # Plan how to build it, small, atomic tasks
+  /build              # Build incrementally, one slice at a time
+  /test               # Prove it works, tests are proof
+  /review             # Review before merge, improve code health
+  /code-simplify      # Simplify the code, clarity over cleverness
+  /ship               # Ship to production, faster is safer
+when_to_use: SDLC-phase-driven shipping where you want each lifecycle phase (define / plan / build / verify / review / ship) gated by a skill the agent auto-activates. Strong default for production work where senior-engineer discipline matters.
+when_not_to_use: Quick scripts or throwaway prototypes where the 7-phase lifecycle overhead exceeds the work. Skills are designed to enforce production-grade rigor, not great for spike work.
+tags: [skills, sdlc, slash-commands, addy-osmani, production, mit]
+use_cases: [building-features, bug-fixing]
+sources:
+  - title: addyosmani/agent-skills
+    author: Addy Osmani
+    url: https://github.com/addyosmani/agent-skills
+    year: 2026
+  - title: Addy Osmani on X
+    author: Addy Osmani
+    url: https://x.com/addyosmani
+    year: 2026
+related:
+  patterns: [orchestrator-workers, spec-driven-development-kiro-style, plan-execute-verify-commit, writer-reviewer-two-session, red-green-tdd-with-agent]
+  antiPatterns: [one-shotting, cookie-clicker-mode-passive-supervision]
+  practices: [custom-slash-commands, spec-driven-workflow, verify-everything, human-in-loop-checkpoints]
+  glossary: [slash-command-custom-command]
+  tools: [claude-code]
+  workflows: [gstack, superpowers, spec-kit-specify, tdd-red-green-refactor-skills, compound-engineering-plugin]
+---
+
+Addy Osmani's take on agentic SDLC: 7 slash commands that map directly to the development lifecycle, each backed by skills the agent auto-activates based on what you're doing. The thesis: **encode the workflows, quality gates, and best practices that senior engineers use, so AI agents follow them consistently**.
+
+40k+ stars (Feb 2026 release), MIT, and Addy's strong frontend/eng brand. Built for Claude Code primarily, with Gemini CLI and OpenCode support.
+
+## The 7-phase lifecycle
+
+```
+  DEFINE          PLAN           BUILD          VERIFY         REVIEW          SHIP
+ ┌──────┐      ┌──────┐      ┌──────┐      ┌──────┐      ┌──────┐      ┌──────┐
+ │ Idea │ ───▶ │ Spec │ ───▶ │ Code │ ───▶ │ Test │ ───▶ │  QA  │ ───▶ │  Go  │
+ │Refine│      │  PRD │      │ Impl │      │Debug │      │ Gate │      │ Live │
+ └──────┘      └──────┘      └──────┘      └──────┘      └──────┘      └──────┘
+  /spec          /plan          /build        /test         /review       /ship
+```
+
+| What you're doing | Command | Key principle |
+|---|---|---|
+| Define what to build | `/spec` | Spec before code |
+| Plan how to build it | `/plan` | Small, atomic tasks |
+| Build incrementally | `/build` | One slice at a time |
+| Prove it works | `/test` | Tests are proof |
+| Review before merge | `/review` | Improve code health |
+| Simplify the code | `/code-simplify` | Clarity over cleverness |
+| Ship to production | `/ship` | Faster is safer |
+
+Skills also activate automatically based on what you're doing, designing an API triggers `api-and-interface-design`, building UI triggers `frontend-ui-engineering`, and so on.
+
+## Why it works
+
+- **Skills, not just commands.** The 7 slash commands are the front door; behind them, specialized skills auto-activate based on the work you're doing (API design, UI engineering, debugging, etc.).
+- **Production-grade defaults.** "Spec before code", "tests are proof", "clarity over cleverness", the principles are baked in, not optional.
+- **Linear handoff.** Output of one phase is input to the next, `/spec` writes a PRD that `/plan` reads; `/plan` writes tasks that `/build` executes.
+
+**Use for** production work where you want SDLC rigor without re-explaining it every session. Particularly strong for shipping features end-to-end with the discipline of a senior engineer.
+
+**Avoid for** quick scripts where 7 phases is overkill. For exploratory spike work, see [grill-prototype-rewind](/workflows/grill-prototype-rewind) instead.

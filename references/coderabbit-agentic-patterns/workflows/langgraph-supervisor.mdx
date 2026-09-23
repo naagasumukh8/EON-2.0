@@ -1,0 +1,39 @@
+---
+title: LangGraph Supervisor
+tagline: A central supervisor LLM routes every turn to a specialist; control returns to the supervisor after each.
+attribution: LangChain
+tier: tool
+canonical_url: https://reference.langchain.com/python/langgraph-supervisor
+upstream:
+  repo: langchain-ai/langgraph-supervisor-py
+  ref: main
+  paths:
+    - README.md
+setup_command: |
+  pip install langgraph-supervisor
+
+  # Python:
+  from langgraph_supervisor import create_supervisor
+  app = create_supervisor(
+      [researcher, coder, reviewer],
+      model="claude-sonnet-4-6"
+  )
+when_to_use: Debuggability and routing accuracy matter more than latency. Supervisor wins routing accuracy in LangChain's own benchmark.
+when_not_to_use: Latency-critical pipelines, the supervisor becomes the bottleneck. Use LangGraph swarm instead.
+tags: [langgraph, supervisor, multi-agent, python]
+use_cases: [building-features]
+sources:
+  - title: langgraph-supervisor (LangChain reference)
+    author: LangChain
+    url: https://reference.langchain.com/python/langgraph-supervisor
+    year: 2025
+  - title: Benchmarking multi-agent architectures
+    author: LangChain
+    url: https://blog.langchain.com/benchmarking-multi-agent-architectures/
+    year: 2025
+related:
+  patterns: [orchestrator-workers, routing, plan-and-execute]
+  glossary: [agent-fleet-agent-cluster]
+  tools: [langgraph]
+  workflows: [openai-handoffs, crewai-process, autogen-group-chat]
+---
