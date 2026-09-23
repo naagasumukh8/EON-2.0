@@ -1,0 +1,138 @@
+
+Polymath Innovae × Eonexea AI
+1-Day Hackathon — Elaborated Problem Statements
+Scoped for a 1–2 hour build window, for 3rd/4th-year engineering participants. Judging rubric weighted toward Systems Thinking and AI-First Problem Solving.
+How to Make This a Great Hackathon Entry
+Format & Scope
+Total time: 60–90 minutes to build, 10–15 minutes to prepare the pitch, ~5 minutes per team to present (2 min problem framing, 3 min demo + ask).
+A working prototype is a script, spreadsheet, clickable mockup, or scripted conversation flow — not a production app. Static or sample data is expected and fine.
+AI-assisted coding tools (ChatGPT, Claude, Copilot, Voiceflow, Bubble, etc.) are encouraged. Speed of assembly is part of the AI-first judging criterion.
+What Makes an Entry Effective
+Depth on one narrow slice beats breadth across the whole problem — judges reward a sharp, working piece over an ambitious but unfinished system.
+Show your reasoning, not just your output. A visible 'why' (a rule, a scoring logic, a named psychological principle) is what separates a toy from a credible prototype.
+Name at least one thing your prototype gets wrong or doesn't handle. Self-awareness about limits reads as maturity, not weakness.
+How to Present
+Open with the business situation in one or two sentences before touching the build — judges should understand *why this matters* before they see *what you made*.
+Demo live if possible, even with 3–5 sample inputs typed in front of the judges. A live (if small) demo beats a polished recorded walkthrough.
+Close with the metric your solution is meant to move, and how you'd know if it actually worked — not just that it runs.
+
+Track — AI Systems & Product
+  Sample 1 — The Invisible Bottleneck
+Industry: D2C / E-commerce customer support
+Business Situation: A growing D2C brand (think: skincare, electronics accessories) has scaled from 500 to 5,000 orders a day. An 8-person support team is buried in tickets — most repetitive (order status, return policy) but a meaningful share are emotionally charged (damaged product, delayed refund) where a bot response makes things worse, not better.
+The Business Problem / Opportunity: Leadership already tried a generic chatbot. CSAT dropped and escalations rose, because every query, simple or sensitive, got funneled through the bot first. The real opportunity isn't 'add AI' — it's building the judgment layer that decides where AI genuinely helps versus where it actively damages trust.
+What to Build (in 1–2 hours)
+A notebook or spreadsheet that takes 10–15 sample support queries and classifies each as 'AI can handle' or 'Needs human,' with a one-line reason per query.
+Suggested Tools: ChatGPT/Claude directly, or an API call in a short Python script. Output as a simple table.
+What Makes It Effective
+The classification logic is visible and defensible — not just a label, but a reason a support manager would trust. Bonus: one query the prototype deliberately gets 'wrong,' with an honest explanation of why.
+How to Present It
+Show the queries, the classifications, and reasoning as a table. Close by live-testing one new query the judges suggest, and narrate the reasoning out loud as it classifies.
+Best-Practice Tip
+Pull real queries from actual brand complaints on Twitter/Reddit for authenticity — invented queries tend to feel too clean and too easy to classify.
+  Sample 2 — Build vs. Buy, Decided by AI
+Industry: SaaS / early-stage startup product teams
+Business Situation: A 40-person startup's product team is debating whether to build an in-house analytics dashboard or license a tool like Mixpanel. Every decision like this currently takes 6–8 weeks of Slack debate, competing priorities, and whoever argues loudest in the room.
+The Business Problem / Opportunity: The real cost isn't the tool — it's decision paralysis and an inconsistent process that depends on who's in the room. Smaller teams without a dedicated strategy function feel this most acutely. There's an opportunity to standardize how these calls get made and made faster.
+What to Build (in 1–2 hours)
+A scoring calculator that takes 3–4 real constraint inputs (cost, timeline, tech debt, integration risk) and outputs a Build/Buy recommendation with visible, inspectable reasoning.
+Suggested Tools: A Google Sheet with weighted formulas, optionally wrapped with one LLM call that turns the score into a plain-language recommendation.
+What Makes It Effective
+The tool shows its reasoning trail, not just a verdict, and demonstrates sensitivity — changing one input changes the recommendation in a way judges can follow.
+How to Present It
+Live demo: run 2–3 different scenarios in front of judges and show the recommendation (and reasoning) shift as inputs change. This sensitivity demo is what separates a credible tool from a gimmick.
+Best-Practice Tip
+Use trade-off categories judges already recognize (cost, time, lock-in) rather than invented jargon — the logic should be instantly legible.
+  Sample 3 — The Feedback Loop No One Closes
+Industry: Consumer app / SaaS product teams
+Business Situation: A consumer app with 50,000 users generates hundreds of App Store reviews, support tickets, and NPS comments every month. The product team currently skims a handful of reviews manually before each sprint planning meeting.
+The Business Problem / Opportunity: High-signal feedback gets buried under repeated, low-value complaints. The opportunity is converting unstructured, scattered feedback into a ranked, defensible product priority list — the kind a Head of Product could act on directly.
+What to Build (in 1–2 hours)
+A script or notebook that takes 15–20 sample feedback snippets and groups them into themes, ranked by frequency and severity.
+Suggested Tools: One LLM prompt to tag and cluster the feedback, or basic keyword grouping in Python if working offline.
+What Makes It Effective
+The output surfaces at least one quiet-but-important insight that a simple 'most common complaint' count would have missed — that's the signal judges are looking for.
+How to Present It
+Present as a before/after: raw scattered feedback on the left, ranked backlog with one-line justification per item on the right. Pitch it as if presenting to a Head of Product.
+Best-Practice Tip
+Use messy, realistic sample feedback — a mix of vague, contradictory, and specific comments. Overly clean sample data feels artificial to judges.
+Track — Consumer Growth & Applied Psychology
+  Sample 1 — The Loyalty Illusion
+Industry: D2C retail / subscription
+Business Situation: A coffee subscription brand runs a simple loyalty program: buy 9, get the 10th free. Everyone participates, but churn hasn't moved — customers redeem the reward and leave anyway.
+The Business Problem / Opportunity: The company is optimizing for repeat purchase, not loyalty. There's a real difference between a customer buying again out of habit or sunk cost, versus buying again because they genuinely prefer the brand. The opportunity is designing a mechanism that builds real preference, not just repetition.
+What to Build (in 1–2 hours)
+A visual mockup (Figma, slides, or even hand-drawn and photographed) of one new loyalty mechanic, paired with a half-page brief on the psychology behind it.
+Suggested Tools: Figma, Canva, or plain slides — no data or backend needed. This is a concept pitch with a visual anchor.
+What Makes It Effective
+A named psychological principle (variable reward, identity signaling, the endowment effect) is explicitly mapped onto the mechanic, and the proposed loyalty metric is one a pure discount program would fail.
+How to Present It
+Show the mockup, then walk through the psychology brief. Include a mock customer quote that shows the emotional hook in action — the reasoning is the pitch here, not the UI polish.
+Best-Practice Tip
+Reference one real example that 'gets it' — gaming loot mechanics, or a niche brand's cult following — as inspiration or contrast for your idea.
+  Sample 2 — Friction as a Feature
+Industry: E-commerce / fashion retail
+Business Situation: An online fashion retailer has a return rate above 30%, driven largely by impulsive one-click purchases that customers regret within days.
+The Business Problem / Opportunity: Removing all friction maximized short-term conversion but quietly hurt margins through return logistics. The opportunity is a deliberately placed pause that reduces impulsive buying without meaningfully hurting overall conversion.
+What to Build (in 1–2 hours)
+A before/after wireframe of one specific step in the journey (checkout or cancellation), showing exactly where friction was added and how it appears to the user.
+Suggested Tools: Figma, Canva, or simple slides showing two screens — no working code required.
+What Makes It Effective
+A clear justification for why that specific step (not another) was chosen, plus a stated prediction: which metric should improve, and which might dip, and why that trade-off is worth it.
+How to Present It
+Walk through the two screens, then explain the psychological principle behind the pause (commitment device, reflective delay) and the trade-off being made.
+Best-Practice Tip
+Pick one step, not a full redesign. Depth on a single moment beats a broad but shallow journey overhaul.
+  Sample 3 — Word-of-Mouth, Engineered
+Industry: Consumer app / D2C subscription
+Business Situation: A meal-kit delivery startup runs a referral program (₹500 off) but referral volume has stayed flat despite decent customer satisfaction scores.
+The Business Problem / Opportunity: Most people who do refer were probably going to anyway — the incentive is paying for advocacy that would have happened for free, not creating new advocacy. The opportunity is triggering the ask at the psychological peak moment (right after a great unboxing, for instance) instead of a generic post-purchase nudge.
+What to Build (in 1–2 hours)
+A mockup of one specific referral trigger moment (an in-app popup or WhatsApp message), plus a short note on how you'd isolate incremental referrals.
+Suggested Tools: Figma/Canva for the mockup; a short written note (not a working test) describing a proposed A/B or holdout comparison.
+What Makes It Effective
+The submission clearly separates incremental advocacy from advocacy that would have happened anyway, and shows exactly where in the user journey the trigger fires.
+How to Present It
+Show the exact screen/moment where the ask appears, explain the behavioral trigger by name, and walk through how you'd measure whether it actually created new referrals.
+Best-Practice Tip
+Show the moment, not just the mechanic. A screenshot of precisely when and where this fires is more convincing than a description of the idea in the abstract.
+Track — Clinical & HealthTech
+  Sample 1 — The Adherence Gap
+Industry: Chronic disease management (health-tech app)
+Business Situation: A diabetes care startup has 2,000 patients on its app. Medication and logging adherence drops by roughly 40% after week three.
+The Business Problem / Opportunity: The team assumed patients simply forget, so they added reminders — adherence didn't improve. The real bottleneck may be something else entirely: cost anxiety, symptom-free complacency, or the logistics of refills. The opportunity is correctly diagnosing the true bottleneck for one condition and targeting that, specifically.
+What to Build (in 1–2 hours)
+A short diagnosis memo (half a page) naming the real bottleneck, paired with a scripted nudge flow (a WhatsApp-style conversation on slides, or a simple Voiceflow chatbot) targeted at that specific cause.
+Suggested Tools: Slides or a basic Voiceflow/chatbot builder for the scripted flow — no real patient data or integration needed.
+What Makes It Effective
+The strength is in the diagnosis, not the intervention. Judges should see a reasoned case for why this is the real bottleneck, not a generic assumption dressed up as insight.
+How to Present It
+Present the memo first — the 'why' — then the scripted intervention as the 'what.' Keep the intervention tightly scoped to the diagnosed cause.
+Best-Practice Tip
+Ground the chosen bottleneck in something specific and plausible — cite a known adherence statistic or pattern if you can, rather than asserting a generic cause.
+  Sample 2 — The Second Opinion Problem
+Industry: Diagnostics / telehealth
+Business Situation: A telehealth platform sends lab results to patients through a portal with minimal explanation, which leads to anxious calls and confusion, especially for borderline or ambiguous values.
+The Business Problem / Opportunity: Patients need clarity without being falsely alarmed or falsely reassured — a communication problem as much as an information one. The opportunity is an explanation layer that helps patients understand next steps without replacing the doctor's judgment.
+What to Build (in 1–2 hours)
+A prompt-based tool that takes 2–3 sample (clearly fabricated) ambiguous lab results and explains them in plain language, with an explicit 'this is not a diagnosis, talk to your doctor' boundary built in.
+Suggested Tools: ChatGPT/Claude with a carefully written prompt; present as a scripted or live demo.
+What Makes It Effective
+The tool handles at least one genuinely ambiguous result well and clearly states its own limits — treat the disclaimer as a designed feature, not a caveat to bury in fine print.
+How to Present It
+Enter a sample result live, show the explanation output, then explain how you tested the tone against both an anxious-patient framing and a dismissive-patient framing.
+Best-Practice Tip
+Fabricate lab data and label it clearly as fictional. Never use real patient data, and never imply clinical validation you don't have.
+  Sample 3 — The Referral Black Hole
+Industry: Hospital networks / multi-provider healthcare systems
+Business Situation: A multi-specialty hospital chain refers roughly 15% of patients to specialists. Internal estimates suggest a third of those referrals never get completed — lost to scheduling friction, cost concerns, or simply being forgotten.
+The Business Problem / Opportunity: No one currently owns the referral after it's issued — it disappears into the gap between departments or systems. The opportunity is a lightweight tracker that makes referral status visible and prompts action at the right moment, before it goes stale.
+What to Build (in 1–2 hours)
+A tracker (Google Sheet or simple script) with 5–10 sample referrals moving through stages, using conditional formatting or basic logic to flag referrals stuck too long.
+Suggested Tools: Google Sheets with conditional formatting, or a short Python script simulating the same logic.
+What Makes It Effective
+The tracker visibly catches at least one referral before it would have gone stale, and the submission defines a completion metric distinct from simple referral volume.
+How to Present It
+Walk through the sheet/dashboard with sample referrals in different stages, color-coded by drop-off risk, and explain the nudge logic behind the flagging.
+Best-Practice Tip
+Focus on one handoff point in the referral chain rather than trying to model the entire hospital system end to end.
