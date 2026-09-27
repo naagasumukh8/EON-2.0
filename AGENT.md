@@ -3,247 +3,126 @@
 
 ---
 
-## 1. Project Identity
+## 1. Project Identity & Framing
 - **Brand**: UnStuck Med
 - **Tagline**: "Prescription refills. Unstuck in minutes."
-- **Repo**: naagasumukh8/EON-2.0 (GitHub) → auto-deploys to Vercel
-- **Stack**: Next.js 14 App Router, TypeScript, Tailwind CSS, Supabase (Postgres + Auth)
-- **Runtime**: Node 24, npm
+- **Event**: Polymath Innovae × Eonexea AI Hackathon 2026
+- **Problem Statement (1–2 sentences)**: When maintenance prescription refills require provider intervention, they stall across phone tag, fax queues, and EHR inboxes for an average of 3.2 days (192 minutes active manual coordination). UnStuck Med provides a unified cross-organizational triage worklist that deterministically classifies the block, enforces strict clinical safety guardrails, and automates low-risk coordination while preserving human clinician authority over all therapeutic decisions.
+- **Repository**: `naagasumukh8/EON-2.0` (GitHub) → Vercel production deployment
+- **Core Law**: **Depth Over Breadth** — 1 deep, fully functional workflow with visible reasoning beats 5 unfinished screens.
 
 ---
 
-## 2. Architecture Summary
+## 2. Architecture & Autonomy Engine
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│  CLIENT (Next.js App Router — all pages are "use client") │
-│                                                           │
-│  /           Landing page (marketing + live stats)        │
-│  /dashboard  Shared refill queue + autonomy toggle        │
-│  /classify   AI block classifier (offline-safe)           │
-│  /workflow   Interactive workflow diagram (2-path)        │
-│  /security   Security & Trust statement                   │
-│                                                           │
-│  lib/supabase.ts    → Supabase client (browser + server)  │
-│  app/api/health     → Supabase connectivity probe         │
-│  app/api/action     → Autonomy engine: executes or drafts │
-└─────────────────────────────────────────────────────────┘
-         ↕ REST (Supabase PostgREST) + Realtime WS
-┌─────────────────────────────────────────────────────────┐
-│  SUPABASE (Postgres)                                      │
-│  organizations, refill_requests, refill_events,           │
-│  profiles (users+roles), autonomy_settings               │
-└─────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│  PERSISTENT AUTONOMY BANNER (app/components/AutonomyBanner.tsx)        │
+│  - Visible on every page (layout.tsx)                                  │
+│  - Readable by judges in <2 seconds: Badge + 1-Line Explanation        │
+│  - Instant toggle: Draft-Only ↔ Autonomous Mode                        │
+│  - Hierarchy: User Setting Overrides Org Default                       │
+└────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│  CENTRAL AUTONOMY CONTEXT & STATE MACHINE (lib/autonomy.tsx)           │
+│                                                                        │
+│  Modes:                                                                │
+│  - DRAFT_ONLY: Every action requires human click:                      │
+│    ACTION_DRAFTED ➔ ACTION_CONFIRMED ➔ ACTION_SENT                     │
+│  - AUTONOMOUS: Whitelisted low-risk actions auto-skip directly:        │
+│    ACTION_DRAFTED ➔ ACTION_CONFIRMED ➔ ACTION_SENT                     │
+│                                                                        │
+│  Safety Invariant (Hardcoded):                                         │
+│  - Therapy-affecting actions (new Rx, dose change, PA justification)   │
+│    ALWAYS require human confirmation regardless of active mode.        │
+└────────────────────────────────────────────────────────────────────────┘
 ```
+
+### Whitelist & Safety Rules (`lib/autonomy.tsx`)
+1. **Low-Risk Whitelist (Eligible for Auto-Skip in Autonomous Mode)**:
+   - `SEND_MISSING_INFO_SMS` ("send missing-info request" via SMS for demographic mismatch)
+   - `SEND_PATIENT_STATUS` ("send patient status update" and generic scheduling link)
+   - `LOG_INSURANCE_REQUEST` (administrative claim submission log)
+   - `SEND_PROVIDER_ALERT` (notification only; provider retains ultimate authority)
+
+2. **Therapy-Affecting Actions (ALWAYS Require Human Confirmation)**:
+   - `NEW_RX_REQUEST` ("new Rx", "new eRx renewal request")
+   - `DOSAGE_CHANGE` ("dosage change", "dose titration")
+   - `PA_JUSTIFICATION` ("prior auth justification", "step therapy appeal")
+   - `TRANSFER_RX` ("request transfer" to alternative partner pharmacy)
+   - `ESCALATE` (clinical condition escalation to attending physician)
 
 ---
 
-## 3. Data Model
+## 3. Pages & Density Redesign
 
-### `organizations`
-| Column | Type | Notes |
-|--------|------|-------|
-| id | uuid PK | |
-| name | text | Practice or pharmacy name |
-| org_type | enum | 'practice' \| 'pharmacy' |
-| autonomy_mode | enum | 'DRAFT_ONLY' \| 'AUTONOMOUS' |
-| created_at | timestamptz | |
-
-### `profiles` (extends auth.users)
-| Column | Type | Notes |
-|--------|------|-------|
-| id | uuid PK FK auth.users | |
-| org_id | uuid FK organizations | |
-| role | enum | 'staff' \| 'provider' \| 'pharmacist' \| 'admin' |
-| autonomy_override | enum | NULL \| 'DRAFT_ONLY' \| 'AUTONOMOUS' |
-
-### `refill_requests`
-| Column | Type | Notes |
-|--------|------|-------|
-| id | uuid PK | |
-| org_id | uuid FK | RLS scoped |
-| patient_token | text | One-way hash of patient ID — no PII stored |
-| med_name | text | Medication name (not PHI but de-identified in classifier) |
-| med_class | enum | 'chronic_high_risk' \| 'chronic_standard' \| 'acute' |
-| block_type | enum | See state machine |
-| status | enum | See state machine |
-| priority_score | int | 0–100, computed by classifier |
-| priority_reason | text | Human-readable "why prioritized" |
-| assigned_actor | enum | 'provider' \| 'staff' \| 'pharmacy' \| 'patient' \| 'insurance' |
-| next_action | text | Classifier recommended action |
-| days_stuck | int | Computed |
-| created_at | timestamptz | |
-| resolved_at | timestamptz | Nullable |
-| minutes_saved | int | Set on RESOLVED, based on 192min avg |
-
-### `refill_events` (insert-only audit log)
-| Column | Type | Notes |
-|--------|------|-------|
-| id | uuid PK | |
-| refill_id | uuid FK | |
-| org_id | uuid FK | RLS scoped |
-| event_type | text | 'CLASSIFIED' \| 'ACTION_DRAFTED' \| 'ACTION_CONFIRMED' \| 'PII_STRIPPED' \| 'RESOLVED' etc |
-| actor_id | uuid | User who triggered |
-| payload | jsonb | De-identified only |
-| autonomy_mode | text | Mode active at time of event |
-| created_at | timestamptz | Insert-only enforced by RLS |
-
-### `autonomy_settings` (org-level)
-| Column | Type | Notes |
-|--------|------|-------|
-| org_id | uuid PK FK | |
-| mode | enum | 'DRAFT_ONLY' \| 'AUTONOMOUS' |
-| auto_allowed_actions | text[] | e.g. ['SEND_MISSING_INFO_SMS', 'SEND_PROVIDER_ALERT'] |
-| updated_at | timestamptz | |
-| updated_by | uuid FK profiles | |
+| Route | File | Discipline & Density Simplification | Status |
+|-------|------|--------------------------------------|--------|
+| `/` | `app/page.tsx` | **Antigravity Hero**: Confident dominant typography, near-empty canvas, single quiet cursor-responsive gradient mesh, thin top nav (wordmark + Queue + Classifier + Security + pill CTA). **Opal Scroll Narrative**: 1 step at a time for How It Works. **Single Live Metric**: 192-min manual resolution counter. **Collapsed Workflow**: Expandable cross-org handoff table. | ✅ Production Build Clean |
+| `/dashboard` | `app/dashboard/page.tsx` | **Simplified Stat Row**: Reduced to the 2 numbers that matter in a live demo — **Hours Saved This Session** (animated counter) and **Blocked Count** (active bottleneck). Priority-sorted clinical worklist, real state machine execution (`ACTION_DRAFTED` ➔ `ACTION_CONFIRMED` ➔ `ACTION_SENT`), and new **Pharmacy Alternative Suggestion Card**. | ✅ Production Build Clean |
+| `/classify` | `app/classify/page.tsx` | **Focused Visual Hierarchy**: Primary emphasis on quick-select sample inputs (messy real-world faxes) and instant triage output with visible reasoning trail. The 5 block types taxonomy is demoted to a secondary collapsed reference accordion to eliminate layout competition. | ✅ Production Build Clean |
+| `/security` | `app/security/page.tsx` | Documents 8 security safeguards (Auth+MFA, RLS isolation, PII stripping, append-only audit, RBAC, AES-256/TLS 1.3, notification privacy, autonomy guardrails), explicit HIPAA-aligned caveat, and stated clinical design principle. | ✅ Production Build Clean |
+| `/workflow` | `app/workflow/page.tsx` | Detailed provider/pharmacy/PBM actor matrix. Removed from primary top-nav emphasis and integrated as collapsed section reachable from How It Works. | ✅ Production Build Clean |
 
 ---
 
-## 4. State Machine
+## 4. New Feature — Pharmacy-Alternative Suggestion
 
-```
-SUBMITTED
-    ↓ (AI Classifier runs, PII stripped before model call)
-CLASSIFYING
-    ↓
-CLASSIFIED  ← block_type assigned, priority_score set
-    ↓
-ACTION_DRAFTED  ← next_action generated
-    ↓ (DRAFT_ONLY: human confirms)  (AUTONOMOUS: auto-executes if whitelisted)
-ACTION_CONFIRMED
-    ↓
-IN_PROGRESS  ← assigned actor notified
-    ↓
-RESOLVED  ← minutes_saved logged, counter incremented
+### Problem Scoped
+When the refill bottleneck is pharmacy-side inventory exhaustion (out of stock, distributor delay, regional backlog), rather than provider renewal or prior authorization:
 
-Side transitions:
-  Any state → ESCALATED (if priority_score > 85 and stuck > 24h)
-  CLASSIFIED → VISIT_REQUIRED (if block_type = VISIT)
-```
-
-### Block Types
-| Type | Meaning | Default Actor |
-|------|---------|---------------|
-| NO_REFILLS | Rx expired, new eRx needed | provider |
-| INSURANCE | PA / step therapy / denial | staff |
-| VISIT | Provider requires appointment | patient |
-| MISSING_INFO | Incomplete data | staff |
-| CONDITION | Clinical review needed | provider |
-
-### Autonomy Whitelist (AUTONOMOUS mode only)
-Actions that CAN auto-execute without human confirmation:
-- `SEND_MISSING_INFO_SMS` — patient contact only, no therapy change
-- `SEND_PROVIDER_ALERT` — notification only, provider still decides
-- `LOG_INSURANCE_REQUEST` — admin action, no clinical impact
-
-Actions that ALWAYS require human confirmation:
-- Anything that changes therapy (new Rx, dose change)
-- Anything that communicates diagnosis or medication to patient
-- `ESCALATE` actions
+### Feature Implementation (`app/dashboard/page.tsx`)
+- Surfaces an AI-drafted suggestion card when `blockType === "PHARMACY_STOCK"` (e.g. `RF-009` Amoxicillin 500mg out of stock).
+- **Mandatory Simulated Data Tag**: Displays a prominent `[SIMULATED DATA]` badge.
+- Displays 2 verified in-network partner pharmacies with simulated on-hand units and distance:
+  1. CarePoint Pharmacy (0.8 mi · 140 units on hand · Same-day delivery)
+  2. Metro Health Pharmacy (1.4 mi · 90 units on hand · Pickup available)
+- **Human-in-the-Loop Constraint**: Draft recommendation only — never an auto-transfer. A human clinician or patient must explicitly click **"Request Transfer"** to trigger state transition: `ACTION_DRAFTED ➔ ACTION_CONFIRMED (TRANSFER_REQUESTED)` logged in the immutable audit trail.
+- **Provider Continuity Guardrail**: Explicit copy stating *"We deliberately do not suggest alternate providers — clinical continuity stays with the assigned provider"* prominently featured in the UI and documentation.
 
 ---
 
-## 5. Pages
+## 5. Design System Tokens (Canonical)
 
-| Route | File | Purpose | Primary Demo? |
-|-------|------|---------|---------------|
-| `/` | app/page.tsx | Landing — value prop, live savings counter, CTA | Yes (open) |
-| `/dashboard` | app/dashboard/page.tsx | Shared refill queue + autonomy toggle | **Primary demo** |
-| `/classify` | app/classify/page.tsx | AI block classifier + risk scoring | **Primary demo** |
-| `/workflow` | app/workflow/page.tsx | Interactive workflow diagram | Supporting |
-| `/security` | app/security/page.tsx | Security & Trust statement | Supporting |
-
----
-
-## 6. Design Tokens (Canonical)
-
-### Colors
-```css
---ink-900:    #0D1117   /* primary anchor, near-black */
---ink-800:    #161B22   /* dark surface */
---ink-700:    #21262D   /* elevated surface */
---ink-600:    #30363D   /* border/divider */
---ink-400:    #6E7681   /* muted text */
---ink-200:    #C9D1D9   /* subtle text */
---ink-100:    #F0F2F4   /* light surface */
---ink-50:     #F8F9FA   /* page bg */
-
---accent-700: #1E40AF   /* deep accent */
---accent-600: #2563EB   /* core accent blue */
---accent-500: #3B82F6   /* hover state */
---accent-100: #DBEAFE   /* accent surface */
---accent-50:  #EFF6FF   /* accent pale */
-
---amber-700:  #92400E   /* blocked — dark text */
---amber-600:  #B45309   /* blocked — standard text */
---amber-200:  #FDE68A   /* blocked — border */
---amber-50:   #FFFBEB   /* blocked — surface */
-
---sage-700:   #166534   /* resolved — dark text */
---sage-600:   #15803D   /* resolved — standard text */
---sage-200:   #BBF7D0   /* resolved — border */
---sage-50:    #F0FDF4   /* resolved — surface */
-
---red-600:    #DC2626   /* error/high priority */
---red-50:     #FEF2F2   /* error surface */
-```
+### Color Palette
+- **Ink Palette**:
+  - `--ink-900: #0D1117` (Deep obsidian black — primary text, high-contrast headings)
+  - `--ink-800: #161B22` (Card headers, dark accents)
+  - `--ink-600: #4B5563` (Secondary body copy)
+  - `--ink-400: #6B7280` (Muted labels, metadata, monospace tokens)
+  - `--ink-100: #F3F4F6` (Border dividers, neutral badges)
+  - `--ink-50:  #FAFAFA` (Page canvas background)
+- **Clinical Accent**:
+  - `--accent-600: #2563EB` (Primary actionable blue)
+  - `--accent-100: #DBEAFE` (Subtle active states)
+  - `--accent-50:  #EFF6FF` (Autonomous mode surfaces)
+- **Semantic State Colors**:
+  - **Warn / Blocked**: `#92400E` (text), `#FDE68A` (border), `#FFFBEB` (surface) — used for Draft-Only mode and stalled refills.
+  - **Success / Resolved**: `#15803D` (text), `#BBF7D0` (border), `#F0FDF4` (surface) — used for session savings and completed refills.
+  - **Simulated Stock / Amber**: `#78350F` (text), `#FCD34D` (border), `#FEF3C7` (surface) — used for Pharmacy Alternative card with `[SIMULATED DATA]`.
 
 ### Typography
-```
-Display/Headings: Sora (weights 600, 700, 800) — editorial, high contrast
-Body/Data/UI:     Inter (weights 400, 500, 600) — legible at small sizes
-Mono:             JetBrains Mono — for IDs, codes, timestamps
-```
-
-### Type Scale (5 sizes max)
-```
-text-xs:   12px / 1.5   — meta, labels, timestamps
-text-sm:   14px / 1.5   — body, table cells
-text-base: 16px / 1.6   — standard body
-text-xl:   20px / 1.3   — section headers
-text-4xl:  36px / 1.1   — page titles
-text-6xl:  60px / 1.0   — hero display
-```
-
-### Spacing
-Standard 8px grid. Key values: 4, 8, 12, 16, 24, 32, 48, 64, 96px
-
-### Borders & Radius
-- Border: 1px solid var(--ink-600) on dark, 1px solid #E5E7EB on light
-- Radius: 6px cards, 4px inputs, 2px badges
+- **Headings & Display**: Google Sans style geometric sans — `Sora` (weights 700, 800) for large, confident headlines with generous vertical spacing.
+- **Body & UI**: `Inter` (weights 400, 500, 600) for high legibility across table cells and reasoning cards.
+- **Data & Codes**: `JetBrains Mono` for IDs, confidence percentages, tokens, and audit timestamps.
 
 ---
 
-## 7. Security Implementation
-
-| Measure | Status | Notes |
-|---------|--------|-------|
-| Supabase Auth + MFA | Configured | TOTP-capable via Supabase Auth |
-| Session expiry | 1 hour idle, 24h absolute | Configured in Supabase dashboard |
-| Row-Level Security | RLS on all patient/refill tables | org_id = auth.jwt() claim |
-| PII stripping before LLM | Implemented | Only med_class, block_type, days_stuck sent |
-| Audit log (insert-only) | refill_events | RLS: no UPDATE or DELETE |
-| Role-based UI | 4 roles | staff/provider/pharmacist/admin |
-| Patient notifications | Generic text only | No med name, no diagnosis |
-| Encryption | At rest (AES-256) + in transit (TLS 1.3) | Supabase managed |
-
----
-
-## 8. Key Constants
-```ts
-AVG_MANUAL_MINUTES = 192  // 3.2 hours — labeled as estimate, from industry data
-PRIORITY_THRESHOLD_HIGH = 75
-PRIORITY_THRESHOLD_ESCALATE = 85
-AUTONOMY_WHITELISTED_ACTIONS = ['SEND_MISSING_INFO_SMS', 'SEND_PROVIDER_ALERT', 'LOG_INSURANCE_REQUEST']
-```
-
----
-
-## 9. Next Steps
-- [x] AGENT.md created
-- [x] Design system defined (tokens, fonts, grid)
-- [ ] Vercel login + production deploy
-- [ ] Supabase RLS policies written and applied
-- [ ] Real Supabase Auth flow (currently mock)
-- [ ] WebSocket real-time queue updates
-- [ ] E2E test: full refill from SUBMITTED → RESOLVED in both autonomy modes
+## 6. Verification Checklist
+- [x] Autonomy toggle wired to real shared context (`lib/autonomy.tsx` + `app/layout.tsx`)
+- [x] Org-level default and User-level override logic implemented
+- [x] State machine transitions (`ACTION_DRAFTED` ➔ `ACTION_CONFIRMED` ➔ `ACTION_SENT`) enforced in queue
+- [x] Whitelisted low-risk actions auto-execute in Autonomous mode
+- [x] Therapy-affecting actions strictly protected by human safety guardrail
+- [x] Persistent 2-second readable banner rendered on all pages
+- [x] Antigravity-discipline hero section with cursor-responsive gradient mesh
+- [x] Opal-discipline step-by-step scroll narrative for How It Works
+- [x] Dashboard stat row simplified to 2 critical numbers (hours saved + blocked count)
+- [x] Classify page layout tightened with collapsible 5 block types taxonomy
+- [x] Pharmacy-alternative suggestion card implemented with `[SIMULATED DATA]` tag
+- [x] "We deliberately do not suggest alternate providers" stated as core design principle
+- [x] Top-nav simplified across all pages (Workflow demoted to collapsed section)
+- [x] TypeScript validation clean (`npx tsc --noEmit` exits 0)
+- [x] Next.js production build verified clean (`npm run build` exits 0, all 10 pages generated)

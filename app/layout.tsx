@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AutonomyProvider } from "../lib/autonomy";
+import { AutonomyBanner } from "./components/AutonomyBanner";
 
 export const metadata: Metadata = {
   title: "UnStuck Med — Prescription Refill Intelligence",
-  description:
-    "UnStuck Med gives pharmacy and practice staff one shared, real-time worklist for prescription refills stuck on provider intervention. AI classifies the block. Humans resolve it.",
+  description: "UnStuck Med gives pharmacy and practice staff one shared, real-time worklist for prescription refills stuck on provider intervention. AI classifies the block. Humans resolve it.",
   openGraph: {
     title: "UnStuck Med — Prescription Refill Intelligence",
     description: "Close the refill gap. Unstuck in minutes.",
@@ -23,8 +24,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased bg-ink-50 text-ink-900 font-sans">
-        {children}
+      <body className="antialiased bg-white text-ink-900 font-sans">
+        <AutonomyProvider>
+          {/* Global autonomy banner — visible on every page */}
+          <AutonomyBanner />
+          {children}
+        </AutonomyProvider>
       </body>
     </html>
   );

@@ -14,10 +14,13 @@ function Nav() {
           <span className="top-nav__wordmark">UnStuck Med</span>
         </Link>
         <div className="top-nav__links">
-          {(["/", "/workflow", "/dashboard", "/classify", "/security"] as const).map(href => (
-            <Link key={href} href={href}
-              className={`top-nav__link ${href === "/workflow" ? "top-nav__link--active" : ""}`}>
-              {href === "/" ? "Home" : href.replace("/", "").charAt(0).toUpperCase() + href.slice(2)}
+          {[
+            { href: "/dashboard", label: "Queue" },
+            { href: "/classify",  label: "Classifier" },
+            { href: "/security",  label: "Security" },
+          ].map(l => (
+            <Link key={l.href} href={l.href} className="top-nav__link">
+              {l.label}
             </Link>
           ))}
         </div>
