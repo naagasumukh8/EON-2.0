@@ -2,17 +2,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
-  ArrowRight,
-  Zap,
-  ChevronDown,
-  ChevronUp,
-  Layers,
-  Bot,
+  ArrowRight, Zap, ChevronDown, ChevronUp, Layers, Bot, Check,
 } from "lucide-react";
 import { CrowdCanvas } from "@/components/ui/skiper39";
 import { TextReveal } from "@/components/ui/text-reveal";
 
-/* -- Typewriter that cycles through words -- */
+/* -- Typewriter -- */
 function TypewriterWords({ words }: { words: string[] }) {
   const [wordIdx, setWordIdx] = useState(0);
   const [displayed, setDisplayed] = useState("");
@@ -20,16 +15,13 @@ function TypewriterWords({ words }: { words: string[] }) {
   useEffect(() => {
     const target = words[wordIdx];
     let timeout: ReturnType<typeof setTimeout>;
-    if (!deleting && displayed.length < target.length) {
+    if (!deleting && displayed.length < target.length)
       timeout = setTimeout(() => setDisplayed(target.slice(0, displayed.length + 1)), 70);
-    } else if (!deleting && displayed.length === target.length) {
+    else if (!deleting && displayed.length === target.length)
       timeout = setTimeout(() => setDeleting(true), 1800);
-    } else if (deleting && displayed.length > 0) {
+    else if (deleting && displayed.length > 0)
       timeout = setTimeout(() => setDisplayed(displayed.slice(0, -1)), 40);
-    } else if (deleting && displayed.length === 0) {
-      setDeleting(false);
-      setWordIdx((i) => (i + 1) % words.length);
-    }
+    else { setDeleting(false); setWordIdx(i => (i + 1) % words.length); }
     return () => clearTimeout(timeout);
   }, [displayed, deleting, wordIdx, words]);
   return (
@@ -42,11 +34,10 @@ function TypewriterWords({ words }: { words: string[] }) {
 
 /* -- Fade-in on scroll -- */
 function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+    const el = ref.current; if (!el) return;
     const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.12 });
     obs.observe(el);
     return () => obs.disconnect();
@@ -73,7 +64,7 @@ function Nav() {
             { href: "/security",  label: "Security" },
             { href: "/workflow",  label: "Workflow" },
             { href: "/gtm",       label: "GTM / Funnel" },
-          ].map((l) => (
+          ].map(l => (
             <Link key={l.href} href={l.href} style={{ fontSize: "13.5px", fontWeight: 450, color: "rgb(60,60,65)", padding: "6px 14px", borderRadius: "9999px", textDecoration: "none", transition: "background 0.15s" }}>
               {l.label}
             </Link>
@@ -84,6 +75,174 @@ function Nav() {
         </Link>
       </div>
     </header>
+  );
+}
+
+/* ── PRICING SECTION with Monthly / Yearly toggle ──────── */
+function PricingSection() {
+  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
+  const yearly = billing === "yearly";
+
+  const plans = [
+    {
+      label: "Usage",
+      title: "Per-Resolved Stall",
+      price: yearly ? "$1.02" : "$1.20",
+      unit: "/ resolved refill",
+      note: "Breaks even on 1st saved call",
+      recommended: false,
+      dark: false,
+      features: ["Triage Queue Access", "Deterministic Classifier", "Human Clinician Sign-off"],
+    },
+    {
+      label: "Ambulatory Group",
+      title: "Clinic Provider SaaS",
+      price: yearly ? "$392" : "$490",
+      unit: "/ provider / month",
+      note: yearly ? "Save $1,176/yr · billed annually" : "Payback: 3 hrs staff phone tag",
+      recommended: true,
+      dark: true,
+      features: ["Unlimited Refill Triage", "Bi-directional EHR Connector", "Therapy Protected Protocol", "Partner Pharmacy Stock Lookup"],
+    },
+    {
+      label: "Enterprise",
+      title: "Health System Campus",
+      price: "Custom",
+      unit: "volume tiered",
+      note: "Includes custom integration",
+      recommended: false,
+      dark: false,
+      features: ["Dedicated FHIR R4 Bridge", "Custom Formulary Rule Engine", "99.9% High Availability SLA", "Enterprise BAA & Audit Logs"],
+    },
+  ];
+
+  return (
+    <section style={{ padding: "0 32px 100px", maxWidth: "1200px", margin: "0 auto" }}>
+      <FadeIn>
+        {/* Header row */}
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: "20px", marginBottom: "48px" }}>
+          <div>
+            <p style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(18,19,23,0.38)", margin: "0 0 12px" }}>Pricing</p>
+            <h2 style={{ fontSize: "clamp(2rem,3.2vw,3rem)", fontWeight: 650, lineHeight: 1.12, letterSpacing: "-0.035em", color: "rgb(18,19,23)", margin: "0 0 8px" }}>
+              Simple, usage-based pricing.
+            </h2>
+            <p style={{ fontSize: "15px", color: "rgba(18,19,23,0.5)", margin: 0 }}>
+              Pays for itself within 3 hours of deflected staff phone tag.
+            </p>
+          </div>
+
+          {/* Monthly / Yearly toggle */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0", background: "rgba(0,0,0,0.06)", borderRadius: "9999px", padding: "3px", border: "1px solid rgba(0,0,0,0.07)" }}>
+            {(["monthly", "yearly"] as const).map(opt => (
+              <button
+                key={opt}
+                onClick={() => setBilling(opt)}
+                style={{
+                  fontSize: "13px", fontWeight: 550, padding: "8px 20px", borderRadius: "9999px",
+                  border: "none", cursor: "pointer", transition: "all 0.18s ease",
+                  background: billing === opt ? "rgb(18,19,23)" : "transparent",
+                  color: billing === opt ? "#fff" : "rgba(18,19,23,0.5)",
+                  display: "flex", alignItems: "center", gap: "6px",
+                }}
+              >
+                {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                {opt === "yearly" && (
+                  <span style={{ fontSize: "10px", fontWeight: 700, background: billing === "yearly" ? "#4ADE80" : "rgba(74,222,128,0.2)", color: billing === "yearly" ? "rgb(18,19,23)" : "#16a34a", padding: "1px 6px", borderRadius: "9999px" }}>
+                    Save 20%
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 3 Cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", alignItems: "start" }}>
+          {plans.map(plan => (
+            <div
+              key={plan.title}
+              style={{
+                background: plan.dark ? "rgb(18,19,23)" : "#fff",
+                border: plan.recommended ? "2px solid #8AB4F8" : plan.dark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)",
+                borderRadius: "20px",
+                padding: "36px 32px",
+                display: "flex", flexDirection: "column", gap: "24px",
+                position: "relative",
+                boxShadow: plan.recommended ? "0 8px 40px rgba(138,180,248,0.18)" : "none",
+                transition: "transform 0.2s ease",
+              }}
+            >
+              {/* Recommended badge */}
+              {plan.recommended && (
+                <span style={{
+                  position: "absolute", top: "-14px", left: "50%", transform: "translateX(-50%)",
+                  background: "#8AB4F8", color: "rgb(18,19,23)",
+                  fontFamily: "monospace", fontSize: "11px", fontWeight: 700,
+                  letterSpacing: "0.06em", textTransform: "uppercase",
+                  padding: "4px 14px", borderRadius: "9999px", whiteSpace: "nowrap",
+                }}>
+                  Recommended
+                </span>
+              )}
+
+              <div>
+                <p style={{
+                  fontFamily: "monospace", fontSize: "10px", fontWeight: 700,
+                  letterSpacing: "0.1em", textTransform: "uppercase",
+                  color: plan.dark ? "#8AB4F8" : "rgba(18,19,23,0.38)",
+                  margin: "0 0 10px",
+                }}>{plan.label}</p>
+                <h3 style={{
+                  fontSize: "19px", fontWeight: 650, letterSpacing: "-0.02em",
+                  color: plan.dark ? "#fff" : "rgb(18,19,23)", margin: "0 0 12px",
+                }}>{plan.title}</h3>
+                <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
+                  <span style={{
+                    fontSize: "42px", fontWeight: 700, letterSpacing: "-0.04em",
+                    color: plan.dark ? "#fff" : "rgb(18,19,23)", lineHeight: 1,
+                    transition: "all 0.2s",
+                  }}>{plan.price}</span>
+                  <span style={{ fontSize: "13px", color: plan.dark ? "rgba(255,255,255,0.4)" : "rgba(18,19,23,0.45)" }}>
+                    {plan.unit}
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ borderTop: `1px solid ${plan.dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"}`, paddingTop: "20px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                {plan.features.map(f => (
+                  <div key={f} style={{ display: "flex", alignItems: "center", gap: "9px", fontSize: "13.5px", color: plan.dark ? "rgba(255,255,255,0.72)" : "rgba(18,19,23,0.7)" }}>
+                    <Check style={{ width: 14, height: 14, color: plan.dark ? "#4ADE80" : "#22c55e", flexShrink: 0 }} />
+                    {f}
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <Link
+                  href="/dashboard"
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
+                    padding: "11px 20px", borderRadius: "9999px",
+                    background: plan.dark ? "#fff" : "rgb(18,19,23)",
+                    color: plan.dark ? "rgb(18,19,23)" : "#fff",
+                    fontSize: "14px", fontWeight: 550, textDecoration: "none",
+                    transition: "opacity 0.15s",
+                  }}
+                >
+                  {plan.title === "Health System Campus" ? "Contact Sales" : "Get Started"}
+                  <ArrowRight style={{ width: 13, height: 13 }} />
+                </Link>
+                <p style={{
+                  fontFamily: "monospace", fontSize: "11px",
+                  color: plan.dark ? "rgba(255,255,255,0.3)" : "rgba(18,19,23,0.35)",
+                  margin: 0, textAlign: "center",
+                }}>{plan.note}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </FadeIn>
+    </section>
   );
 }
 
@@ -102,11 +261,9 @@ export default function HomePage() {
         {/* HERO */}
         <section style={{ position: "relative", minHeight: "92vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "50px 32px 300px", overflow: "hidden" }}>
           <div style={{ position: "relative", zIndex: 1, maxWidth: "860px", margin: "0 auto" }}>
-            {/* Black UnStuck Med Badge */}
             <div style={{ display: "inline-flex", alignItems: "center", padding: "6px 18px", borderRadius: "9999px", background: "rgb(18,19,23)", color: "#fff", fontSize: "13px", fontWeight: 500, letterSpacing: "-0.01em", marginBottom: "26px" }}>
               UnStuck Med
             </div>
-
             <h1 style={{ fontSize: "clamp(2.8rem,6vw,5.2rem)", fontWeight: 700, lineHeight: 1.06, letterSpacing: "-0.04em", color: "rgb(18,19,23)", margin: "0 0 28px" }}>
               Prescription refills.<br />Unstuck in minutes.
             </h1>
@@ -115,29 +272,21 @@ export default function HomePage() {
               Built for <TypewriterWords words={["pharmacy staff", "practice teams", "provider review", "cross-org care"]} />
             </p>
             <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
-              <Link href="/dashboard" style={{ background: "rgb(18,19,23)", color: "#fff", fontSize: "15px", fontWeight: 500, padding: "13px 28px", borderRadius: "9999px", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "8px", transition: "opacity 0.15s" }}>
+              <Link href="/dashboard" style={{ background: "rgb(18,19,23)", color: "#fff", fontSize: "15px", fontWeight: 500, padding: "13px 28px", borderRadius: "9999px", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "8px" }}>
                 <Zap style={{ width: 15, height: 15, color: "#8AB4F8" }} />
                 Open Worklist
               </Link>
-              <Link href="/classify" style={{ background: "rgba(0,0,0,0.05)", color: "rgb(18,19,23)", fontSize: "15px", fontWeight: 450, padding: "13px 28px", borderRadius: "9999px", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "8px", border: "1px solid rgba(0,0,0,0.09)", transition: "background 0.15s" }}>
+              <Link href="/classify" style={{ background: "rgba(0,0,0,0.05)", color: "rgb(18,19,23)", fontSize: "15px", fontWeight: 450, padding: "13px 28px", borderRadius: "9999px", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "8px", border: "1px solid rgba(0,0,0,0.09)" }}>
                 <Bot style={{ width: 15, height: 15 }} />
                 Explore AI Classifier
               </Link>
             </div>
           </div>
 
-          {/* Interactive GSAP Crowd Canvas (Skiper39) */}
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2, overflow: "hidden", lineHeight: 0, width: "100%", height: "clamp(280px, 33vh, 380px)", pointerEvents: "none" }}>
-            {/* Top gradient fade blending into hero background */}
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "70px", background: "linear-gradient(to bottom, #F0F0F0 25%, rgba(240,240,240,0))", zIndex: 3, pointerEvents: "none" }} />
-            {/* Bottom edge fade */}
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "15px", background: "linear-gradient(to top, #F0F0F0 10%, rgba(240,240,240,0))", zIndex: 3, pointerEvents: "none" }} />
-            <CrowdCanvas
-              src="/peeps.png"
-              rows={15}
-              cols={7}
-              className="w-full h-full block"
-            />
+            <CrowdCanvas src="/peeps.png" rows={15} cols={7} className="w-full h-full block" />
           </div>
         </section>
 
@@ -145,10 +294,7 @@ export default function HomePage() {
         <section style={{ background: "#F0F0F0", borderTop: "1px solid rgba(0,0,0,0.07)", padding: "96px 32px" }}>
           <div style={{ maxWidth: "900px", margin: "0 auto" }}>
             <TextReveal
-              as="p"
-              preset="fade-in-blur"
-              per="word"
-              speedReveal={1.2}
+              as="p" preset="fade-in-blur" per="word" speedReveal={1.2}
               viewport={{ once: true, amount: 0.35 }}
               style={{ fontSize: "clamp(1.6rem,3vw,2.4rem)", fontWeight: 450, lineHeight: 1.35, letterSpacing: "-0.025em", color: "rgb(18,19,23)", margin: 0 }}
             >
@@ -186,7 +332,7 @@ export default function HomePage() {
                   { id: "RF-001", med: "Metformin 500mg", block: "Zero refills remaining", state: "THERAPY PROTECTED", sc: "#FCA5A5" },
                   { id: "RF-005", med: "Levothyroxine 50mcg", block: "DOB mismatch — SMS sent", state: "AUTO-EXECUTED", sc: "#8AB4F8" },
                   { id: "RF-009", med: "Amoxicillin 500mg", block: "Out of stock", state: "PENDING REVIEW", sc: "#FCD34D" },
-                ].map((row) => (
+                ].map(row => (
                   <div key={row.id} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "12px", padding: "14px 16px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                       <div>
@@ -257,7 +403,7 @@ export default function HomePage() {
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
                     <thead>
                       <tr style={{ background: "rgba(0,0,0,0.02)" }}>
-                        {["Block Type","Conventional Delay","UnStuck Med Action","Human Guardrail"].map((h) => (
+                        {["Block Type","Conventional Delay","UnStuck Med Action","Human Guardrail"].map(h => (
                           <th key={h} style={{ padding: "12px 20px", textAlign: "left", fontFamily: "monospace", fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(18,19,23,0.4)", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>{h}</th>
                         ))}
                       </tr>
@@ -284,11 +430,12 @@ export default function HomePage() {
           )}
         </section>
 
-        {/* LAST SLIDE / DARK FOOTER (MATCHING DESIGN SPEC, NO ANTIGRAVITY LOGO) */}
+        {/* PRICING */}
+        <PricingSection />
+
+        {/* DARK FOOTER */}
         <footer style={{ background: "#0D0E12", position: "relative", overflow: "hidden", borderTop: "1px solid rgba(255,255,255,0.06)", minHeight: "440px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-          {/* Top content row */}
           <div style={{ position: "relative", zIndex: 2, maxWidth: "1240px", width: "100%", margin: "0 auto", padding: "64px 48px 36px", display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: "60px", alignItems: "start" }}>
-            {/* Left: brand + tagline (no Antigravity logo) */}
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
                 <span style={{ fontFamily: '"Google Sans","Sora","Inter",sans-serif', fontWeight: 700, fontSize: "19px", color: "#FFFFFF", letterSpacing: "-0.02em" }}>
@@ -296,89 +443,44 @@ export default function HomePage() {
                 </span>
               </div>
               <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.48)", lineHeight: 1.65, margin: 0, maxWidth: "340px", fontWeight: 400 }}>
-                Autonomous &amp; Human-in-the-Loop Prescription<br />
+                Autonomous & Human-in-the-Loop Prescription<br />
                 Refill Triage Platform.
               </p>
             </div>
-
-            {/* Right: three link columns (Product, Governance, Strategy) */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "40px" }}>
               <div>
-                <p style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", margin: "0 0 16px" }}>
-                  PRODUCT
-                </p>
+                <p style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", margin: "0 0 16px" }}>PRODUCT</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  {[
-                    { href: "/dashboard", label: "Queue Worklist" },
-                    { href: "/classify", label: "AI Classifier" },
-                    { href: "/workflow", label: "Workflow Matrix" },
-                  ].map((l) => (
-                    <Link key={l.label} href={l.href} style={{ fontSize: "13px", color: "rgba(255,255,255,0.72)", textDecoration: "none", transition: "color 0.15s" }}>
-                      {l.label}
-                    </Link>
+                  {[{ href: "/dashboard", label: "Queue Worklist" }, { href: "/classify", label: "AI Classifier" }, { href: "/workflow", label: "Workflow Matrix" }].map(l => (
+                    <Link key={l.label} href={l.href} style={{ fontSize: "13px", color: "rgba(255,255,255,0.72)", textDecoration: "none" }}>{l.label}</Link>
                   ))}
                 </div>
               </div>
               <div>
-                <p style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", margin: "0 0 16px" }}>
-                  GOVERNANCE
-                </p>
+                <p style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", margin: "0 0 16px" }}>GOVERNANCE</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  {[
-                    { href: "/security", label: "Security & Trust" },
-                    { href: "/security", label: "HIPAA Aligned" },
-                    { href: "/security", label: "Zero-PII Pipeline" },
-                  ].map((l, i) => (
-                    <Link key={i} href={l.href} style={{ fontSize: "13px", color: "rgba(255,255,255,0.72)", textDecoration: "none", transition: "color 0.15s" }}>
-                      {l.label}
-                    </Link>
+                  {[{ href: "/security", label: "Security & Trust" }, { href: "/security", label: "HIPAA Aligned" }, { href: "/security", label: "Zero-PII Pipeline" }].map((l, i) => (
+                    <Link key={i} href={l.href} style={{ fontSize: "13px", color: "rgba(255,255,255,0.72)", textDecoration: "none" }}>{l.label}</Link>
                   ))}
                 </div>
               </div>
               <div>
-                <p style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", margin: "0 0 16px" }}>
-                  STRATEGY
-                </p>
+                <p style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", margin: "0 0 16px" }}>STRATEGY</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  {[
-                    { href: "/gtm", label: "GTM Funnel" },
-                    { href: "/gtm#pricing", label: "Commercial Model" },
-                    { href: "/gtm#buyer", label: "Buyer vs. User" },
-                  ].map((l, i) => (
-                    <Link key={i} href={l.href} style={{ fontSize: "13px", color: "rgba(255,255,255,0.72)", textDecoration: "none", transition: "color 0.15s" }}>
-                      {l.label}
-                    </Link>
+                  {[{ href: "/gtm", label: "GTM Funnel" }, { href: "/gtm", label: "Commercial Model" }, { href: "/gtm", label: "Buyer vs. User" }].map((l, i) => (
+                    <Link key={i} href={l.href} style={{ fontSize: "13px", color: "rgba(255,255,255,0.72)", textDecoration: "none" }}>{l.label}</Link>
                   ))}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Prominent centered watermark exactly as in screenshot */}
-          <div style={{
-            position: "relative",
-            zIndex: 1,
-            width: "100%",
-            textAlign: "center",
-            padding: "10px 24px 28px",
-            userSelect: "none",
-            pointerEvents: "none",
-          }}>
-            <span style={{
-              display: "inline-block",
-              fontSize: "clamp(64px, 12vw, 155px)",
-              fontWeight: 800,
-              letterSpacing: "-0.04em",
-              color: "rgba(255, 255, 255, 0.085)",
-              lineHeight: 0.95,
-              fontFamily: '"Google Sans","Sora","Inter",sans-serif',
-              whiteSpace: "nowrap",
-            }}>
+          <div style={{ position: "relative", zIndex: 1, width: "100%", textAlign: "center", padding: "10px 24px 28px", userSelect: "none", pointerEvents: "none" }}>
+            <span style={{ display: "inline-block", fontSize: "clamp(64px, 12vw, 155px)", fontWeight: 800, letterSpacing: "-0.04em", color: "rgba(255, 255, 255, 0.085)", lineHeight: 0.95, fontFamily: '"Google Sans","Sora","Inter",sans-serif', whiteSpace: "nowrap" }}>
               UnStuck Med
             </span>
           </div>
 
-          {/* Bottom copyright bar */}
           <div style={{ position: "relative", zIndex: 2, borderTop: "1px solid rgba(255,255,255,0.06)", maxWidth: "1240px", width: "100%", margin: "0 auto", padding: "16px 48px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.28)", fontFamily: "monospace" }}>© 2026 UnStuck Med</span>
             <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.28)", fontFamily: "monospace" }}>Polymath Innovae × Eonexea AI Hackathon</span>

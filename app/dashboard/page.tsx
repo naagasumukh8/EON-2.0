@@ -302,6 +302,58 @@ export default function DashboardPage() {
   const [approvalItem, setApprovalItem] = useState<RefillItem | null>(null);
   const [approvalNote, setApprovalNote] = useState<string>("");
 
+  // ── Auto-execute all whitelisted items when mode switches to AUTONOMOUS ──
+  const prevModeRef = useRef<string | null>(null);
+  useEffect(() => {
+    // Only trigger when switching INTO autonomous mode (not on initial mount if already autonomous)
+    if (mode !== "AUTONOMOUS") {
+      prevModeRef.current = mode;
+      return;
+    }
+    if (prevModeRef.current === "AUTONOMOUS") return; // already was autonomous
+    prevModeRef.current = mode;
+
+    // Fire all whitelisted drafted items immediately
+    let autoCount = 0;
+    let minutesAdded = 0;
+    setQueue(prev => prev.map(r => {
+      if (
+        r.actionState === "ACTION_DRAFTED" &&
+        r.status === "BLOCKED" &&
+        canAutoExecute(r.nextAction)
+      ) {
+        autoCount++;
+        minutesAdded += AVG_MANUAL_MINUTES;
+        recordAudit({
+          refillId: r.id,
+          actionType: r.nextAction,
+          fromState: "ACTION_DRAFTED",
+          toState: "ACTION_SENT",
+          actor: "Autonomous System",
+          isAutoExecuted: true,
+          notes: `[AUTONOMOUS MODE ACTIVATED] Auto-executed on mode switch: ${r.nextAction}`,
+        });
+        return {
+          ...r,
+          actionState: "ACTION_SENT" as const,
+          status: "FILLING" as const,
+          daysStuck: 0,
+          actor: "Autonomous Bot",
+          transferRequested: r.blockType === "PHARMACY_STOCK" ? true : r.transferRequested,
+        };
+      }
+      return r;
+    }));
+    if (autoCount > 0) {
+      setMinutesSaved(m => m + minutesAdded);
+      setNotification({
+        msg: `⚡ Autonomous mode ON — ${autoCount} low-risk action${autoCount > 1 ? "s" : ""} auto-executed instantly (+${minutesAdded} min saved).`,
+        type: "success",
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
+
   const selectedItem = queue.find(r => r.id === selected);
 
   // Filtered queue
@@ -680,12 +732,9 @@ export default function DashboardPage() {
                               <Send className="h-3 w-3" /> Dispatch
                             </button>
                           ) : mode === "AUTONOMOUS" && canAutoExecute(row.nextAction) ? (
-                            <button
-                              onClick={() => handlePerformAction(row)}
-                              className="btn btn-sm text-[11px] py-1 px-2.5 bg-accent-600 hover:bg-accent-700 text-white rounded shadow-sm inline-flex items-center gap-1 font-semibold"
-                            >
-                              <Zap className="h-3 w-3" /> Auto-Execute
-                            </button>
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent-700 bg-accent-50 px-2 py-0.5 rounded border border-accent-200">
+                              <RefreshCw className="h-3 w-3 animate-spin" /> Queuing...
+                            </span>
                           ) : (
                             <button
                               onClick={() => {
