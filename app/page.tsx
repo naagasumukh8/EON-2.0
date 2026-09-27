@@ -279,14 +279,64 @@ export default function HomePage() {
           )}
         </section>
 
-        {/* FOOTER */}
-        <footer style={{ borderTop: "1px solid rgba(0,0,0,0.07)", padding: "40px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: "1200px", margin: "0 auto" }}>
-          <span style={{ fontWeight: 600, fontSize: "14px" }}>UnStuck Med</span>
-          <span style={{ fontSize: "12px", color: "rgba(18,19,23,0.4)" }}>Polymath Innovae x Eonexea AI Hackathon 2026</span>
-          <div style={{ display: "flex", gap: "20px" }}>
-            {[{ href: "/dashboard", label: "Worklist" }, { href: "/classify", label: "Classifier" }, { href: "/security", label: "Security" }].map((l) => (
-              <Link key={l.href} href={l.href} style={{ fontSize: "13px", color: "rgba(18,19,23,0.5)", textDecoration: "none" }}>{l.label}</Link>
-            ))}
+        {/* DARK FOOTER */}
+        <footer style={{ background: "rgb(10,10,12)", position: "relative", overflow: "hidden", padding: "0" }}>
+          {/* Ghost watermark */}
+          <div style={{
+            position: "absolute",
+            bottom: "-20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            fontSize: "clamp(80px,14vw,180px)",
+            fontWeight: 700,
+            letterSpacing: "-0.04em",
+            color: "rgba(255,255,255,0.04)",
+            whiteSpace: "nowrap",
+            pointerEvents: "none",
+            userSelect: "none",
+            lineHeight: 1,
+            fontFamily: '"Google Sans","Sora","Inter",sans-serif',
+          }}>
+            UnStuck Med
+          </div>
+
+          {/* Top content row */}
+          <div style={{ position: "relative", zIndex: 1, maxWidth: "1200px", margin: "0 auto", padding: "56px 40px 48px", display: "grid", gridTemplateColumns: "1fr auto", gap: "64px", alignItems: "start" }}>
+            {/* Left: brand + tagline */}
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
+                <span style={{ fontFamily: '"Google Sans","Sora",sans-serif', fontWeight: 600, fontSize: "15px", color: "#fff", letterSpacing: "-0.01em" }}>UnStuck Med</span>
+              </div>
+              <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.38)", lineHeight: 1.65, margin: 0, maxWidth: "260px" }}>
+                Autonomous &amp; <span style={{ color: "rgba(255,100,100,0.7)", fontWeight: 500 }}>Human-in-the-Loop</span> Prescription<br />Refill Triage Platform.
+              </p>
+            </div>
+
+            {/* Right: two link columns */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "48px" }}>
+              <div>
+                <p style={{ fontFamily: "monospace", fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.28)", margin: "0 0 16px" }}>Product</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "11px" }}>
+                  {[{ href: "/dashboard", label: "Queue Worklist" }, { href: "/classify", label: "AI Classifier" }, { href: "/workflow", label: "Workflow Matrix" }].map(l => (
+                    <Link key={l.href} href={l.href} style={{ fontSize: "13px", color: "rgba(255,255,255,0.55)", textDecoration: "none", transition: "color 0.15s" }}>{l.label}</Link>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p style={{ fontFamily: "monospace", fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.28)", margin: "0 0 16px" }}>Governance</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "11px" }}>
+                  {[{ href: "/security", label: "Security & Trust" }, { href: "/security", label: "HIPAA Aligned" }, { href: "/security", label: "Zero-PII Pipeline" }].map((l, i) => (
+                    <Link key={i} href={l.href} style={{ fontSize: "13px", color: "rgba(255,255,255,0.55)", textDecoration: "none", transition: "color 0.15s" }}>{l.label}</Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div style={{ position: "relative", zIndex: 1, borderTop: "1px solid rgba(255,255,255,0.05)", maxWidth: "1200px", margin: "0 auto", padding: "18px 40px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.2)", fontFamily: "monospace" }}>© 2026 UnStuck Med</span>
+            <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.2)" }}>Polymath Innovae × Eonexea AI Hackathon</span>
           </div>
         </footer>
       </div>
