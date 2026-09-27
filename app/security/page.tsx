@@ -20,6 +20,7 @@ function Nav() {
             { href: "/classify",  label: "Classifier" },
             { href: "/security",  label: "Security" },
             { href: "/workflow",  label: "Workflow" },
+            { href: "/gtm",       label: "GTM / Funnel" },
           ].map(l => (
             <Link
               key={l.href}

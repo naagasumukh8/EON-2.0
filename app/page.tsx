@@ -65,7 +65,13 @@ function Nav() {
           UnStuck Med
         </Link>
         <nav style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-          {[{ href: "/dashboard", label: "Worklist" }, { href: "/classify", label: "Classifier" }, { href: "/security", label: "Security" }, { href: "/workflow", label: "Workflow" }].map((l) => (
+          {[
+            { href: "/dashboard", label: "Worklist" },
+            { href: "/classify",  label: "Classifier" },
+            { href: "/security",  label: "Security" },
+            { href: "/workflow",  label: "Workflow" },
+            { href: "/gtm",       label: "GTM / Funnel" },
+          ].map((l) => (
             <Link key={l.href} href={l.href} style={{ fontSize: "13.5px", fontWeight: 450, color: "rgb(60,60,65)", padding: "6px 14px", borderRadius: "9999px", textDecoration: "none", transition: "background 0.15s" }}>
               {l.label}
             </Link>
@@ -299,8 +305,8 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Right: two link columns */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "56px" }}>
+            {/* Right: three link columns (Product, Governance, Strategy) */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "40px" }}>
               <div>
                 <p style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", margin: "0 0 16px" }}>
                   PRODUCT
@@ -326,6 +332,22 @@ export default function HomePage() {
                     { href: "/security", label: "Security & Trust" },
                     { href: "/security", label: "HIPAA Aligned" },
                     { href: "/security", label: "Zero-PII Pipeline" },
+                  ].map((l, i) => (
+                    <Link key={i} href={l.href} style={{ fontSize: "13px", color: "rgba(255,255,255,0.72)", textDecoration: "none", transition: "color 0.15s" }}>
+                      {l.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", margin: "0 0 16px" }}>
+                  STRATEGY
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {[
+                    { href: "/gtm", label: "GTM Funnel" },
+                    { href: "/gtm#pricing", label: "Commercial Model" },
+                    { href: "/gtm#buyer", label: "Buyer vs. User" },
                   ].map((l, i) => (
                     <Link key={i} href={l.href} style={{ fontSize: "13px", color: "rgba(255,255,255,0.72)", textDecoration: "none", transition: "color 0.15s" }}>
                       {l.label}

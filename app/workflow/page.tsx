@@ -19,6 +19,7 @@ function Nav() {
             { href: "/classify",  label: "Classifier" },
             { href: "/security",  label: "Security" },
             { href: "/workflow",  label: "Workflow" },
+            { href: "/gtm",       label: "GTM / Funnel" },
           ].map(l => (
             <Link key={l.href} href={l.href} className={`top-nav__link ${l.href === "/workflow" ? "top-nav__link--active" : ""}`}>
               {l.label}

@@ -48,7 +48,7 @@ Full EHR Writeback        Audit Log      Clinician Sign-  Classifier &
   - Deep dark background (`#0D0E12`).
   - Clean brand wordmark: **UnStuck Med** (**No Antigravity logo**).
   - Tagline: `Autonomous & Human-in-the-Loop Prescription Refill Triage Platform.`
-  - Two distinct navigation columns: **PRODUCT** (`Queue Worklist`, `AI Classifier`, `Workflow Matrix`) and **GOVERNANCE** (`Security & Trust`, `HIPAA Aligned`, `Zero-PII Pipeline`).
+  - Three distinct navigation columns: **PRODUCT** (`Queue Worklist`, `AI Classifier`, `Workflow Matrix`), **GOVERNANCE** (`Security & Trust`, `HIPAA Aligned`, `Zero-PII Pipeline`), and **STRATEGY** (`GTM Funnel`, `Commercial Model`, `Buyer vs. User`).
   - **Prominent `UnStuck Med` Watermark**: Centered, high-contrast dark charcoal watermark spanning across the slide.
   - Legal & copyright bar: `© 2026 UnStuck Med · Polymath Innovae × Eonexea AI Hackathon`.
 
@@ -116,7 +116,31 @@ Full EHR Writeback        Audit Log      Clinician Sign-  Classifier &
 
 ---
 
-### 6. Security, Governance & HIPAA Alignment (`app/security/page.tsx`)
+### 6. GTM Funnel Strategy & Commercial Model (`app/gtm/page.tsx`) — Track 03
+- [x] **Full 8-Stage Customer Journey Funnel**:
+  - Built from the *Strategize the Funnel* blueprint:
+    1. `01 NOTHING`: Untapped market & audience (22,000+ ambulatory practices).
+    2. `02 PROSPECT`: Right audience, now in radar (EHR qualification).
+    3. `03 DATA ANALYSIS` ⭐ (Emphasized): Turn data into opportunity (stall latency audit).
+    4. `04 TOFU`: Awareness & initial interest (192-minute benchmark whitepaper).
+    5. `05 MOFU` ⭐ (Emphasized): Deepen interest & build credibility (live classifier sandbox).
+    6. `06 BOFU` ⭐ (Emphasized): Validate, compare & decide (BAA, HIPAA audit, pilot).
+    7. `07 CLOSE`: Convert to customer (FHIR EHR webhook integration).
+    8. `08 CUSTOMER SUCCESS` ⭐ (Emphasized): Value & expansion (rollout to specialty clinics).
+  - Each stage includes the 3 required dimensions: **What we do**, **Signals to move forward**, and **Customer experience**.
+- [x] **Buyer vs. User Distinction**:
+  - **The Economic Buyer**: Practice COO / Clinic Operations Director / CMO (buys staff overhead reduction, EBITDA recovery, SLA guarantees).
+  - **The Daily End-User**: Pharmacy Techs, Triage Nurses, Medical Assistants (needs 1-click worklist, zero double-data entry, rapid clinician sign-off).
+- [x] **One-Line Commercial Pricing Model**:
+  - Transparent tiers: **$1.20 per resolved refill stall** (usage) OR **$490 / provider / month** (enterprise SaaS).
+  - **3-Hour Payback Proof**: Deflecting just 3 hours of staff phone tag per month fully funds the platform.
+- [x] **Measurement & Growth Counters**:
+  - Real-time unit metrics: 192 min saved/refill, 45% queue deflection, 3.2x faster turnaround, 100% safety adherence.
+- [x] **6 Evaluation Rubric Pillars**: Funnel Strategy, Signals & Actions, Customer Understanding, Commercial Thinking, Systems Thinking, and Measurement & Growth.
+
+---
+
+### 7. Security, Governance & HIPAA Alignment (`app/security/page.tsx`)
 - [x] **6 Enterprise Governance Pillars**:
   1. *Authentication & MFA Enforcement*.
   2. *Row-Level Security (RLS) Multi-Tenant Separation*.
@@ -128,7 +152,7 @@ Full EHR Writeback        Audit Log      Clinician Sign-  Classifier &
 
 ---
 
-### 7. API Runtime Layer
+### 8. API Runtime Layer
 - [x] **`/api/action` (POST & GET)**: Serverless endpoint simulating multi-step Opal Systems Reasoner execution with verified output verdicts.
 - [x] **`/api/health` (GET)**: Service uptime and operational health check.
 
@@ -139,7 +163,7 @@ Full EHR Writeback        Audit Log      Clinician Sign-  Classifier &
 | Check | Result | Details |
 |---|---|---|
 | **TypeScript Compilation** | ✅ Passed | `npx tsc --noEmit` exits with 0 errors |
-| **Next.js Production Build** | ✅ Passed | `npm run build` compiles all 10 routes cleanly |
+| **Next.js Production Build** | ✅ Passed | `npm run build` compiles all 11 routes cleanly |
 | **Console Errors** | ✅ Zero | No missing keys, unhandled promises, or hydration mismatches |
 | **Zero-Latency Offline Mode** | ✅ Passed | Full functionality works completely offline with local state bank |
 | **Responsive Layout** | ✅ Verified | Works seamlessly across mobile, tablet, and desktop viewports |
@@ -155,5 +179,5 @@ Full EHR Writeback        Audit Log      Clinician Sign-  Classifier &
   "Let's look at `RF-001` (Metformin 500mg, zero refills remaining). Notice our **Draft-Only protocol**. The AI drafts the eRx renewal and checks adherence history, but it **cannot send automatically**. A clinician clicks `Review & Approve`, signs off with their credential (`Dr. Sarah Chen, PharmD`), and dispatches. The audit log is stamped and +192 minutes are saved."
 - **[3:30 – 4:15] Deliberate Limitation (Self-Aware Boundary)**:  
   "In `/classify`, let's paste an ambiguous note containing contradictory signals. Instead of hallucinating, our classifier triggers a **deliberate boundary failure**, refusing to guess and routing to senior clinical staff."
-- **[4:15 – 5:00] Business Impact & Close**:  
-  "Zero PII leaks, 100% deterministic rules on therapy-affecting drugs, and 45% reduction in administrative ticket volume. Prescription refills, unstuck in minutes."
+- **[4:15 – 5:00] Commercial Model, Buyer & Close**:  
+  "Our Economic Buyer is the Practice COO or Clinic Operations Director, while the Daily End-Users are triage nurses and pharmacy techs. At **$1.20 per resolved refill** or **$490/provider/month**, UnStuck Med pays for itself within the first 3 hours of deflected staff phone tag. Zero PII leaks, 100% deterministic rules on therapy-affecting drugs, and 45% reduction in administrative ticket volume. Prescription refills, unstuck in minutes."

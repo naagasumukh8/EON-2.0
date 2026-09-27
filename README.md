@@ -10,6 +10,7 @@
 - **Worklist Command Center**: [`/dashboard`](/dashboard)
 - **Deterministic AI Classifier**: [`/classify`](/classify)
 - **Workflow & Triage Rules Matrix**: [`/workflow`](/workflow)
+- **GTM & Commercial Funnel**: [`/gtm`](/gtm)
 - **Security & HIPAA Governance**: [`/security`](/security)
 - **Full Implementation Report**: [`WHAT_IS_DONE.md`](./WHAT_IS_DONE.md)
 
