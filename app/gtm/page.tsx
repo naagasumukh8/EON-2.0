@@ -6,40 +6,7 @@ import {
   ChevronRight, ChevronLeft, Compass, Target
 } from "lucide-react";
 
-function Nav() {
-  return (
-    <nav className="top-nav">
-      <div className="top-nav__inner">
-        <Link href="/" className="top-nav__logo">
-          <span className="top-nav__wordmark">UnStuck Med</span>
-        </Link>
-        <div className="top-nav__links">
-          {[
-            { href: "/portal",    label: "Portals" },
-            { href: "/dashboard", label: "Worklist" },
-            { href: "/classify",  label: "Classifier" },
-            { href: "/security",  label: "Security" },
-            { href: "/workflow",  label: "Workflow" },
-            { href: "/gtm",       label: "GTM / Funnel" },
-          ].map(l => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className={`top-nav__link ${l.href === "/gtm" ? "top-nav__link--active" : ""}`}
-            >
-              {l.label}
-            </Link>
-          ))}
-        </div>
-        <div className="top-nav__right">
-          <Link href="/portal" className="btn btn-primary btn-sm">
-            Enter Portal <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-      </div>
-    </nav>
-  );
-}
+import { AppHeader } from "@/components/AppHeader";
 
 interface FunnelStage {
   id: string;
@@ -145,8 +112,8 @@ export default function GTMPage() {
   };
 
   return (
-    <div className="page-frame min-h-screen bg-[#F0F0F0] text-ink-900 font-sans pb-24">
-      <Nav />
+    <div style={{ background: "#F0F0F0", color: "rgb(18,19,23)", fontFamily: '"Google Sans","Sora",-apple-system,BlinkMacSystemFont,sans-serif', minHeight: "100vh", paddingBottom: "96px" }}>
+      <AppHeader activePath="/gtm" />
 
       {/* HEADER */}
       <section className="border-b border-black/10 bg-[#F0F0F0] pt-10 pb-10">

@@ -2,37 +2,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ChevronRight, CheckCircle, Info } from "lucide-react";
-
-function Nav() {
-  return (
-    <nav className="top-nav">
-      <div className="top-nav__inner">
-        <Link href="/" className="top-nav__logo">
-          <span className="top-nav__wordmark">UnStuck Med</span>
-        </Link>
-        <div className="top-nav__links">
-          {[
-            { href: "/portal",    label: "Portals" },
-            { href: "/dashboard", label: "Worklist" },
-            { href: "/classify",  label: "Classifier" },
-            { href: "/security",  label: "Security" },
-            { href: "/workflow",  label: "Workflow" },
-            { href: "/gtm",       label: "GTM / Funnel" },
-          ].map(l => (
-            <Link key={l.href} href={l.href} className={`top-nav__link ${l.href === "/workflow" ? "top-nav__link--active" : ""}`}>
-              {l.label}
-            </Link>
-          ))}
-        </div>
-        <div className="top-nav__right">
-          <Link href="/portal" className="btn btn-primary btn-sm">
-            Enter Portal <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-      </div>
-    </nav>
-  );
-}
+import { AppHeader } from "@/components/AppHeader";
 
 /* ── Workflow data (exactly from image) ─────────────────── */
 const NEW_RX_STEPS = [
@@ -47,17 +17,17 @@ const NEW_RX_STEPS = [
 ];
 
 const ACTOR_ROLES: Record<string, Record<number, string[]>> = {
-  Patient:   {
+  Patient: {
     1: ["Shares symptoms", "Discusses health history"],
     7: ["Receives status notification"],
     8: ["Picks up or receives medication"],
   },
-  Provider:  {
+  Provider: {
     1: ["Reviews history", "Examines patient"],
     2: ["Confirms diagnosis", "Checks allergies, formulary"],
     3: ["Creates eRx (drug, dose, qty, refills, pharmacy)"],
   },
-  Pharmacy:  {
+  Pharmacy: {
     4: ["Receives eRx", "Verifies provider & patient", "Insurance eligibility check"],
     5: ["Submits claim to insurance (PBM)"],
     6: ["Prepares medication", "Pharmacist verification"],
@@ -88,23 +58,90 @@ const REFILL_B = [
 
 const ACTORS = ["Patient", "Provider", "Pharmacy", "Insurance / PBM"];
 
-function StepPill({ step, label, active, highlight, onClick }: {
-  step: number; label: string; active: boolean; highlight?: boolean; onClick: () => void;
+function StepPill({
+  step,
+  label,
+  active,
+  highlight,
+  onClick,
+}: {
+  step: number;
+  label: string;
+  active: boolean;
+  highlight?: boolean;
+  onClick: () => void;
 }) {
   return (
-    <button onClick={onClick}
-      className={`flex flex-col items-center gap-1 min-w-[80px] transition-all ${active ? "opacity-100" : "opacity-60 hover:opacity-80"}`}>
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all ${active ? "border-accent-600 bg-accent-600 text-white" : highlight ? "border-warn-600 bg-warn-50 text-warn-700" : "border-ink-200 bg-white text-ink-900"}`}>
+    <button
+      onClick={onClick}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "6px",
+        minWidth: "84px",
+        background: "transparent",
+        border: "none",
+        cursor: "pointer",
+        opacity: active ? 1 : 0.65,
+        transition: "all 0.18s ease",
+      }}
+    >
+      <div
+        style={{
+          width: "34px",
+          height: "34px",
+          borderRadius: "50%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "12px",
+          fontWeight: 700,
+          fontFamily: "monospace",
+          transition: "all 0.18s ease",
+          background: active
+            ? "rgb(18,19,23)"
+            : highlight
+            ? "#FFFBEB"
+            : "#ffffff",
+          color: active
+            ? "#ffffff"
+            : highlight
+            ? "#B45309"
+            : "rgb(18,19,23)",
+          border: active
+            ? "2px solid rgb(18,19,23)"
+            : highlight
+            ? "2px solid #FCD34D"
+            : "2px solid rgba(0,0,0,0.12)",
+          boxShadow: active ? "0 2px 8px rgba(0,0,0,0.15)" : "none",
+        }}
+      >
         {step}
       </div>
-      <div className={`text-[10px] font-medium text-center leading-tight max-w-[72px] ${active ? "text-accent-700" : highlight ? "text-warn-700" : "text-ink-400"}`}>{label}</div>
+      <div
+        style={{
+          fontSize: "11px",
+          fontWeight: active ? 600 : 500,
+          textAlign: "center",
+          lineHeight: 1.25,
+          maxWidth: "76px",
+          color: active
+            ? "rgb(18,19,23)"
+            : highlight
+            ? "#B45309"
+            : "rgba(18,19,23,0.55)",
+        }}
+      >
+        {label}
+      </div>
     </button>
   );
 }
 
 export default function WorkflowPage() {
-  const [activeStep, setActiveStep]       = useState<number | null>(null);
-  const [path, setPath]                   = useState<"A" | "B">("A");
+  const [activeStep, setActiveStep] = useState<number | null>(null);
+  const [path, setPath] = useState<"A" | "B">("B");
   const [activeRefillStep, setActiveRefillStep] = useState<number | null>(null);
 
   const refillSteps = path === "A" ? REFILL_A : REFILL_B;
@@ -112,28 +149,87 @@ export default function WorkflowPage() {
   const activeRefillData = activeRefillStep ? refillSteps[activeRefillStep - 1] : null;
 
   return (
-    <div className="page-frame min-h-screen bg-[#F0F0F0]">
-      <Nav />
+    <div
+      style={{
+        background: "#F0F0F0",
+        color: "rgb(18,19,23)",
+        fontFamily: '"Google Sans","Sora",-apple-system,BlinkMacSystemFont,sans-serif',
+        minHeight: "100vh",
+      }}
+    >
+      <AppHeader activePath="/workflow" />
 
-      <div className="container py-8 space-y-6">
+      <main style={{ maxWidth: "1240px", margin: "0 auto", padding: "40px 24px 80px", display: "flex", flexDirection: "column", gap: "24px" }}>
+        {/* Header */}
+        <div>
+          <p style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(18,19,23,0.38)", margin: "0 0 8px" }}>
+            Prescription Lifecycle Architecture
+          </p>
+          <h1 style={{ fontSize: "clamp(2rem, 3.2vw, 2.75rem)", fontWeight: 700, letterSpacing: "-0.035em", color: "rgb(18,19,23)", margin: "0 0 6px" }}>
+            Prescription &amp; Refill Workflow
+          </h1>
+          <p style={{ fontSize: "15px", color: "rgba(18,19,23,0.55)", margin: 0 }}>
+            The cross-organizational hand-offs between patient, provider, pharmacy, and insurance/PBM.
+          </p>
+        </div>
 
         {/* ── Section 1: New Prescription ─────────────────── */}
-        <div className="card overflow-hidden">
-          <div className="flex items-center gap-3 px-6 py-4 border-b border-ink-100 bg-ink-50">
-            <span className="w-6 h-6 rounded-full bg-accent-100 text-accent-700 text-xs font-bold flex items-center justify-center">1</span>
-            <h1 className="text-xl font-display font-bold text-ink-900">New Prescription Workflow</h1>
-            <span className="text-xs text-ink-400 ml-2">Click any step to see actor responsibilities</span>
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: "24px",
+            border: "1px solid rgba(0,0,0,0.08)",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 12px 28px -6px rgba(0,0,0,0.03)",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              padding: "20px 28px",
+              borderBottom: "1px solid rgba(0,0,0,0.06)",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              background: "rgba(0,0,0,0.015)",
+            }}
+          >
+            <span
+              style={{
+                width: "24px",
+                height: "24px",
+                borderRadius: "50%",
+                background: "rgb(18,19,23)",
+                color: "#ffffff",
+                fontSize: "11px",
+                fontWeight: 700,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              1
+            </span>
+            <h2 style={{ fontSize: "17px", fontWeight: 650, color: "rgb(18,19,23)", margin: 0 }}>
+              New Prescription Workflow
+            </h2>
+            <span style={{ fontSize: "12.5px", color: "rgba(18,19,23,0.45)", marginLeft: "4px" }}>
+              Click any step to see actor responsibilities
+            </span>
           </div>
 
-          <div className="p-6">
-            {/* Step pills */}
-            <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
+          <div style={{ padding: "28px" }}>
+            {/* Step pills row */}
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "24px", overflowX: "auto", paddingBottom: "8px" }}>
               {NEW_RX_STEPS.map((s, i) => (
                 <React.Fragment key={s.id}>
-                  <StepPill step={s.id} label={s.label} active={activeStep === s.id}
-                    onClick={() => setActiveStep(activeStep === s.id ? null : s.id)} />
+                  <StepPill
+                    step={s.id}
+                    label={s.label}
+                    active={activeStep === s.id}
+                    onClick={() => setActiveStep(activeStep === s.id ? null : s.id)}
+                  />
                   {i < NEW_RX_STEPS.length - 1 && (
-                    <ChevronRight className="h-3.5 w-3.5 text-ink-200 flex-shrink-0" />
+                    <ChevronRight style={{ width: 14, height: 14, color: "rgba(18,19,23,0.25)", flexShrink: 0 }} />
                   )}
                 </React.Fragment>
               ))}
@@ -141,25 +237,68 @@ export default function WorkflowPage() {
 
             {/* Active step detail */}
             {activeNewStep && (
-              <div className="mb-5 p-3 rounded border border-accent-100 bg-accent-50 flex items-center gap-3">
-                <div className="w-7 h-7 rounded-full bg-accent-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">{activeNewStep.id}</div>
+              <div
+                style={{
+                  marginBottom: "20px",
+                  padding: "14px 18px",
+                  borderRadius: "14px",
+                  border: "1px solid rgba(0,0,0,0.08)",
+                  background: "rgba(0,0,0,0.025)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: "50%",
+                    background: "rgb(18,19,23)",
+                    color: "#fff",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  {activeNewStep.id}
+                </div>
                 <div>
-                  <div className="text-sm font-semibold text-accent-700">{activeNewStep.label}</div>
-                  <div className="text-xs text-accent-600">{activeNewStep.desc}</div>
+                  <div style={{ fontSize: "14px", fontWeight: 650, color: "rgb(18,19,23)" }}>{activeNewStep.label}</div>
+                  <div style={{ fontSize: "12.5px", color: "rgba(18,19,23,0.6)" }}>{activeNewStep.desc}</div>
                 </div>
               </div>
             )}
 
             {/* Actor matrix */}
-            <div className="overflow-x-auto">
-              <table className="data-table min-w-[760px]">
+            <div style={{ overflowX: "auto", borderRadius: "16px", border: "1px solid rgba(0,0,0,0.06)" }}>
+              <table style={{ width: "100%", minWidth: "820px", borderCollapse: "collapse", fontSize: "13px" }}>
                 <thead>
-                  <tr>
-                    <th className="w-32">Actor</th>
+                  <tr style={{ background: "rgba(0,0,0,0.025)" }}>
+                    <th style={{ width: "130px", padding: "12px 18px", textAlign: "left", fontFamily: "monospace", fontSize: "10.5px", fontWeight: 700, color: "rgba(18,19,23,0.45)", textTransform: "uppercase", letterSpacing: "0.08em", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                      Actor
+                    </th>
                     {NEW_RX_STEPS.map(s => (
-                      <th key={s.id} className="text-center">
-                        <button onClick={() => setActiveStep(activeStep === s.id ? null : s.id)}
-                          className={`w-full text-center px-2 py-1 rounded text-[10px] font-semibold transition-all ${activeStep === s.id ? "bg-accent-600 text-white" : "hover:bg-ink-100 text-ink-400"}`}>
+                      <th key={s.id} style={{ textAlign: "center", padding: "8px 6px", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                        <button
+                          onClick={() => setActiveStep(activeStep === s.id ? null : s.id)}
+                          style={{
+                            width: "100%",
+                            textAlign: "center",
+                            padding: "6px 8px",
+                            borderRadius: "9999px",
+                            fontSize: "11px",
+                            fontWeight: 600,
+                            border: "none",
+                            cursor: "pointer",
+                            transition: "all 0.15s ease",
+                            background: activeStep === s.id ? "rgb(18,19,23)" : "transparent",
+                            color: activeStep === s.id ? "#fff" : "rgba(18,19,23,0.55)",
+                          }}
+                        >
                           {s.id}. {s.label}
                         </button>
                       </th>
@@ -168,22 +307,33 @@ export default function WorkflowPage() {
                 </thead>
                 <tbody>
                   {ACTORS.map(actor => (
-                    <tr key={actor}>
-                      <td className="font-medium text-ink-900 text-xs whitespace-nowrap">{actor}</td>
+                    <tr key={actor} style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
+                      <td style={{ padding: "14px 18px", fontWeight: 600, color: "rgb(18,19,23)", fontSize: "12.5px", whiteSpace: "nowrap" }}>
+                        {actor}
+                      </td>
                       {NEW_RX_STEPS.map(s => {
                         const roles = ACTOR_ROLES[actor]?.[s.id];
                         return (
-                          <td key={s.id} className={`align-top text-xs ${activeStep === s.id ? "bg-accent-50/50" : ""}`}>
+                          <td
+                            key={s.id}
+                            style={{
+                              padding: "12px 8px",
+                              verticalAlign: "top",
+                              fontSize: "12px",
+                              background: activeStep === s.id ? "rgba(0,0,0,0.025)" : "transparent",
+                            }}
+                          >
                             {roles ? (
-                              <ul className="space-y-0.5">
+                              <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "3px" }}>
                                 {roles.map((r, i) => (
-                                  <li key={i} className="flex items-start gap-1 text-ink-600">
-                                    <span className="text-ok-600 mt-0.5 flex-shrink-0">·</span> {r}
+                                  <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "5px", color: "rgba(18,19,23,0.75)" }}>
+                                    <span style={{ color: "#166534", fontWeight: 700, lineHeight: 1 }}>·</span>
+                                    <span>{r}</span>
                                   </li>
                                 ))}
                               </ul>
                             ) : (
-                              <span className="text-ink-200">—</span>
+                              <span style={{ color: "rgba(18,19,23,0.2)", display: "block", textAlign: "center" }}>—</span>
                             )}
                           </td>
                         );
@@ -197,39 +347,124 @@ export default function WorkflowPage() {
         </div>
 
         {/* ── Section 2: Refill Workflow ───────────────────── */}
-        <div className="card overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-ink-100 bg-ink-50">
-            <div className="flex items-center gap-3">
-              <span className="w-6 h-6 rounded-full bg-warn-50 border border-warn-200 text-warn-700 text-xs font-bold flex items-center justify-center">2</span>
-              <h2 className="text-xl font-display font-bold text-ink-900">Refill Workflow</h2>
-              <span className="text-xs text-ink-400">Path depends on whether refills remain</span>
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: "24px",
+            border: "1px solid rgba(0,0,0,0.08)",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 12px 28px -6px rgba(0,0,0,0.03)",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              padding: "20px 28px",
+              borderBottom: "1px solid rgba(0,0,0,0.06)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              background: "rgba(0,0,0,0.015)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <span
+                style={{
+                  width: "24px",
+                  height: "24px",
+                  borderRadius: "50%",
+                  background: "rgb(18,19,23)",
+                  color: "#ffffff",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                2
+              </span>
+              <h2 style={{ fontSize: "17px", fontWeight: 650, color: "rgb(18,19,23)", margin: 0 }}>
+                Refill Workflow
+              </h2>
+              <span style={{ fontSize: "12.5px", color: "rgba(18,19,23,0.45)" }}>
+                Path depends on whether refills remain
+              </span>
             </div>
           </div>
 
-          <div className="p-6">
+          <div style={{ padding: "28px" }}>
             {/* Path toggle */}
-            <div className="flex gap-2 mb-6">
-              {(["A", "B"] as const).map(p => (
-                <button key={p} onClick={() => { setPath(p); setActiveRefillStep(null); }}
-                  className={`flex items-center gap-2 px-4 py-2 rounded border text-sm font-semibold transition-all ${path === p ? "border-accent-600 bg-accent-50 text-accent-700" : "border-ink-200 text-ink-400 hover:border-accent-600/40"}`}>
-                  <span className={`w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center text-white ${path === p ? "bg-accent-600" : "bg-ink-200"}`}>{p}</span>
-                  {p === "A" ? "Refills Remaining (Most Common)" : "No Refills Remaining"}
-                  {p === "B" && (
-                    <span className="text-[10px] bg-warn-50 text-warn-700 border border-warn-200 px-1.5 py-0.5 rounded font-semibold">Our Focus</span>
-                  )}
-                </button>
-              ))}
+            <div style={{ display: "flex", gap: "8px", marginBottom: "24px", flexWrap: "wrap" }}>
+              {(["A", "B"] as const).map(p => {
+                const isSelected = path === p;
+                return (
+                  <button
+                    key={p}
+                    onClick={() => { setPath(p); setActiveRefillStep(null); }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      padding: "8px 18px",
+                      borderRadius: "9999px",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "all 0.18s ease",
+                      background: isSelected ? "rgb(18,19,23)" : "rgba(0,0,0,0.04)",
+                      color: isSelected ? "#fff" : "rgb(18,19,23)",
+                      border: isSelected ? "1px solid rgb(18,19,23)" : "1px solid rgba(0,0,0,0.07)",
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: "20px",
+                        height: "20px",
+                        borderRadius: "50%",
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: isSelected ? "#fff" : "rgba(18,19,23,0.15)",
+                        color: isSelected ? "rgb(18,19,23)" : "rgb(18,19,23)",
+                      }}
+                    >
+                      {p}
+                    </span>
+                    <span>{p === "A" ? "Refills Remaining (Standard Path)" : "No Refills Remaining"}</span>
+                    {p === "B" && (
+                      <span
+                        style={{
+                          fontSize: "10px",
+                          background: isSelected ? "#4ADE80" : "rgba(74,222,128,0.2)",
+                          color: isSelected ? "rgb(18,19,23)" : "#166534",
+                          padding: "1px 8px",
+                          borderRadius: "9999px",
+                          fontWeight: 700,
+                        }}
+                      >
+                        Our Focus
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Refill steps */}
-            <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-2">
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "24px", overflowX: "auto", paddingBottom: "8px" }}>
               {refillSteps.map((s, i) => (
                 <React.Fragment key={s.id}>
-                  <StepPill step={s.id} label={s.label} active={activeRefillStep === s.id}
+                  <StepPill
+                    step={s.id}
+                    label={s.label}
+                    active={activeRefillStep === s.id}
                     highlight={(s as any).highlight}
-                    onClick={() => setActiveRefillStep(activeRefillStep === s.id ? null : s.id)} />
+                    onClick={() => setActiveRefillStep(activeRefillStep === s.id ? null : s.id)}
+                  />
                   {i < refillSteps.length - 1 && (
-                    <ChevronRight className="h-3.5 w-3.5 text-ink-200 flex-shrink-0" />
+                    <ChevronRight style={{ width: 14, height: 14, color: "rgba(18,19,23,0.25)", flexShrink: 0 }} />
                   )}
                 </React.Fragment>
               ))}
@@ -237,53 +472,82 @@ export default function WorkflowPage() {
 
             {/* Active refill step */}
             {activeRefillData && (
-              <div className={`mb-5 p-3 rounded border flex items-center gap-3 ${(activeRefillData as any).highlight ? "border-warn-200 bg-warn-50" : "border-accent-100 bg-accent-50"}`}>
-                <div className={`w-7 h-7 rounded-full text-white text-xs font-bold flex items-center justify-center flex-shrink-0 ${(activeRefillData as any).highlight ? "bg-warn-600" : "bg-accent-600"}`}>
+              <div
+                style={{
+                  marginBottom: "24px",
+                  padding: "14px 18px",
+                  borderRadius: "14px",
+                  border: (activeRefillData as any).highlight ? "1px solid rgba(180,83,9,0.25)" : "1px solid rgba(0,0,0,0.08)",
+                  background: (activeRefillData as any).highlight ? "#FFFBEB" : "rgba(0,0,0,0.025)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: "50%",
+                    color: "#fff",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                    background: (activeRefillData as any).highlight ? "#B45309" : "rgb(18,19,23)",
+                  }}
+                >
                   {activeRefillData.id}
                 </div>
                 <div>
-                  <div className={`text-sm font-semibold ${(activeRefillData as any).highlight ? "text-warn-700" : "text-accent-700"}`}>
+                  <div style={{ fontSize: "14px", fontWeight: 650, color: (activeRefillData as any).highlight ? "#78350F" : "rgb(18,19,23)" }}>
                     {activeRefillData.label}
                     {(activeRefillData as any).highlight && (
-                      <span className="ml-2 text-[10px] bg-warn-100 text-warn-700 px-1.5 py-0.5 rounded font-bold">UnStuck Med intercepts here</span>
+                      <span style={{ marginLeft: "8px", fontSize: "10.5px", background: "#FEF3C7", color: "#92400E", padding: "2px 8px", borderRadius: "9999px", fontWeight: 700 }}>
+                        UnStuck Med intercepts here
+                      </span>
                     )}
                   </div>
-                  <div className={`text-xs ${(activeRefillData as any).highlight ? "text-warn-600" : "text-accent-600"}`}>{activeRefillData.desc}</div>
+                  <div style={{ fontSize: "12.5px", color: (activeRefillData as any).highlight ? "#92400E" : "rgba(18,19,23,0.6)" }}>
+                    {activeRefillData.desc}
+                  </div>
                 </div>
               </div>
             )}
 
             {/* Info panels */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-              <div className="bg-warn-50 border border-warn-200 rounded p-4">
-                <div className="text-xs font-semibold text-warn-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                  <Info className="h-3 w-3" /> When a visit is required
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "14px", marginTop: "16px" }}>
+              <div style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.06)", borderRadius: "16px", padding: "18px" }}>
+                <div style={{ fontFamily: "monospace", fontSize: "10.5px", fontWeight: 700, color: "#92400E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <Info style={{ width: 13, height: 13 }} /> When a visit is required
                 </div>
                 {["Blood pressure medications", "Diabetes medications", "Antidepressants", "ADHD / controlled substances", "Provider wants condition check"].map((m, i) => (
-                  <div key={i} className="text-xs text-warn-700 flex items-center gap-1.5 mt-1.5">
-                    <span className="w-1 h-1 rounded-full bg-warn-600 flex-shrink-0" /> {m}
+                  <div key={i} style={{ fontSize: "12.5px", color: "rgba(18,19,23,0.7)", display: "flex", alignItems: "center", gap: "6px", marginTop: "6px" }}>
+                    <span style={{ width: "4px", height: "4px", borderRadius: "50%", background: "#B45309", flexShrink: 0 }} /> {m}
                   </div>
                 ))}
               </div>
 
-              <div className="bg-ink-50 border border-ink-200 rounded p-4">
-                <div className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                  <Info className="h-3 w-3" /> Insurance issues (even with refills)
+              <div style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.06)", borderRadius: "16px", padding: "18px" }}>
+                <div style={{ fontFamily: "monospace", fontSize: "10.5px", fontWeight: 700, color: "rgba(18,19,23,0.5)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <Info style={{ width: 13, height: 13 }} /> Insurance issues (even with refills)
                 </div>
                 {["Too early to refill", "New prior authorization needed", "Insurance plan changed", "Not covered on formulary"].map((m, i) => (
-                  <div key={i} className="text-xs text-ink-400 flex items-center gap-1.5 mt-1.5">
-                    <span className="w-1 h-1 rounded-full bg-ink-400 flex-shrink-0" /> {m}
+                  <div key={i} style={{ fontSize: "12.5px", color: "rgba(18,19,23,0.7)", display: "flex", alignItems: "center", gap: "6px", marginTop: "6px" }}>
+                    <span style={{ width: "4px", height: "4px", borderRadius: "50%", background: "rgba(18,19,23,0.35)", flexShrink: 0 }} /> {m}
                   </div>
                 ))}
               </div>
 
-              <div className="bg-ok-50 border border-ok-200 rounded p-4">
-                <div className="text-xs font-semibold text-ok-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                  <CheckCircle className="h-3 w-3" /> Typical refill statuses
+              <div style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.06)", borderRadius: "16px", padding: "18px" }}>
+                <div style={{ fontFamily: "monospace", fontSize: "10.5px", fontWeight: 700, color: "#166534", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <CheckCircle style={{ width: 13, height: 13 }} /> Typical refill statuses
                 </div>
                 {["Refill requested", "Prescription located", "Refills available", "Insurance processing", "Provider approval pending", "Ready for pickup", "Dispensed"].map((s, i) => (
-                  <div key={i} className="text-xs text-ok-700 flex items-center gap-1.5 mt-1.5">
-                    <span className="w-1 h-1 rounded-full bg-ok-600 flex-shrink-0" /> {s}
+                  <div key={i} style={{ fontSize: "12.5px", color: "rgba(18,19,23,0.7)", display: "flex", alignItems: "center", gap: "6px", marginTop: "6px" }}>
+                    <span style={{ width: "4px", height: "4px", borderRadius: "50%", background: "#16a34a", flexShrink: 0 }} /> {s}
                   </div>
                 ))}
               </div>
@@ -291,41 +555,93 @@ export default function WorkflowPage() {
           </div>
         </div>
 
-        {/* ── Where UnStuck Med fits ───────────────────────── */}
-        <div className="card-dark p-6 rounded-xl">
-          <div className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-            <span className="w-1 h-1 rounded-full bg-ok-600" /> Where UnStuck Med intervenes
+        {/* ── Section 3: Where UnStuck Med fits ───────────────────────── */}
+        <div
+          style={{
+            background: "rgb(18,19,23)",
+            borderRadius: "28px",
+            padding: "44px 36px",
+            color: "#ffffff",
+          }}
+        >
+          <div style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 700, color: "#8AB4F8", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#4ADE80", display: "inline-block" }} />
+            Where UnStuck Med Intervenes
           </div>
-          <h3 className="text-xl font-display font-bold text-ink-200 mb-2">
+          <h3 style={{ fontSize: "clamp(1.5rem, 2.5vw, 2.1rem)", fontWeight: 650, letterSpacing: "-0.03em", color: "#ffffff", margin: "0 0 10px", lineHeight: 1.2 }}>
             We own the gap between Step 2 and Step 5 on Path B
           </h3>
-          <p className="text-sm text-ink-400 mb-6">
-            When no refills remain — AI classifies the block in seconds and routes the right action to the right actor automatically.
+          <p style={{ fontSize: "14.5px", color: "rgba(255,255,255,0.6)", marginBottom: "32px", maxWidth: "640px", lineHeight: 1.6 }}>
+            When zero refills remain, AI classifies the root cause in seconds and routes the exact clinical action to the right actor automatically.
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "14px", marginBottom: "32px" }}>
             {[
-              { step: "B-2", label: "Block Detected",  desc: "No refills — pharmacy flags",         color: "border-warn-600/40 bg-warn-600/10 text-warn-200" },
-              { step: "B-3", label: "AI Classifies",   desc: "Block type named in < 4s",            color: "border-accent-500/40 bg-accent-500/10 text-accent-300" },
-              { step: "B-4", label: "Action Routed",   desc: "Right task to right actor",            color: "border-accent-500/40 bg-accent-500/10 text-accent-300" },
-              { step: "B-5", label: "Fill Complete",   desc: "Audit logged, patient notified",       color: "border-ok-600/40 bg-ok-600/10 text-ok-300" },
+              { step: "B-2", label: "Block Detected",  desc: "Zero refills — pharmacy flags denial", badge: "#FCA5A5" },
+              { step: "B-3", label: "AI Classifies",   desc: "Deterministic root-cause < 4s", badge: "#8AB4F8" },
+              { step: "B-4", label: "Action Routed",   desc: "Right task pre-filled for clinician", badge: "#FCD34D" },
+              { step: "B-5", label: "Fill Complete",   desc: "Audit logged, patient notified", badge: "#4ADE80" },
             ].map((s, i) => (
-              <div key={i} className={`rounded border p-4 ${s.color}`}>
-                <div className="font-mono text-[10px] mb-1 opacity-70">{s.step}</div>
-                <div className="text-sm font-semibold mb-1">{s.label}</div>
-                <div className="text-xs opacity-60">{s.desc}</div>
+              <div
+                key={i}
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: "16px",
+                  padding: "18px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "6px",
+                }}
+              >
+                <div style={{ fontFamily: "monospace", fontSize: "10.5px", fontWeight: 700, color: s.badge }}>
+                  {s.step}
+                </div>
+                <div style={{ fontSize: "14px", fontWeight: 650, color: "#fff" }}>{s.label}</div>
+                <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.48)", lineHeight: 1.4 }}>{s.desc}</div>
               </div>
             ))}
           </div>
-          <div className="flex gap-3 mt-6">
-            <Link href="/classify" className="btn btn-primary btn-sm">
-              Try AI Classifier <ArrowRight className="h-3.5 w-3.5" />
+
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <Link
+              href="/classify"
+              style={{
+                background: "#ffffff",
+                color: "rgb(18,19,23)",
+                fontSize: "13.5px",
+                fontWeight: 600,
+                padding: "10px 22px",
+                borderRadius: "9999px",
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              Try AI Classifier <ArrowRight style={{ width: 14, height: 14 }} />
             </Link>
-            <Link href="/dashboard" className="btn btn-ghost btn-sm text-ink-400 hover:text-ink-200">
-              Open Queue <ArrowRight className="h-3.5 w-3.5" />
+            <Link
+              href="/dashboard"
+              style={{
+                background: "rgba(255,255,255,0.08)",
+                color: "#ffffff",
+                fontSize: "13.5px",
+                fontWeight: 550,
+                padding: "10px 22px",
+                borderRadius: "9999px",
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                border: "1px solid rgba(255,255,255,0.12)",
+              }}
+            >
+              Open Refill Queue <ArrowRight style={{ width: 14, height: 14 }} />
             </Link>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

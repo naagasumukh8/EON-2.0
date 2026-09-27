@@ -5,8 +5,7 @@ import { Shield, Zap, ArrowRight } from "lucide-react";
 import { useAutonomy } from "../../lib/autonomy";
 
 /**
- * Clean, minimal AI mode banner.
- * Crisp, modern, single-line presentation without verbose text walls.
+ * Clean, minimal AI mode banner with luxury glassmorphic styling matching landing page.
  */
 export function AutonomyBanner() {
   const { mode, setMode } = useAutonomy();
@@ -15,28 +14,32 @@ export function AutonomyBanner() {
   return (
     <div
       style={{
-        background: isDraft ? "#FFFBEB" : "#F0F7FF",
-        borderBottom: isDraft ? "1px solid #FDE68A" : "1px solid #E0EDFE",
+        background: "rgba(255, 255, 255, 0.75)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
         transition: "all 0.2s ease",
+        fontFamily: '"Google Sans", "Sora", sans-serif',
       }}
-      className="sticky top-0 z-50 text-xs"
+      className="sticky top-[54px] z-40 text-xs"
     >
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-1.5 flex items-center justify-between gap-4">
+      <div className="max-w-[1240px] mx-auto px-6 py-2 flex items-center justify-between gap-4">
         {/* Left: Mode badge + concise statement */}
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-3 min-w-0">
           <span
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: "4px",
-              padding: "2px 7px",
-              borderRadius: "4px",
-              fontSize: "10.5px",
+              gap: "5px",
+              padding: "3px 10px",
+              borderRadius: "9999px",
+              fontSize: "11px",
               fontWeight: 700,
               fontFamily: "monospace",
-              background: isDraft ? "#B45309" : "#2563EB",
+              background: isDraft ? "rgb(18,19,23)" : "#166534",
               color: "#fff",
               flexShrink: 0,
+              letterSpacing: "0.04em",
             }}
           >
             {isDraft ? (
@@ -52,9 +55,9 @@ export function AutonomyBanner() {
 
           <span
             style={{
-              color: isDraft ? "#92400E" : "#1E40AF",
-              fontWeight: 500,
-              fontSize: "12px",
+              color: "rgba(18,19,23,0.65)",
+              fontWeight: 450,
+              fontSize: "12.5px",
             }}
             className="truncate"
           >
@@ -70,24 +73,24 @@ export function AutonomyBanner() {
           <div
             style={{
               display: "inline-flex",
-              background: isDraft ? "rgba(180, 83, 9, 0.1)" : "rgba(37, 99, 235, 0.1)",
+              background: "rgba(0, 0, 0, 0.05)",
               borderRadius: "9999px",
               padding: "2px",
-              border: isDraft ? "1px solid rgba(180, 83, 9, 0.2)" : "1px solid rgba(37, 99, 235, 0.2)",
+              border: "1px solid rgba(0, 0, 0, 0.06)",
             }}
           >
             <button
               onClick={() => setMode("DRAFT_ONLY")}
               style={{
-                fontSize: "10.5px",
+                fontSize: "11px",
                 fontWeight: 600,
-                padding: "2px 8px",
+                padding: "3px 12px",
                 borderRadius: "9999px",
                 border: "none",
-                background: isDraft ? "#fff" : "transparent",
-                color: isDraft ? "#92400E" : "#6B7280",
+                background: isDraft ? "rgb(18,19,23)" : "transparent",
+                color: isDraft ? "#fff" : "rgba(18,19,23,0.5)",
                 cursor: "pointer",
-                boxShadow: isDraft ? "0 1px 2px rgba(0,0,0,0.08)" : "none",
+                boxShadow: isDraft ? "0 1px 3px rgba(0,0,0,0.12)" : "none",
                 transition: "all 0.15s ease",
               }}
             >
@@ -96,15 +99,15 @@ export function AutonomyBanner() {
             <button
               onClick={() => setMode("AUTONOMOUS")}
               style={{
-                fontSize: "10.5px",
+                fontSize: "11px",
                 fontWeight: 600,
-                padding: "2px 8px",
+                padding: "3px 12px",
                 borderRadius: "9999px",
                 border: "none",
-                background: !isDraft ? "#2563EB" : "transparent",
-                color: !isDraft ? "#fff" : "#6B7280",
+                background: !isDraft ? "#166534" : "transparent",
+                color: !isDraft ? "#fff" : "rgba(18,19,23,0.5)",
                 cursor: "pointer",
-                boxShadow: !isDraft ? "0 1px 2px rgba(37,99,235,0.25)" : "none",
+                boxShadow: !isDraft ? "0 1px 3px rgba(22,101,52,0.25)" : "none",
                 transition: "all 0.15s ease",
               }}
             >
@@ -115,15 +118,18 @@ export function AutonomyBanner() {
           <Link
             href="/dashboard"
             style={{
-              fontSize: "11.5px",
-              fontWeight: 600,
-              color: isDraft ? "#92400E" : "#2563EB",
+              fontSize: "12px",
+              fontWeight: 550,
+              color: "rgb(18,19,23)",
               textDecoration: "none",
               display: "inline-flex",
               alignItems: "center",
-              gap: "3px",
+              gap: "4px",
+              padding: "4px 12px",
+              borderRadius: "9999px",
+              background: "rgba(0,0,0,0.05)",
+              transition: "all 0.15s ease",
             }}
-            className="hover:opacity-80"
           >
             Queue <ArrowRight style={{ width: 11, height: 11 }} />
           </Link>

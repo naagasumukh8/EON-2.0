@@ -8,42 +8,7 @@ import {
 } from "lucide-react";
 import { useAutonomy, type ActionState, AVG_MANUAL_MINUTES } from "../../lib/autonomy";
 import { AutonomyBanner } from "../components/AutonomyBanner";
-
-/* ── Nav (minimal, workflow removed from primary) ───────── */
-function Nav() {
-  return (
-    <nav className="top-nav">
-      <div className="top-nav__inner">
-        <Link href="/" className="top-nav__logo">
-          <span className="top-nav__wordmark">UnStuck Med</span>
-        </Link>
-        <div className="top-nav__links">
-          {[
-            { href: "/portal",    label: "Portals" },
-            { href: "/dashboard", label: "Worklist" },
-            { href: "/classify",  label: "Classifier" },
-            { href: "/security",  label: "Security" },
-            { href: "/workflow",  label: "Workflow" },
-            { href: "/gtm",       label: "GTM / Funnel" },
-          ].map(l => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className={`top-nav__link ${l.href === "/dashboard" ? "top-nav__link--active" : ""}`}
-            >
-              {l.label}
-            </Link>
-          ))}
-        </div>
-        <div className="top-nav__right">
-          <Link href="/classify" className="btn btn-primary btn-sm">
-            <Zap className="h-3.5 w-3.5" /> AI Classifier
-          </Link>
-        </div>
-      </div>
-    </nav>
-  );
-}
+import { AppHeader } from "@/components/AppHeader";
 
 /* ── Risk scoring ─────────────────────────────────────── */
 const MED_CLASS_RISK: Record<string, { score: number; reason: string }> = {
@@ -271,12 +236,27 @@ function SavingsCounter({ minutesSaved }: { minutesSaved: number }) {
 
   const hrs = (displayed / 60).toFixed(1);
   return (
-    <div className="stat-card border-ok-200 bg-ok-50/60 p-4">
-      <div className="stat-card__label flex items-center gap-1.5 text-ok-700 font-semibold text-xs uppercase tracking-wider">
-        <TrendingUp className="h-3.5 w-3.5" /> Hours Saved This Session
+    <div
+      style={{
+        background: "#ffffff",
+        borderRadius: "20px",
+        border: "1px solid rgba(0, 0, 0, 0.08)",
+        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.02), 0 12px 28px -6px rgba(0, 0, 0, 0.03)",
+        padding: "24px 28px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(18,19,23,0.4)" }}>
+        <TrendingUp style={{ width: 14, height: 14, color: "#166534" }} /> Hours Saved This Session
       </div>
-      <div className="text-3xl font-display font-extrabold text-ok-700 my-1">{hrs} hrs</div>
-      <div className="text-xs text-ok-700/70">{displayed} min saved</div>
+      <div style={{ fontSize: "38px", fontWeight: 750, letterSpacing: "-0.03em", color: "rgb(18,19,23)", margin: "8px 0 4px" }}>
+        {hrs} hrs
+      </div>
+      <div style={{ fontSize: "12.5px", fontWeight: 600, color: "#166534" }}>
+        {displayed} min saved
+      </div>
     </div>
   );
 }
@@ -548,91 +528,109 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="page-frame min-h-screen bg-[#F0F0F0]">
-      <Nav />
+    <div style={{ background: "#F0F0F0", color: "rgb(18,19,23)", fontFamily: '"Google Sans","Sora",-apple-system,BlinkMacSystemFont,sans-serif', minHeight: "100vh" }}>
+      <AppHeader activePath="/dashboard" />
       <AutonomyBanner />
       {/* ── System notification toast ────────────────────── */}
       {notification && (
-        <div className="max-w-screen-xl mx-auto px-6 mt-3">
+        <div style={{ maxWidth: "1240px", margin: "16px auto 0", padding: "0 24px" }}>
           <div
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg border text-sm shadow-sm ${
-              notification.type === "success"
-                ? "bg-ok-50 border-ok-200 text-ok-800"
-                : notification.type === "warn"
-                ? "bg-warn-50 border-warn-200 text-warn-800"
-                : "bg-blue-50 border-blue-200 text-blue-800"
-            }`}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              padding: "12px 18px",
+              borderRadius: "14px",
+              border: notification.type === "success" ? "1px solid rgba(22,101,52,0.15)" : "1px solid rgba(180,83,9,0.2)",
+              background: notification.type === "success" ? "#F0FDF4" : "#FFFBEB",
+              color: notification.type === "success" ? "#14532D" : "#78350F",
+              fontSize: "13.5px",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+            }}
           >
             {notification.type === "success" ? (
-              <CheckCircle className="h-4 w-4 flex-shrink-0 text-ok-600" />
+              <CheckCircle style={{ width: 16, height: 16, flexShrink: 0, color: "#166534" }} />
             ) : (
-              <Zap className="h-4 w-4 flex-shrink-0 text-blue-600" />
+              <Zap style={{ width: 16, height: 16, flexShrink: 0, color: "#B45309" }} />
             )}
-            <span className="flex-1 font-medium">{notification.msg}</span>
+            <span style={{ flex: 1, fontWeight: 550 }}>{notification.msg}</span>
             <button
               onClick={() => setNotification(null)}
-              className="p-1 hover:opacity-75 transition-opacity"
+              style={{ background: "transparent", border: "none", cursor: "pointer", color: "inherit", padding: "4px" }}
             >
-              <X className="h-4 w-4" />
+              <X style={{ width: 14, height: 14 }} />
             </button>
           </div>
         </div>
       )}
 
-      <div className="max-w-screen-xl mx-auto px-6 py-6">
+      <div style={{ maxWidth: "1240px", margin: "0 auto", padding: "32px 24px 80px" }}>
         {/* ── Page header ──────────────────────────────── */}
-        <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: "16px", marginBottom: "28px" }}>
           <div>
-            <div className="section-label">Real-Time Prescription Intelligence</div>
-            <h1 className="text-3xl sm:text-4xl font-display font-extrabold text-ink-900 tracking-tight">
+            <div style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(18,19,23,0.38)", margin: "0 0 8px" }}>
+              Real-Time Prescription Intelligence
+            </div>
+            <h1 style={{ fontSize: "clamp(2rem, 3.2vw, 2.75rem)", fontWeight: 700, letterSpacing: "-0.035em", color: "rgb(18,19,23)", margin: "0 0 6px" }}>
               Prescription Refill Queue
             </h1>
-            <p className="text-sm text-ink-400 mt-1">
+            <p style={{ fontSize: "15px", color: "rgba(18,19,23,0.55)", margin: 0 }}>
               Cross-organization worklist · Prioritized by clinical risk and days stalled
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-xs font-mono text-ok-700 bg-ok-50 border border-ok-200 px-3 py-1.5 rounded-md">
-              <span className="w-2 h-2 rounded-full bg-ok-600 animate-pulse" />
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", fontFamily: "monospace", color: "#166534", background: "rgba(22,101,52,0.06)", border: "1px solid rgba(22,101,52,0.15)", padding: "6px 14px", borderRadius: "9999px", fontWeight: 600 }}>
+              <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#16a34a", display: "inline-block" }} />
               Connected (Local Simulation)
             </div>
           </div>
         </div>
 
         {/* ── SIMPLIFIED STAT ROW: ONLY 2 NUMBERS THAT MATTER ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px", marginBottom: "24px" }}>
           {/* Stat 1: Hours saved this session */}
           <SavingsCounter minutesSaved={minutesSaved} />
 
           {/* Stat 2: Blocked count */}
-          <div className="stat-card border-warn-200 bg-warn-50/60 p-4">
-            <div className="stat-card__label flex items-center gap-1.5 text-warn-700 font-semibold text-xs uppercase tracking-wider">
-              <AlertTriangle className="h-3.5 w-3.5" /> Blocked Refills Requiring Action
+          <div
+            style={{
+              background: "#ffffff",
+              borderRadius: "20px",
+              border: "1px solid rgba(0, 0, 0, 0.08)",
+              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.02), 0 12px 28px -6px rgba(0, 0, 0, 0.03)",
+              padding: "24px 28px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#B45309" }}>
+              <AlertTriangle style={{ width: 14, height: 14, color: "#B45309" }} /> Blocked Refills Requiring Action
             </div>
-            <div className="text-3xl font-display font-extrabold text-warn-700 my-1">
+            <div style={{ fontSize: "38px", fontWeight: 750, letterSpacing: "-0.03em", color: "rgb(18,19,23)", margin: "8px 0 4px" }}>
               {blockedCount} Blocked
             </div>
-            <div className="text-xs text-warn-700/70">
+            <div style={{ fontSize: "12.5px", color: "rgba(18,19,23,0.5)" }}>
               Stalled on provider renewal, prior auth, or pharmacy out-of-stock
             </div>
           </div>
         </div>
 
         {/* ── Search & Filter Bar ──────────────────────── */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <div className="flex items-center gap-2 input py-1.5 w-full sm:w-80">
-            <Search className="h-3.5 w-3.5 text-ink-400 flex-shrink-0" />
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "18px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#ffffff", borderRadius: "9999px", border: "1px solid rgba(0,0,0,0.08)", padding: "7px 16px", width: "100%", maxWidth: "340px", boxShadow: "0 1px 2px rgba(0,0,0,0.02)" }}>
+            <Search style={{ width: 14, height: 14, color: "rgba(18,19,23,0.35)", flexShrink: 0 }} />
             <input
-              className="text-sm bg-transparent outline-none text-ink-900 placeholder:text-ink-400 w-full"
+              style={{ fontSize: "13.5px", background: "transparent", outline: "none", border: "none", color: "rgb(18,19,23)", width: "100%", fontFamily: '"Google Sans","Sora",sans-serif' }}
               placeholder="Search medication, token, or block..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-ink-400">
-            <span>Showing {filtered.length} of {queue.length} refills</span>
+          <div style={{ fontSize: "12.5px", color: "rgba(18,19,23,0.45)", fontFamily: "monospace" }}>
+            Showing {filtered.length} of {queue.length} refills
           </div>
         </div>
 

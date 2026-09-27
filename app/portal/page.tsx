@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, User, Building2, Stethoscope, RefreshCw, Check } from "lucide-react";
 import { setCurrentRole, resetDemoData, seedDemoData, type Role } from "../../lib/demo-messages";
+import { AppHeader } from "@/components/AppHeader";
 
 type RoleConfig = {
   role: Role;
@@ -87,52 +88,32 @@ export default function PortalPage() {
         color: "rgb(18,19,23)",
       }}
     >
-      {/* Clean, Minimal Top Nav */}
-      <header
-        style={{
-          height: "54px",
-          background: "rgba(244, 244, 246, 0.85)",
-          backdropFilter: "blur(18px)",
-          borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 36px",
-          justifyContent: "space-between",
-        }}
-      >
-        <Link
-          href="/"
-          style={{
-            fontWeight: 600,
-            fontSize: "16px",
-            color: "rgb(18,19,23)",
-            textDecoration: "none",
-            letterSpacing: "-0.01em",
-          }}
-        >
-          UnStuck Med
-        </Link>
-        <button
-          onClick={handleReset}
-          style={{
-            background: "#FFFFFF",
-            border: "1px solid rgba(0,0,0,0.08)",
-            borderRadius: "9999px",
-            padding: "5px 14px",
-            fontSize: "11.5px",
-            color: "rgb(60,60,65)",
-            cursor: "pointer",
-            fontWeight: 500,
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "6px",
-            transition: "all 0.15s ease",
-          }}
-        >
-          <RefreshCw style={{ width: 11, height: 11 }} />
-          {resetting ? "Resetting State…" : "Reset Demo Data"}
-        </button>
-      </header>
+      {/* Unified Top Nav with Reset Demo Button */}
+      <AppHeader
+        activePath="/portal"
+        rightElement={
+          <button
+            onClick={handleReset}
+            style={{
+              background: "#FFFFFF",
+              border: "1px solid rgba(0,0,0,0.08)",
+              borderRadius: "9999px",
+              padding: "6px 16px",
+              fontSize: "12px",
+              color: "rgb(60,60,65)",
+              cursor: "pointer",
+              fontWeight: 500,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              transition: "all 0.15s ease",
+            }}
+          >
+            <RefreshCw style={{ width: 12, height: 12, animation: resetting ? "spin 1s linear infinite" : "none" }} />
+            {resetting ? "Resetting State…" : "Reset Demo Data"}
+          </button>
+        }
+      />
 
       {/* Hero Section */}
       <main
