@@ -7,6 +7,7 @@
 ---
 
 ## ⚡ Quick Links
+- **Portals Hub (Patient, Pharmacy, Provider)**: [`/portal`](/portal)
 - **Worklist Command Center**: [`/dashboard`](/dashboard)
 - **Deterministic AI Classifier**: [`/classify`](/classify)
 - **Workflow & Triage Rules Matrix**: [`/workflow`](/workflow)
