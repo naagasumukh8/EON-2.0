@@ -92,7 +92,7 @@ export default function HomePage() {
         <Nav />
 
         {/* HERO */}
-        <section style={{ position: "relative", minHeight: "92vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "70px 32px 180px", overflow: "hidden" }}>
+        <section style={{ position: "relative", minHeight: "92vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "70px 32px 300px", overflow: "hidden" }}>
           <div style={{ position: "relative", zIndex: 1, maxWidth: "860px", margin: "0 auto", animation: "fadeUp 0.7s ease both" }}>
             {/* Black UnStuck Med Badge */}
             <div style={{ display: "inline-flex", alignItems: "center", padding: "6px 18px", borderRadius: "9999px", background: "rgb(18,19,23)", color: "#fff", fontSize: "13px", fontWeight: 500, letterSpacing: "-0.01em", marginBottom: "26px" }}>
@@ -119,10 +119,13 @@ export default function HomePage() {
           </div>
 
           {/* Crowd video at bottom of hero */}
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2, overflow: "hidden", lineHeight: 0, maxHeight: "200px" }}>
-            {/* Edge fade masks */}
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, #F0F0F0 0%, transparent 12%, transparent 88%, #F0F0F0 100%)", zIndex: 3, pointerEvents: "none" }} />
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "30px", background: "linear-gradient(to top, #F0F0F0, transparent)", zIndex: 3, pointerEvents: "none" }} />
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2, overflow: "hidden", lineHeight: 0, height: "300px" }}>
+            {/* Left/right edge fade */}
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, #F0F0F0 0%, transparent 10%, transparent 90%, #F0F0F0 100%)", zIndex: 3, pointerEvents: "none" }} />
+            {/* Top fade so it blends into hero */}
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "80px", background: "linear-gradient(to bottom, #F0F0F0, transparent)", zIndex: 3, pointerEvents: "none" }} />
+            {/* Bottom fade */}
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "40px", background: "linear-gradient(to top, #F0F0F0, transparent)", zIndex: 3, pointerEvents: "none" }} />
             <video
               autoPlay
               loop
@@ -130,9 +133,10 @@ export default function HomePage() {
               playsInline
               style={{
                 width: "100%",
+                height: "300px",
                 display: "block",
-                objectFit: "cover",
-                maxHeight: "200px",
+                objectFit: "contain",
+                objectPosition: "center bottom",
               }}
             >
               <source src="/crowd.mp4" type="video/mp4" />
