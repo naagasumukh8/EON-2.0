@@ -10,6 +10,7 @@ import {
   updateThread, addNotification, timeAgo, setCurrentRole,
   type Message, type RefillThread,
 } from "../../lib/demo-messages";
+import { RoleSwitcher } from "../components/RoleSwitcher";
 
 function StatusChip({ status }: { status: RefillThread["status"] }) {
   const map: Record<string, { label: string; color: string; bg: string }> = {
@@ -303,15 +304,10 @@ export default function PharmacyPage() {
     <div style={{ minHeight: "100vh", background: "#F0F0F0", fontFamily: '"Inter","Sora",sans-serif' }}>
       {/* Nav */}
       <nav style={{ position: "sticky", top: 0, zIndex: 50, height: "52px", background: "rgba(240,240,240,0.9)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(0,0,0,0.08)", display: "flex", alignItems: "center", padding: "0 24px" }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto", width: "100%", display: "flex", alignItems: "center", gap: "16px" }}>
-          <Link href="/portal" style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#6E7681", textDecoration: "none", fontWeight: 500 }}>
-            <ArrowLeft style={{ width: 13, height: 13 }} /> All Portals
-          </Link>
+        <div style={{ maxWidth: "1200px", margin: "0 auto", width: "100%", display: "flex", alignItems: "center", gap: "12px" }}>
+          <Link href="/" style={{ fontWeight: 700, fontSize: "14px", color: "#0D1117", textDecoration: "none", letterSpacing: "-0.02em", flexShrink: 0 }}>UnStuck Med</Link>
           <span style={{ color: "#E5E7EB" }}>|</span>
-          <span style={{ fontWeight: 700, fontSize: "14px", color: "#0D1117" }}>Pharmacy Portal</span>
-          <span style={{ padding: "2px 10px", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "999px", fontSize: "11px", fontWeight: 600, color: "#15803D" }}>
-            Summit Rx
-          </span>
+          <RoleSwitcher current="pharmacy" />
 
           {/* AI Mode toggle */}
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "8px" }}>

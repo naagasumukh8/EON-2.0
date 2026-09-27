@@ -9,6 +9,7 @@ import {
   getNotifications, countUnread, countUnreadNotifs, timeAgo, setCurrentRole,
   type Message, type RefillThread,
 } from "../../lib/demo-messages";
+import { RoleSwitcher } from "../components/RoleSwitcher";
 
 const PATIENT_NAME = "Alex Rivera";
 const PATIENT_DEMO = {
@@ -507,24 +508,10 @@ export default function PatientPage() {
           padding: "0 24px",
         }}
       >
-        <div style={{ maxWidth: "1100px", margin: "0 auto", width: "100%", display: "flex", alignItems: "center", gap: "16px" }}>
-          <Link
-            href="/portal"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "12px",
-              color: "#6E7681",
-              textDecoration: "none",
-              fontWeight: 500,
-            }}
-          >
-            <ArrowLeft style={{ width: 13, height: 13 }} />
-            All Portals
-          </Link>
+        <div style={{ maxWidth: "1100px", margin: "0 auto", width: "100%", display: "flex", alignItems: "center", gap: "12px" }}>
+          <Link href="/" style={{ fontWeight: 700, fontSize: "14px", color: "#0D1117", textDecoration: "none", letterSpacing: "-0.02em", flexShrink: 0 }}>UnStuck Med</Link>
           <span style={{ color: "#E5E7EB" }}>|</span>
-          <span style={{ fontWeight: 700, fontSize: "14px", color: "#0D1117" }}>Patient Portal</span>
+          <RoleSwitcher current="patient" />
           <div
             style={{
               marginLeft: "auto",
