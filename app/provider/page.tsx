@@ -226,7 +226,7 @@ function RefillPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
                     }}
                   >
                     <CheckCircle2 style={{ width: 14, height: 14 }} />
-                    {acting === "approve" ? "Signing eRx…" : "✍️ Approve & Send eRx"}
+                    {acting === "approve" ? "Signing eRx…" : "Approve & Send eRx"}
                   </button>
 
                   <button
@@ -248,7 +248,7 @@ function RefillPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
                     }}
                   >
                     <Shuffle style={{ width: 13, height: 13 }} />
-                    {acting === "alternative" ? "Routing…" : "🔄 Authorize Alternative"}
+                    {acting === "alternative" ? "Routing…" : "Authorize Alternative"}
                   </button>
 
                   <button
@@ -270,7 +270,7 @@ function RefillPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
                     }}
                   >
                     <XCircle style={{ width: 13, height: 13 }} />
-                    {acting === "visit" ? "Updating…" : "📅 Require Clinic Visit"}
+                    {acting === "visit" ? "Updating…" : "Require Clinic Visit"}
                   </button>
                 </div>
               </div>
@@ -427,9 +427,9 @@ function RefillPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
                 Quick Actions:
               </span>
               {[
-                { label: "✅ Approve 90-Day Refill", text: "Refill authorized for 90-day maintenance supply. Electronic prescription renewal transmitted to pharmacy." },
-                { label: "📅 Require Clinic Visit", text: "Annual lab work and blood pressure re-evaluation required before renewing this maintenance medication. Please schedule an office visit." },
-                { label: "🩺 Dose Titration Note", text: "Reviewed clinical profile. Recommended dosage adjusted based on last comprehensive metabolic panel." },
+                { label: "Approve 90-Day Refill", text: "Refill authorized for 90-day maintenance supply. Electronic prescription renewal transmitted to pharmacy." },
+                { label: "Require Clinic Visit", text: "Annual lab work and blood pressure re-evaluation required before renewing this maintenance medication. Please schedule an office visit." },
+                { label: "Dose Titration Note", text: "Reviewed clinical profile. Recommended dosage adjusted based on last comprehensive metabolic panel." },
               ].map(p => (
                 <button
                   key={p.label}

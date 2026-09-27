@@ -194,7 +194,7 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
             }}
           >
             <Zap style={{ width: 13, height: 13 }} />
-            {processing ? "Processing…" : "⚡ Process & Route Refill"}
+            {processing ? "Processing…" : "Process & Route Refill"}
           </button>
           {processResult && (
             <div
@@ -261,9 +261,9 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
           Quick Replies:
         </span>
         {[
-          { label: "✅ Process & Ready for Pickup", text: "Your prescription has been filled and is ready for pickup at our counter." },
-          { label: "🩺 Escalate to Dr. Chen", text: "Zero refills remain on profile. Escalating refill renewal request to Dr. Marcus Chen." },
-          { label: "🏪 Query Stock Reserve", text: "Inventory checked with partner network: 140 units on hand at CarePoint Pharmacy." },
+          { label: "Ready for Pickup", text: "Your prescription has been filled and is ready for pickup at our counter." },
+          { label: "Escalate to Dr. Chen", text: "Zero refills remain on profile. Escalating refill renewal request to Dr. Marcus Chen." },
+          { label: "Query Partner Stock", text: "Inventory checked with partner network: 140 units on hand at CarePoint Pharmacy." },
         ].map(p => (
           <button
             key={p.label}

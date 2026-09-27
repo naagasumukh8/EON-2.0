@@ -105,3 +105,11 @@ Action: Terminating tangential work. Refocusing on the primary interactive slice
 - **API Registry**: `lib/api-registry.ts` (15 pre-wired typed slots with dual Mock/Live toggle).
 - **Presentation HUD**: `components/PitchDrawer.tsx` (5-minute countdown + rubric cheat sheet).
 - **Sample Data Bank**: `lib/sample-data.ts` (authentic real-world datasets across all 3 tracks).
+
+---
+
+## 🚫 STRICT DESIGN RULE: NO EMOJIS INSIDE CAPSULE/PILL BADGES
+- **NEVER use emojis inside pill or capsule badges/boxes** (e.g., `💊 Real-Time Rx Tracker`, `⚡ Triage`, `👤 Actor`).
+- **NEVER use cartoonish emoji tags in cards or tables**.
+- Always use clean, professional SVG icons (from `lucide-react`) or clean typography.
+- Maintain a luxury, minimalist, executive B2B SaaS aesthetic (Linear / Vercel style).

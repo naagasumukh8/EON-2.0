@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, RefreshCw, Sparkles, Shield } from "lucide-react";
+import { ArrowRight, RefreshCw, Zap, Shield, User, Clock, CheckCircle2, AlertTriangle, Pill, Building2, FileText } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 
 const BLOCK_RULES = [
@@ -9,56 +9,56 @@ const BLOCK_RULES = [
     id: "NO_REFILLS",
     keywords: ["no refill", "no more refill", "zero refill", "refills exhausted", "expired prescription", "needs new rx", "no remaining", "ran out"],
     label: "No Refills Remaining",
-    emoji: "💊",
     confidence: 94,
     description: "Prescription has zero refills left. New provider authorization required.",
     nextAction: "Draft eRx renewal request to attending provider with last fill date & adherence history.",
     actor: "Provider",
     timeline: "< 4 hours via eRx",
+    Icon: Pill,
   },
   {
     id: "INSURANCE",
     keywords: ["prior auth", "pa required", "insurance denied", "pbm", "step therapy", "not covered", "coverage denied", "authorization", "formulary"],
     label: "Insurance Prior Auth Hold",
-    emoji: "📋",
     confidence: 91,
     description: "Payer restriction detected: prior authorization or step therapy required.",
     nextAction: "Submit PA justification form with clinical diagnosis and prior treatment history.",
     actor: "Practice Staff",
     timeline: "< 6 hours via portal",
+    Icon: FileText,
   },
   {
     id: "VISIT",
     keywords: ["needs a visit", "requires appointment", "visit required", "come in", "see the doctor", "in person", "controlled substance", "schedule appointment", "in-person"],
     label: "Clinical Visit Required",
-    emoji: "🩺",
     confidence: 88,
     description: "Provider requires an in-person or telehealth visit before renewal.",
     nextAction: "Send appointment scheduling link to patient portal with privacy-compliant generic reminder.",
     actor: "Patient",
     timeline: "Instant scheduling",
+    Icon: User,
   },
   {
     id: "MISSING_INFO",
     keywords: ["missing", "incomplete", "unclear", "wrong dob", "no dob", "illegible", "incorrect", "mismatch", "doesn't match", "cant find"],
     label: "Demographic Data Mismatch",
-    emoji: "🪪",
     confidence: 89,
     description: "EHR profile mismatch detected for date of birth or member ID.",
     nextAction: "Send secure SMS demographic verification link to patient.",
     actor: "Practice Staff",
     timeline: "< 1 hour via SMS",
+    Icon: FileText,
   },
   {
     id: "PHARMACY_STOCK",
     keywords: ["out of stock", "backlog", "backordered", "inventory", "wholesaler delay", "supply chain", "cannot fill", "stock shortage"],
     label: "Pharmacy Inventory Shortage",
-    emoji: "🏪",
     confidence: 93,
     description: "Dispensing pharmacy reports zero on-hand units or wholesaler backorder.",
     nextAction: "Query partner pharmacy network for verified stock and route electronic transfer.",
     actor: "Pharmacy",
     timeline: "< 30 min partner transfer",
+    Icon: Building2,
   },
 ];
 
@@ -69,28 +69,28 @@ function scoreRisk(text: string): { score: number; label: string } {
   const lower = text.toLowerCase();
   const isHighRisk = HIGH_RISK_MEDS.some(m => lower.includes(m));
   const isMedRisk  = !isHighRisk && MED_RISK_MEDS.some(m => lower.includes(m));
-  if (isHighRisk) return { score: 85, label: "High Risk (Cardiovascular / Endocrine)" };
-  if (isMedRisk)  return { score: 55, label: "Standard Maintenance" };
-  return { score: 25, label: "Acute / Standard" };
+  if (isHighRisk) return { score: 85, label: "High Risk" };
+  if (isMedRisk)  return { score: 55, label: "Standard" };
+  return { score: 25, label: "Acute" };
 }
 
 const AMBIGUOUS_RESULT = {
   id: "AMBIGUOUS",
   label: "Conflicting Signals — Human Escalation",
-  emoji: "⚠️",
   confidence: 42,
   description: "Contradictory signals detected across multiple categories. Automatic guess rejected.",
   nextAction: "Escalate to attending clinician for human judgment with multi-signal audit attached.",
   actor: "Senior Clinician",
   timeline: "Manual Review",
+  Icon: AlertTriangle,
 };
 
 const SAMPLES = [
-  { label: "💊 Zero Refills", text: "Pharmacy sent an electronic denial: zero refills remaining on Metformin 500mg. Patient has been on this maintenance dose for 2 years for Type 2 diabetes. Need a new renewal prescription from Dr. Chen before dispensing." },
-  { label: "🏪 Stock Shortage", text: "CVS notes medication is currently out of stock with wholesaler backorder lasting 5+ days. Patient needs this antibiotic course started today. Check partner pharmacies in the immediate network." },
-  { label: "📋 Prior Auth Hold", text: "BlueCross PBM rejected claim code 75: Prior Authorization Required. Formulary prefers enalapril as step-1 therapy unless physician provides clinical contraindication notes." },
-  { label: "🪪 Demographic Mismatch", text: "Prescription transmission rejected due to patient demographic mismatch. Date of birth on e-prescribing profile does not match health plan master registry." },
-  { label: "⚠️ Conflicting Signals", text: "Patient called stating the pharmacy said no refills remained, but also mentioned their insurance dropped coverage and Dr. Patel said they need an office visit before anything is renewed." },
+  { label: "Zero Refills Remaining", text: "Pharmacy sent an electronic denial: zero refills remaining on Metformin 500mg. Patient has been on this maintenance dose for 2 years for Type 2 diabetes. Need a new renewal prescription from Dr. Chen before dispensing." },
+  { label: "Stock Shortage", text: "CVS notes medication is currently out of stock with wholesaler backorder lasting 5+ days. Patient needs this antibiotic course started today. Check partner pharmacies in the immediate network." },
+  { label: "Prior Auth Hold", text: "BlueCross PBM rejected claim code 75: Prior Authorization Required. Formulary prefers enalapril as step-1 therapy unless physician provides clinical contraindication notes." },
+  { label: "Demographic Mismatch", text: "Prescription transmission rejected due to patient demographic mismatch. Date of birth on e-prescribing profile does not match health plan master registry." },
+  { label: "Conflicting Signals", text: "Patient called stating the pharmacy said no refills remained, but also mentioned their insurance dropped coverage and Dr. Patel said they need an office visit before anything is renewed." },
 ];
 
 function classify(text: string) {
@@ -127,12 +127,12 @@ export default function ClassifyPage() {
         ...AMBIGUOUS_RESULT,
         id: "UNKNOWN",
         label: "Unclassified Context",
-        emoji: "❓",
         confidence: 20,
         description: "No known block patterns matched.",
         nextAction: "Provide additional context from the EHR note or pharmacy fax.",
         actor: "Staff",
         timeline: "Pending",
+        Icon: AlertTriangle,
       });
     } else {
       setResult(res);
@@ -160,7 +160,7 @@ export default function ClassifyPage() {
           </p>
         </div>
 
-        {/* Quick Scenario Pills */}
+        {/* Quick Scenario Buttons - Clean Typography, Zero Emojis */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
           {SAMPLES.map((s, i) => {
             const isSelected = input === s.text;
@@ -252,7 +252,7 @@ export default function ClassifyPage() {
                 </>
               ) : (
                 <>
-                  <Sparkles style={{ width: 13, height: 13 }} /> Classify Refill
+                  <Zap style={{ width: 13, height: 13 }} /> Classify Refill
                 </>
               )}
             </button>
@@ -281,7 +281,7 @@ export default function ClassifyPage() {
           </div>
         )}
 
-        {/* ONE UNIFIED, ULTRA-CLEAN RESULT CARD (NO NESTED BOXES) */}
+        {/* ONE UNIFIED, ULTRA-CLEAN RESULT CARD (NO EMOJIS, ZERO NESTED BOXES) */}
         {result && !loading && (
           <div
             style={{
@@ -295,11 +295,15 @@ export default function ClassifyPage() {
               gap: "18px",
             }}
           >
-            {/* Top row: Emoji + Title + Confidence */}
+            {/* Top row: Clean SVG Icon + Title + Confidence */}
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{ width: "42px", height: "42px", borderRadius: "14px", background: "rgba(0,0,0,0.03)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", flexShrink: 0 }}>
-                  {result.emoji}
+                <div style={{ width: "42px", height: "42px", borderRadius: "14px", background: "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  {result.Icon ? (
+                    <result.Icon style={{ width: 20, height: 20, color: "rgb(18,19,23)" }} />
+                  ) : (
+                    <Zap style={{ width: 20, height: 20, color: "rgb(18,19,23)" }} />
+                  )}
                 </div>
                 <div>
                   <h2 style={{ fontSize: "20px", fontWeight: 700, letterSpacing: "-0.02em", color: "rgb(18,19,23)", margin: 0 }}>
@@ -319,7 +323,7 @@ export default function ClassifyPage() {
                   padding: "4px 12px",
                   borderRadius: "9999px",
                   fontSize: "12px",
-                  fontWeight: 700,
+                  fontWeight: 750,
                   whiteSpace: "nowrap",
                 }}
               >
@@ -327,7 +331,7 @@ export default function ClassifyPage() {
               </span>
             </div>
 
-            {/* Clean Action Callout */}
+            {/* Clean Action Callout with SVG Icon */}
             <div
               style={{
                 background: "#F9FAFB",
@@ -339,7 +343,7 @@ export default function ClassifyPage() {
                 border: "1px solid rgba(0,0,0,0.04)",
               }}
             >
-              <span style={{ fontSize: "16px", marginTop: "1px" }}>⚡</span>
+              <Zap style={{ width: 15, height: 15, color: "rgb(18,19,23)", flexShrink: 0, marginTop: "2px" }} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(18,19,23,0.45)", marginBottom: "3px" }}>
                   Recommended Action
@@ -350,17 +354,17 @@ export default function ClassifyPage() {
               </div>
             </div>
 
-            {/* Inline Metadata Pills */}
+            {/* Inline Metadata Tags with SVG Icons (Zero Emojis) */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
-              <span style={{ fontSize: "12px", background: "rgba(0,0,0,0.035)", padding: "5px 12px", borderRadius: "9999px", color: "rgb(18,19,23)", fontWeight: 550 }}>
-                👤 Assigned: {result.actor}
+              <span style={{ fontSize: "12px", background: "rgba(0,0,0,0.035)", padding: "5px 12px", borderRadius: "9999px", color: "rgb(18,19,23)", fontWeight: 550, display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                <User style={{ width: 12, height: 12, color: "rgba(18,19,23,0.6)" }} /> Assigned: {result.actor}
               </span>
-              <span style={{ fontSize: "12px", background: "rgba(0,0,0,0.035)", padding: "5px 12px", borderRadius: "9999px", color: "rgb(18,19,23)", fontWeight: 550 }}>
-                ⏱️ Turnaround: {result.timeline}
+              <span style={{ fontSize: "12px", background: "rgba(0,0,0,0.035)", padding: "5px 12px", borderRadius: "9999px", color: "rgb(18,19,23)", fontWeight: 550, display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                <Clock style={{ width: 12, height: 12, color: "rgba(18,19,23,0.6)" }} /> Turnaround: {result.timeline}
               </span>
               {risk && (
-                <span style={{ fontSize: "12px", background: risk.score >= 70 ? "#FEF2F2" : "rgba(0,0,0,0.035)", color: risk.score >= 70 ? "#DC2626" : "rgb(18,19,23)", padding: "5px 12px", borderRadius: "9999px", fontWeight: 550 }}>
-                  🛡️ Risk: {risk.score}/100 ({risk.label})
+                <span style={{ fontSize: "12px", background: risk.score >= 70 ? "#FEF2F2" : "rgba(0,0,0,0.035)", color: risk.score >= 70 ? "#DC2626" : "rgb(18,19,23)", padding: "5px 12px", borderRadius: "9999px", fontWeight: 550, display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                  <Shield style={{ width: 12, height: 12, color: risk.score >= 70 ? "#DC2626" : "rgba(18,19,23,0.6)" }} /> Risk: {risk.score}/100 ({risk.label})
                 </span>
               )}
             </div>

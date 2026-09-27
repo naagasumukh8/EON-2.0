@@ -169,20 +169,20 @@ function StatusBadge({ status }: { status: string }) {
   if (status === "BLOCKED") {
     return (
       <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11px", fontWeight: 650, color: "#B45309", background: "#FFFBEB", border: "1px solid #FDE68A", padding: "3px 9px", borderRadius: "9999px" }}>
-        ⚠️ Blocked
+        <AlertTriangle style={{ width: 10, height: 10 }} /> Blocked
       </span>
     );
   }
   if (status === "FILLING") {
     return (
       <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11px", fontWeight: 650, color: "#2563EB", background: "#EFF6FF", border: "1px solid #BFDBFE", padding: "3px 9px", borderRadius: "9999px" }}>
-        🔄 Filling
+        <RefreshCw style={{ width: 10, height: 10 }} /> Filling
       </span>
     );
   }
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11px", fontWeight: 650, color: "#166534", background: "#F0FDF4", border: "1px solid #BBF7D0", padding: "3px 9px", borderRadius: "9999px" }}>
-      ✅ Resolved
+      <CheckCircle style={{ width: 10, height: 10 }} /> Resolved
     </span>
   );
 }
@@ -306,7 +306,7 @@ export default function DashboardPage() {
     if (autoCount > 0) {
       setMinutesSaved(m => m + minutesAdded);
       setNotification({
-        msg: `⚡ Autonomous mode active — ${autoCount} action${autoCount > 1 ? "s" : ""} auto-dispatched (+${minutesAdded} min saved).`,
+        msg: `Autonomous mode active — ${autoCount} action${autoCount > 1 ? "s" : ""} auto-dispatched (+${minutesAdded} min saved).`,
         type: "success",
       });
     }
@@ -402,7 +402,7 @@ export default function DashboardPage() {
           notes: `[AUTO-EXECUTE] Action dispatched: ${item.nextAction}`,
         });
         setNotification({
-          msg: `⚡ Auto-executed for ${item.id}: Action dispatched (+${AVG_MANUAL_MINUTES} min saved).`,
+          msg: `Auto-executed for ${item.id}: Action dispatched (+${AVG_MANUAL_MINUTES} min saved).`,
           type: "success",
         });
       } else {
@@ -467,7 +467,7 @@ export default function DashboardPage() {
     }
     setNotification({
       msg: isAuto
-        ? `⚡ Stock reserved & transferred for ${item.med} to CarePoint Pharmacy!`
+        ? `Stock reserved & transferred for ${item.med} to CarePoint Pharmacy!`
         : `Transfer request logged for ${item.med} to CarePoint Pharmacy.`,
       type: "success",
     });
@@ -634,7 +634,7 @@ export default function DashboardPage() {
                             {row.med}
                             {isStockBlock && (
                               <span style={{ fontSize: "10px", background: "#FEF3C7", color: "#92400E", padding: "2px 6px", borderRadius: "9999px", fontWeight: 700 }}>
-                                🏪 Stock
+                                Stock Shortage
                               </span>
                             )}
                           </div>
@@ -933,8 +933,8 @@ export default function DashboardPage() {
                   )}
 
                   {selectedItem.status === "RESOLVED" && (
-                    <div style={{ fontSize: "12.5px", color: "#166534", background: "#F0FDF4", border: "1px solid #BBF7D0", padding: "10px", borderRadius: "10px", textAlign: "center", fontWeight: 600 }}>
-                      ✅ Resolved & Archived
+                    <div style={{ fontSize: "12.5px", color: "#166534", background: "#F0FDF4", border: "1px solid #BBF7D0", padding: "10px", borderRadius: "10px", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+                      <CheckCircle style={{ width: 14, height: 14 }} /> Resolved &amp; Archived
                     </div>
                   )}
                 </div>

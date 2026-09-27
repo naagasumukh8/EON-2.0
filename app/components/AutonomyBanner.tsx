@@ -111,7 +111,7 @@ export function AutonomyBanner() {
                 transition: "all 0.15s ease",
               }}
             >
-              ⚡ Auto
+              Auto
             </button>
           </div>
 

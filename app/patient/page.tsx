@@ -340,9 +340,9 @@ function ThreadView({ thread, onBack, onRefresh }: { thread: RefillThread; onBac
           Quick Actions:
         </span>
         {[
-          { label: "💊 Refill Metformin", text: "I need to request a refill for Metformin 500mg. I have about 2 days left." },
-          { label: "⏱️ Check Pickup ETA", text: "Hi, can you confirm when my prescription will be ready for pickup?" },
-          { label: "✅ Confirm Pickup Today", text: "Thank you! I will pick up my medication today around 4 PM." },
+          { label: "Refill Metformin", text: "I need to request a refill for Metformin 500mg. I have about 2 days left." },
+          { label: "Check Pickup ETA", text: "Hi, can you confirm when my prescription will be ready for pickup?" },
+          { label: "Confirm Pickup Today", text: "Thank you! I will pick up my medication today around 4 PM." },
         ].map(p => (
           <button
             key={p.label}
@@ -780,15 +780,15 @@ export default function PatientPage() {
 
             <div style={{ display: "flex", flexDirection: "column", gap: "8px", paddingTop: "8px", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "rgb(50,50,55)", fontWeight: 500 }}>
-                <span>🩺</span>
+                <Stethoscope style={{ width: 13, height: 13, color: "rgb(18,19,23)", flexShrink: 0 }} />
                 <span>{PATIENT_DEMO.condition}</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#DC2626", fontWeight: 500 }}>
-                <span>⚠️</span>
+                <AlertTriangle style={{ width: 13, height: 13, color: "#DC2626", flexShrink: 0 }} />
                 <span>{PATIENT_DEMO.allergies}</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#166534", fontWeight: 500 }}>
-                <span>🛡️</span>
+                <ShieldCheck style={{ width: 13, height: 13, color: "#166534", flexShrink: 0 }} />
                 <span>{PATIENT_DEMO.insuranceId}</span>
               </div>
             </div>

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, User, Building2, Stethoscope, RefreshCw, Check } from "lucide-react";
+import { ArrowRight, User, Building2, Stethoscope, RefreshCw } from "lucide-react";
 import { setCurrentRole, resetDemoData, seedDemoData, type Role } from "../../lib/demo-messages";
 import { AppHeader } from "@/components/AppHeader";
 
@@ -9,12 +9,11 @@ type RoleConfig = {
   role: Role;
   title: string;
   subtitle: string;
-  emoji: string;
   color: string;
   bg: string;
   href: string;
   Icon: React.ElementType;
-  tags: string[];
+  description: string;
 };
 
 const ROLES: RoleConfig[] = [
@@ -22,34 +21,31 @@ const ROLES: RoleConfig[] = [
     role: "patient",
     title: "Patient Portal",
     subtitle: "Alex Rivera · Chronic Care",
-    emoji: "👤",
     color: "#2563EB",
     bg: "#EFF6FF",
     href: "/patient",
     Icon: User,
-    tags: ["💊 Real-Time Rx Tracker", "💬 Direct Care Team Chat"],
+    description: "Track active prescriptions, monitor real-time pickup status, and message directly with your pharmacy and clinic care team.",
   },
   {
     role: "pharmacy",
     title: "Pharmacy Queue",
-    subtitle: "Summit Rx · Intake Triage",
-    emoji: "🏥",
+    subtitle: "Summit Rx · Central Fill",
     color: "#16A34A",
     bg: "#F0FDF4",
     href: "/pharmacy",
     Icon: Building2,
-    tags: ["⚡ Deterministic AI Triage", "🔄 Instant Provider Routing"],
+    description: "Automated deterministic refill triage, partner pharmacy inventory lookup, and instant provider escalation.",
   },
   {
     role: "provider",
     title: "Physician Review",
-    subtitle: "Dr. Marcus Chen, MD · Prescriber",
-    emoji: "🩺",
+    subtitle: "Dr. Marcus Chen, MD · Prescribing Clinic",
     color: "#9333EA",
     bg: "#FAF5FF",
     href: "/provider",
     Icon: Stethoscope,
-    tags: ["✍️ 1-Click eRx Renewal", "🛡️ Clinical Safety Protocol"],
+    description: "One-click eRx renewal authorization, clinical contraindication safety checklist, and structured alternative regimens.",
   },
 ];
 
@@ -83,7 +79,7 @@ export default function PortalPage() {
         color: "rgb(18,19,23)",
       }}
     >
-      {/* Unified Top Nav with Reset Demo Button */}
+      {/* Top Nav with Reset Demo Button */}
       <AppHeader
         activePath="/portal"
         rightElement={
@@ -152,7 +148,7 @@ export default function PortalPage() {
             maxWidth: "1140px",
           }}
         >
-          {ROLES.map(({ role, title, subtitle, emoji, color, bg, href, Icon, tags }) => {
+          {ROLES.map(({ role, title, subtitle, color, bg, href, Icon, description }) => {
             const isSelected = selected === role;
             const isFaded = selected && selected !== role;
             return (
@@ -174,7 +170,7 @@ export default function PortalPage() {
                 }}
               >
                 <div>
-                  {/* Icon & Title */}
+                  {/* Clean SVG Icon & Title */}
                   <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "20px" }}>
                     <div
                       style={{
@@ -186,10 +182,9 @@ export default function PortalPage() {
                         alignItems: "center",
                         justifyContent: "center",
                         flexShrink: 0,
-                        fontSize: "22px",
                       }}
                     >
-                      {emoji}
+                      <Icon style={{ width: 22, height: 22, color: color }} />
                     </div>
                     <div>
                       <h2
@@ -209,34 +204,17 @@ export default function PortalPage() {
                     </div>
                   </div>
 
-                  {/* Clean Feature Tags */}
-                  <div
+                  {/* Clean Description (No Emoji Capsules) */}
+                  <p
                     style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "9px",
-                      marginBottom: "32px",
+                      fontSize: "13.5px",
+                      color: "rgba(18,19,23,0.65)",
+                      lineHeight: 1.6,
+                      margin: "0 0 32px",
                     }}
                   >
-                    {tags.map((tag) => (
-                      <div
-                        key={tag}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          color: "rgba(18,19,23,0.75)",
-                          background: "rgba(0,0,0,0.025)",
-                          border: "1px solid rgba(0,0,0,0.05)",
-                          padding: "8px 14px",
-                          borderRadius: "12px",
-                        }}
-                      >
-                        {tag}
-                      </div>
-                    ))}
-                  </div>
+                    {description}
+                  </p>
                 </div>
 
                 {/* Action CTA */}
