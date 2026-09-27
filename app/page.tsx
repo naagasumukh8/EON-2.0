@@ -9,6 +9,7 @@ import {
   Layers,
   Bot,
 } from "lucide-react";
+import { CrowdCanvas } from "@/components/ui/skiper39";
 
 /* -- Typewriter that cycles through words -- */
 function TypewriterWords({ words }: { words: string[] }) {
@@ -124,29 +125,18 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Crowd video spanning screen edge-to-edge — positioned higher up */}
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2, overflow: "hidden", lineHeight: 0, width: "100%", height: "clamp(320px, 37vh, 420px)" }}>
+          {/* Interactive GSAP Crowd Canvas (Skiper39) */}
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2, overflow: "hidden", lineHeight: 0, width: "100%", height: "clamp(280px, 33vh, 380px)", pointerEvents: "none" }}>
             {/* Top gradient fade blending into hero background */}
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "80px", background: "linear-gradient(to bottom, #F0F0F0 25%, rgba(240,240,240,0))", zIndex: 3, pointerEvents: "none" }} />
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "70px", background: "linear-gradient(to bottom, #F0F0F0 25%, rgba(240,240,240,0))", zIndex: 3, pointerEvents: "none" }} />
             {/* Bottom edge fade */}
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "15px", background: "linear-gradient(to top, #F0F0F0 10%, rgba(240,240,240,0))", zIndex: 3, pointerEvents: "none" }} />
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              style={{
-                width: "100%",
-                height: "100%",
-                display: "block",
-                objectFit: "cover",
-                objectPosition: "center 38%",
-                filter: "contrast(1.04) brightness(0.98)",
-              }}
-            >
-              <source src="/crowd.mp4" type="video/mp4" />
-            </video>
+            <CrowdCanvas
+              src="/peeps.png"
+              rows={15}
+              cols={7}
+              className="w-full h-full block"
+            />
           </div>
         </section>
 
