@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   ArrowRight, Star, CheckCircle, Phone, Mail, MapPin,
   Clock, Zap, Users, FileText, AlertTriangle,
@@ -120,9 +121,10 @@ export default function Home() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-1">
-            {NAV_LINKS.map((link, i) => (
-              <a key={link} href="#" className={`nav-link ${i === 0 ? "active" : ""}`}>{link}</a>
-            ))}
+            <a href="#" className="nav-link active">Home</a>
+            <Link href="/workflow" className="nav-link">Workflow</Link>
+            <Link href="/dashboard" className="nav-link">Dashboard</Link>
+            <Link href="/classify" className="nav-link">AI Classifier</Link>
           </div>
 
           {/* Right */}
@@ -130,9 +132,9 @@ export default function Home() {
             <div className="hidden sm:flex items-center gap-1.5 text-xs text-[#64748b] bg-[#f0fdf4] rounded-full px-3 py-1.5 border border-[#bbf7d0]">
               <LiveDot /> <span className="font-medium">Live System</span>
             </div>
-            <button className="btn-green text-sm hidden sm:flex">
-              Request Demo <ArrowRight className="h-4 w-4" />
-            </button>
+            <Link href="/classify" className="btn-green text-sm hidden sm:flex">
+              Try AI Demo <ArrowRight className="h-4 w-4" />
+            </Link>
             <button className="md:hidden p-2 rounded-lg text-[#64748b]" onClick={() => setMenuOpen(!menuOpen)}>
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
