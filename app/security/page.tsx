@@ -16,9 +16,10 @@ function Nav() {
         </Link>
         <div className="top-nav__links">
           {[
-            { href: "/dashboard", label: "Queue" },
+            { href: "/dashboard", label: "Worklist" },
             { href: "/classify",  label: "Classifier" },
             { href: "/security",  label: "Security" },
+            { href: "/workflow",  label: "Workflow" },
           ].map(l => (
             <Link
               key={l.href}
@@ -31,7 +32,7 @@ function Nav() {
         </div>
         <div className="top-nav__right">
           <Link href="/dashboard" className="btn btn-primary btn-sm">
-            Open Queue <ArrowRight className="h-3.5 w-3.5" />
+            Open Worklist <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
       </div>

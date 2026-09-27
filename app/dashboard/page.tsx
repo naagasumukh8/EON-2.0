@@ -22,9 +22,10 @@ function Nav() {
         </Link>
         <div className="top-nav__links">
           {[
-            { href: "/dashboard", label: "Queue" },
+            { href: "/dashboard", label: "Worklist" },
             { href: "/classify",  label: "Classifier" },
             { href: "/security",  label: "Security" },
+            { href: "/workflow",  label: "Workflow" },
           ].map(l => (
             <Link
               key={l.href}

@@ -15,18 +15,19 @@ function Nav() {
         </Link>
         <div className="top-nav__links">
           {[
-            { href: "/dashboard", label: "Queue" },
+            { href: "/dashboard", label: "Worklist" },
             { href: "/classify",  label: "Classifier" },
             { href: "/security",  label: "Security" },
+            { href: "/workflow",  label: "Workflow" },
           ].map(l => (
-            <Link key={l.href} href={l.href} className="top-nav__link">
+            <Link key={l.href} href={l.href} className={`top-nav__link ${l.href === "/workflow" ? "top-nav__link--active" : ""}`}>
               {l.label}
             </Link>
           ))}
         </div>
         <div className="top-nav__right">
-          <Link href="/classify" className="btn btn-primary btn-sm">
-            AI Classifier <ArrowRight className="h-3.5 w-3.5" />
+          <Link href="/dashboard" className="btn btn-primary btn-sm">
+            Open Worklist <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
       </div>

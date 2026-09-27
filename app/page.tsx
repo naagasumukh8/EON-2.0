@@ -65,14 +65,14 @@ function Nav() {
           UnStuck Med
         </Link>
         <nav style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-          {[{ href: "/dashboard", label: "Queue" }, { href: "/classify", label: "Classifier" }, { href: "/security", label: "Security" }, { href: "/workflow", label: "Workflow" }].map((l) => (
+          {[{ href: "/dashboard", label: "Worklist" }, { href: "/classify", label: "Classifier" }, { href: "/security", label: "Security" }, { href: "/workflow", label: "Workflow" }].map((l) => (
             <Link key={l.href} href={l.href} style={{ fontSize: "13.5px", fontWeight: 450, color: "rgb(60,60,65)", padding: "6px 14px", borderRadius: "9999px", textDecoration: "none", transition: "background 0.15s" }}>
               {l.label}
             </Link>
           ))}
         </nav>
         <Link href="/dashboard" style={{ background: "rgb(18,19,23)", color: "#fff", fontSize: "13.5px", fontWeight: 450, padding: "8px 20px", borderRadius: "9999px", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px" }}>
-          Open Queue <ArrowRight style={{ width: 13, height: 13 }} />
+          Open Worklist <ArrowRight style={{ width: 13, height: 13 }} />
         </Link>
       </div>
     </header>
@@ -284,7 +284,7 @@ export default function HomePage() {
           <span style={{ fontWeight: 600, fontSize: "14px" }}>UnStuck Med</span>
           <span style={{ fontSize: "12px", color: "rgba(18,19,23,0.4)" }}>Polymath Innovae x Eonexea AI Hackathon 2026</span>
           <div style={{ display: "flex", gap: "20px" }}>
-            {[{ href: "/dashboard", label: "Queue" }, { href: "/classify", label: "Classifier" }, { href: "/security", label: "Security" }].map((l) => (
+            {[{ href: "/dashboard", label: "Worklist" }, { href: "/classify", label: "Classifier" }, { href: "/security", label: "Security" }].map((l) => (
               <Link key={l.href} href={l.href} style={{ fontSize: "13px", color: "rgba(18,19,23,0.5)", textDecoration: "none" }}>{l.label}</Link>
             ))}
           </div>
