@@ -126,7 +126,7 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
             <div key={m.id} style={{ display: "flex", justifyContent: isMe ? "flex-end" : "flex-start" }}>
               <div style={{ maxWidth: "78%", padding: "10px 14px", borderRadius: isMe ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: isMe ? "#15803D" : "#F3F4F6", color: isMe ? "#fff" : "#0D1117", fontSize: "13px", lineHeight: 1.5 }}>
                 <div style={{ fontWeight: 600, fontSize: "9.5px", marginBottom: "3px", opacity: 0.6, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  {isMe ? "💊 Pharmacy" : m.from === "patient" ? "👤 Patient" : "🩺 Provider"}
+                  {isMe ? "Pharmacy" : m.from === "patient" ? "Patient" : "Provider"}
                 </div>
                 {m.text}
                 <div style={{ fontSize: "9.5px", opacity: 0.45, marginTop: "4px", textAlign: "right" }}>{timeAgo(m.timestamp)}</div>
@@ -144,7 +144,7 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
           {(["patient", "provider"] as const).map(r => (
             <button key={r} onClick={() => setRecipient(r)}
               style={{ padding: "3px 12px", borderRadius: "999px", border: "1px solid", borderColor: recipient === r ? "rgb(18,19,23)" : "#E5E7EB", background: recipient === r ? "rgb(18,19,23)" : "#fff", color: recipient === r ? "#fff" : "#6E7681", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "capitalize" }}>
-              {r === "patient" ? "👤 Patient" : "🩺 Provider"}
+              {r === "patient" ? "Patient" : "Provider"}
             </button>
           ))}
         </div>
@@ -198,7 +198,7 @@ export default function PharmacyPage() {
           <span style={{ color: "#E5E7EB" }}>|</span>
           <RoleSwitcher current="pharmacy" />
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ padding: "2px 10px", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "999px", fontSize: "11px", fontWeight: 600, color: "#15803D" }}>Summit Rx</span>
+          <span style={{ padding: "2px 10px", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "999px", fontSize: "11px", fontWeight: 600, color: "#15803D" }}>Summit Rx</span>
             <button onClick={() => setNotifPanel(p => !p)} style={{ position: "relative", background: "none", border: "1px solid #E5E7EB", borderRadius: "8px", padding: "5px 8px", cursor: "pointer", display: "flex" }}>
               <Bell style={{ width: 14, height: 14, color: "#6E7681" }} />
               {notifCount > 0 && <span style={{ position: "absolute", top: "-4px", right: "-4px", background: "#DC2626", color: "#fff", borderRadius: "999px", fontSize: "9px", fontWeight: 700, width: "14px", height: "14px", display: "flex", alignItems: "center", justifyContent: "center" }}>{notifCount}</span>}

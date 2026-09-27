@@ -294,10 +294,10 @@ export function pharmacyProcessRefill(threadId: string): { result: ClassifyResul
     addMessage({
       from: "pharmacy",
       to: "patient",
-      text: `✅ Good news, Alex! Your refill for ${thread.med} has been processed automatically. It is a routine maintenance refill — no provider visit needed. Your prescription is ready. Please contact us for pickup time.`,
+      text: `Your refill for ${thread.med} has been processed. It is a routine maintenance refill — no provider visit needed. Your prescription is ready for pickup. Please contact us to confirm pickup time.`,
       threadId,
     });
-    addNotification({ for: "patient", text: `Your ${thread.med} refill is ready for pickup!`, refillId: threadId });
+    addNotification({ for: "patient", text: `Your ${thread.med} refill is ready for pickup.`, refillId: threadId });
   } else {
     // Needs provider review: escalate
     const summary = `Refill request — ${thread.patientName}, ${thread.med} (${threadId}). ${result.reason}${result.alternative ? ` Possible alternative: ${result.alternative} — ${result.alternativeReason}` : ""} Patient has been waiting. Please review.`;

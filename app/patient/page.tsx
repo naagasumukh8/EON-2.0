@@ -37,16 +37,16 @@ function StatusChip({ status }: { status: RefillThread["status"] }) {
 
 function JourneyTracker({ thread }: { thread: RefillThread }) {
   const stages = [
-    { id: "request",  label: "Requested",         icon: "💊", done: true,  active: false, blocked: false },
-    { id: "pharmacy", label: "Pharmacy",           icon: "🏪",
+    { id: "request",  label: "Requested",      Icon: CheckCircle, done: true,  active: false, blocked: false },
+    { id: "pharmacy", label: "Pharmacy",        Icon: Building2,
       done: thread.status !== "pending_pharmacy",
       active: thread.status === "pending_pharmacy",
       blocked: false },
-    { id: "provider", label: "Provider Review",    icon: "🩺",
+    { id: "provider", label: "Provider Review", Icon: Stethoscope,
       done: thread.status === "approved" || thread.status === "resolved",
       active: thread.status === "pending_provider",
       blocked: thread.status === "blocked" },
-    { id: "ready",    label: "Ready",              icon: "✅",
+    { id: "ready",    label: "Ready",           Icon: CheckCircle,
       done: thread.status === "approved" || thread.status === "resolved",
       active: false,
       blocked: false },
@@ -67,28 +67,38 @@ function JourneyTracker({ thread }: { thread: RefillThread }) {
           <React.Fragment key={stage.id}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
               <div style={{
-                width: "34px", height: "34px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px",
+                width: "32px", height: "32px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
                 border: "2px solid", flexShrink: 0, zIndex: 1, transition: "all 0.3s",
                 borderColor: stage.blocked ? "#DC2626" : stage.done ? "#15803D" : stage.active ? "#1D4ED8" : "#E5E7EB",
                 background: stage.blocked ? "#FEF2F2" : stage.done ? "#F0FDF4" : stage.active ? "#EFF6FF" : "#FAFAFA",
                 boxShadow: stage.active ? "0 0 0 4px rgba(29,78,216,0.12)" : "none",
               }}>
-                {stage.blocked ? "⚠️" : stage.done ? "✓" : stage.icon}
+                {stage.blocked
+                  ? <AlertTriangle style={{ width: 12, height: 12, color: "#DC2626" }} />
+                  : stage.done
+                  ? <CheckCircle style={{ width: 12, height: 12, color: "#15803D" }} />
+                  : <stage.Icon style={{ width: 12, height: 12, color: stage.active ? "#1D4ED8" : "#C9D1D9" }} />
+                }
               </div>
               <div style={{ marginTop: "5px", fontSize: "9.5px", fontWeight: stage.active || stage.done ? 700 : 400, color: stage.blocked ? "#DC2626" : stage.done ? "#15803D" : stage.active ? "#1D4ED8" : "#C9D1D9", textAlign: "center", maxWidth: "60px" }}>
                 {stage.label}
               </div>
             </div>
             {idx < stages.length - 1 && (
-              <div style={{ height: "2px", flex: 1, alignSelf: "flex-start", marginTop: "16px", background: stages[idx + 1].done || stages[idx + 1].active ? "#15803D" : "#E5E7EB", transition: "background 0.3s" }} />
+              <div style={{ height: "2px", flex: 1, alignSelf: "flex-start", marginTop: "15px", background: stages[idx + 1].done || stages[idx + 1].active ? "#15803D" : "#E5E7EB", transition: "background 0.3s" }} />
             )}
           </React.Fragment>
         ))}
       </div>
       <div style={{ background: thread.status === "blocked" ? "#FEF2F2" : (thread.status === "approved" || thread.status === "resolved") ? "#F0FDF4" : "#EFF6FF", border: `1px solid ${thread.status === "blocked" ? "#FECACA" : (thread.status === "approved" || thread.status === "resolved") ? "#BBF7D0" : "#BFDBFE"}`, borderRadius: "10px", padding: "10px 14px", display: "flex", gap: "8px" }}>
-        <span style={{ fontSize: "14px", flexShrink: 0 }}>
-          {thread.status === "blocked" ? "⚠️" : (thread.status === "approved" || thread.status === "resolved") ? "🎉" : "ℹ️"}
-        </span>
+        <div style={{ flexShrink: 0, marginTop: "1px" }}>
+          {thread.status === "blocked"
+            ? <AlertTriangle style={{ width: 14, height: 14, color: "#DC2626" }} />
+            : (thread.status === "approved" || thread.status === "resolved")
+            ? <CheckCircle style={{ width: 14, height: 14, color: "#15803D" }} />
+            : <Info style={{ width: 14, height: 14, color: "#1D4ED8" }} />
+          }
+        </div>
         <div>
           <div style={{ fontSize: "9.5px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "3px", color: thread.status === "blocked" ? "#DC2626" : (thread.status === "approved" || thread.status === "resolved") ? "#15803D" : "#1D4ED8" }}>
             What happens next
