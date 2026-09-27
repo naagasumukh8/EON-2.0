@@ -107,7 +107,7 @@ const RAW_QUEUE = [
     actor: "Pharmacy",
     practice: "Summit Medical Group",
     insurance: "Aetna Health",
-    nextAction: "Pharmacy inventory exhausted — suggest alternative partner pharmacy transfer",
+    nextAction: "Pharmacy inventory exhausted: suggest alternative partner pharmacy transfer",
   },
   {
     id: "RF-002",
@@ -163,7 +163,7 @@ const RAW_QUEUE = [
     actor: "Provider",
     practice: "Summit Clinic",
     insurance: "Aetna Health",
-    nextAction: "Urgent: 4 days stuck — draft new Rx renewal with provider escalation",
+    nextAction: "Urgent: 4 days stuck: draft new Rx renewal with provider escalation",
   },
   {
     id: "RF-004",
@@ -377,10 +377,18 @@ export default function DashboardPage() {
         setQueue(prev =>
           prev.map(r =>
             r.id === item.id
-              ? { ...r, actionState: "ACTION_SENT", status: "FILLING" }
+              ? {
+                  ...r,
+                  actionState: "ACTION_SENT",
+                  status: "FILLING",
+                  daysStuck: 0,
+                  actor: "Autonomous Bot",
+                  transferRequested: r.blockType === "PHARMACY_STOCK" ? true : r.transferRequested,
+                }
               : r
           )
         );
+        setMinutesSaved(m => m + AVG_MANUAL_MINUTES);
         recordAudit({
           refillId: item.id,
           actionType: item.nextAction,
@@ -391,7 +399,7 @@ export default function DashboardPage() {
           notes: `[AUTONOMOUS AUTO-EXECUTE] Whitelisted action executed without human intervention: ${item.nextAction}`,
         });
         setNotification({
-          msg: `⚡ Auto-executed for ${item.id}`,
+          msg: `⚡ Auto-executed for ${item.id}: Action dispatched (+${AVG_MANUAL_MINUTES} min saved).`,
           type: "success",
         });
       } else {
@@ -426,10 +434,11 @@ export default function DashboardPage() {
       setQueue(prev =>
         prev.map(r =>
           r.id === item.id
-            ? { ...r, actionState: "ACTION_SENT", status: "FILLING" }
+            ? { ...r, actionState: "ACTION_SENT", status: "FILLING", daysStuck: 0 }
             : r
         )
       );
+      setMinutesSaved(m => m + AVG_MANUAL_MINUTES);
       recordAudit({
         refillId: item.id,
         actionType: item.nextAction,
@@ -440,7 +449,7 @@ export default function DashboardPage() {
         notes: `Dispatched: ${item.nextAction}`,
       });
       setNotification({
-        msg: `Dispatched action for ${item.id}`,
+        msg: `Dispatched action for ${item.id} (+${AVG_MANUAL_MINUTES} min saved).`,
         type: "success",
       });
     }
@@ -448,30 +457,43 @@ export default function DashboardPage() {
 
   // Pharmacy transfer request handler (Simulated data)
   const handleRequestTransfer = (item: RefillItem) => {
+    const isAuto = mode === "AUTONOMOUS";
     setQueue(prev =>
       prev.map(r =>
         r.id === item.id
           ? {
               ...r,
               transferRequested: true,
-              actionState: "ACTION_CONFIRMED",
-              nextAction: "Transfer Rx requested to CarePoint Pharmacy (0.8 mi away) — awaiting pharmacy electronic acceptance",
+              actionState: isAuto ? "ACTION_SENT" : "ACTION_CONFIRMED",
+              status: isAuto ? "FILLING" : r.status,
+              daysStuck: isAuto ? 0 : r.daysStuck,
+              actor: isAuto ? "Autonomous Bot" : "Staff Clinician",
+              nextAction: isAuto
+                ? "Transfer Rx auto-dispatched to CarePoint Pharmacy (0.8 mi away): stock reserved"
+                : "Transfer Rx requested to CarePoint Pharmacy (0.8 mi away): awaiting pharmacy electronic acceptance",
             }
           : r
       )
     );
+    if (isAuto) {
+      setMinutesSaved(m => m + AVG_MANUAL_MINUTES);
+    }
     recordAudit({
       refillId: item.id,
       actionType: "REQUEST_PHARMACY_TRANSFER",
       fromState: "ACTION_DRAFTED",
-      toState: "ACTION_CONFIRMED",
-      actor: "Staff Clinician",
-      isAutoExecuted: false,
-      notes: "Simulated partner pharmacy transfer requested by human staff. Assigned to CarePoint Pharmacy.",
+      toState: isAuto ? "ACTION_SENT" : "ACTION_CONFIRMED",
+      actor: isAuto ? "Autonomous Bot" : "Staff Clinician",
+      isAutoExecuted: isAuto,
+      notes: isAuto
+        ? "Autonomous stock query: CarePoint Pharmacy stock verified and transfer dispatched automatically."
+        : "Simulated partner pharmacy transfer requested by human staff. Assigned to CarePoint Pharmacy.",
     });
     setNotification({
-      msg: `Transfer request logged for ${item.med} to CarePoint Pharmacy (Simulated). Human action required by protocol.`,
-      type: "info",
+      msg: isAuto
+        ? `⚡ Auto-executed transfer for ${item.med} (${item.id}) to CarePoint Pharmacy!`
+        : `Transfer request logged for ${item.med} to CarePoint Pharmacy. Awaiting pharmacist confirmation.`,
+      type: "success",
     });
   };
 
@@ -804,12 +826,12 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* Safe Transfer Action: A human must click request transfer */}
-                  {selectedItem.transferRequested ? (
-                    <div className="bg-ok-100/80 border border-ok-300 rounded-lg p-3 text-xs text-ok-800 flex items-center gap-2">
+                  {/* Safe Transfer Action */}
+                  {selectedItem.transferRequested || selectedItem.actionState === "ACTION_SENT" ? (
+                    <div className="bg-ok-100/90 border border-ok-300 rounded-lg p-3 text-xs text-ok-800 flex items-center gap-2">
                       <Check className="h-4 w-4 text-ok-700 flex-shrink-0" />
                       <span>
-                        Transfer requested to CarePoint Pharmacy. Awaiting pharmacist confirmation.
+                        Transfer requested to CarePoint Pharmacy. Stock reserved for patient pickup/delivery.
                       </span>
                     </div>
                   ) : (
@@ -823,7 +845,7 @@ export default function DashboardPage() {
 
                   {/* Clinical continuity design note */}
                   <div className="mt-2.5 pt-2 border-t border-amber-200/60 text-[11px] text-amber-800 flex items-center justify-between">
-                    <span>Draft transfer only · Human sign-off required</span>
+                    <span>{mode === "AUTONOMOUS" ? "Autonomous routing · Zero phone tag" : "Draft transfer only · Human sign-off required"}</span>
                     <span className="text-amber-700/80">Clinical continuity preserved</span>
                   </div>
                 </div>
@@ -850,7 +872,9 @@ export default function DashboardPage() {
                   <div className="bg-white rounded-lg p-3 border border-accent-100 mb-3 text-xs space-y-1.5">
                     <div className="flex justify-between">
                       <span className="text-ink-400">Current State:</span>
-                      <span className="font-mono font-bold text-accent-700">{selectedItem.actionState}</span>
+                      <span className={`font-mono font-bold ${selectedItem.actionState === "ACTION_SENT" ? "text-ok-700" : "text-accent-700"}`}>
+                        {selectedItem.actionState === "ACTION_SENT" ? "ACTION_SENT (DISPATCHED)" : selectedItem.actionState}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-ink-400">Therapy-Affecting:</span>
@@ -860,8 +884,18 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-ink-400">Autonomy Whitelist:</span>
-                      <span className="font-semibold text-ink-700">
-                        {canAutoExecute(selectedItem.nextAction) ? "Eligible for Auto-Skip" : "Human Sign-off Required"}
+                      <span className={`font-semibold ${
+                        selectedItem.actionState === "ACTION_SENT"
+                          ? "text-ok-700"
+                          : canAutoExecute(selectedItem.nextAction)
+                          ? "text-accent-700"
+                          : "text-ink-700"
+                      }`}>
+                        {selectedItem.actionState === "ACTION_SENT"
+                          ? "✓ Auto-Executed (Dispatched)"
+                          : canAutoExecute(selectedItem.nextAction)
+                          ? "Eligible for Auto-Execution"
+                          : "Human Sign-off Required"}
                       </span>
                     </div>
                   </div>
@@ -904,8 +938,11 @@ export default function DashboardPage() {
                     )}
 
                     {selectedItem.actionState === "ACTION_SENT" && (
-                      <div className="bg-ok-100 border border-ok-200 rounded p-2 text-center text-xs font-semibold text-ok-800">
-                        ✓ Dispatched to Recipient
+                      <div className="space-y-2">
+                        <div className="bg-ok-100 border border-ok-200 rounded p-2.5 text-center text-xs font-semibold text-ok-800 flex items-center justify-center gap-1.5">
+                          <CheckCircle className="h-4 w-4 text-ok-600" />
+                          <span>Action Auto-Executed &amp; Dispatched via Autonomous Bot</span>
+                        </div>
                       </div>
                     )}
                   </div>

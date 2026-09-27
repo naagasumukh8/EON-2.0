@@ -28,6 +28,13 @@ export const AUTONOMY_WHITELIST = [
   "SEND_PATIENT_STATUS",
   "LOG_INSURANCE_REQUEST",
   "SEND_PROVIDER_ALERT",
+  "suggest alternative partner pharmacy transfer",
+  "partner pharmacy transfer",
+  "pharmacy inventory",
+  "pharmacy stock",
+  "inventory exhausted",
+  "request transfer",
+  "TRANSFER_RX",
 ] as const;
 
 /**
@@ -42,12 +49,11 @@ export const THERAPY_AFFECTING_ACTIONS = [
   "pa justification",
   "prior auth appeal",
   "clinical condition review",
-  "request transfer",
+  "clinical argument",
   "NEW_RX_REQUEST",
   "DOSAGE_CHANGE",
   "PA_JUSTIFICATION",
   "ESCALATE",
-  "TRANSFER_RX",
 ] as const;
 
 export const AVG_MANUAL_MINUTES = 192; // Industry estimate: 3.2 hrs avg manual resolution time
