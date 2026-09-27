@@ -233,11 +233,6 @@ function PricingSection() {
                   {plan.title === "Health System Campus" ? "Contact Sales" : "Get Started"}
                   <ArrowRight style={{ width: 13, height: 13 }} />
                 </Link>
-                <p style={{
-                  fontFamily: "monospace", fontSize: "11px",
-                  color: plan.dark ? "rgba(255,255,255,0.3)" : "rgba(18,19,23,0.35)",
-                  margin: 0, textAlign: "center",
-                }}>{plan.note}</p>
               </div>
             </div>
           ))}
