@@ -5,6 +5,7 @@ import {
   ArrowRight, Zap, RefreshCw, CheckCircle, AlertTriangle,
   Info, ChevronDown, ChevronUp, BarChart3, Shield
 } from "lucide-react";
+import { AutonomyBanner } from "../components/AutonomyBanner";
 
 /* ── Nav (workflow removed from primary) ────────────────── */
 function Nav() {
@@ -250,7 +251,7 @@ export default function ClassifyPage() {
   return (
     <div className="page-frame min-h-screen bg-white">
       <Nav />
-
+      <AutonomyBanner />
       <div className="max-w-screen-xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="mb-6 max-w-2xl">

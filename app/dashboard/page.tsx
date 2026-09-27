@@ -7,6 +7,7 @@ import {
   Building2, MapPin, Check, RefreshCw, Send, Lock
 } from "lucide-react";
 import { useAutonomy, type ActionState, AVG_MANUAL_MINUTES } from "../../lib/autonomy";
+import { AutonomyBanner } from "../components/AutonomyBanner";
 
 /* ── Nav (minimal, workflow removed from primary) ───────── */
 function Nav() {
@@ -447,7 +448,7 @@ export default function DashboardPage() {
   return (
     <div className="page-frame min-h-screen bg-white">
       <Nav />
-
+      <AutonomyBanner />
       {/* ── System notification toast ────────────────────── */}
       {notification && (
         <div className="max-w-screen-xl mx-auto px-6 mt-3">

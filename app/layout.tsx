@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AutonomyProvider } from "../lib/autonomy";
-import { AutonomyBanner } from "./components/AutonomyBanner";
 
 export const metadata: Metadata = {
   title: "UnStuck Med — Prescription Refill Intelligence",
@@ -26,8 +25,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="antialiased bg-white text-ink-900 font-sans">
         <AutonomyProvider>
-          {/* Global autonomy banner — visible on every page */}
-          <AutonomyBanner />
           {children}
         </AutonomyProvider>
       </body>
