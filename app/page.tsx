@@ -54,8 +54,13 @@ function Nav() {
   return (
     <header style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(240,240,240,0.82)", backdropFilter: "blur(18px)", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 32px", height: "54px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Link href="/" style={{ fontFamily: '"Google Sans","Sora",sans-serif', fontWeight: 600, fontSize: "16px", color: "rgb(18,19,23)", textDecoration: "none", letterSpacing: "-0.01em" }}>
-          UnStuck Med
+        <Link href="/" style={{ fontFamily: '"Google Sans","Sora",sans-serif', fontWeight: 600, fontSize: "16px", color: "rgb(18,19,23)", textDecoration: "none", letterSpacing: "-0.01em", display: "flex", alignItems: "center", gap: "8px" }}>
+          <img
+            src="/icon.png"
+            alt="UnStuck Med Logo"
+            style={{ width: "24px", height: "24px", objectFit: "contain", display: "inline-block" }}
+          />
+          <span>UnStuck Med</span>
         </Link>
         <nav style={{ display: "flex", alignItems: "center", gap: "4px" }}>
           {[

@@ -600,9 +600,17 @@ export default function PatientPage() {
                 color: "rgb(18,19,23)",
                 textDecoration: "none",
                 letterSpacing: "-0.01em",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
               }}
             >
-              UnStuck Med
+              <img
+                src="/icon.png"
+                alt="UnStuck Med Logo"
+                style={{ width: "24px", height: "24px", objectFit: "contain", display: "inline-block" }}
+              />
+              <span>UnStuck Med</span>
             </Link>
             <RoleSwitcher current="patient" />
           </div>

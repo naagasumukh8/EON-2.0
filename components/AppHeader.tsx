@@ -58,7 +58,12 @@ export function AppHeader({
             gap: "8px",
           }}
         >
-          UnStuck Med
+          <img
+            src="/icon.png"
+            alt="UnStuck Med Logo"
+            style={{ width: "24px", height: "24px", objectFit: "contain", display: "inline-block" }}
+          />
+          <span>UnStuck Med</span>
         </Link>
 
         <nav style={{ display: "flex", alignItems: "center", gap: "4px" }}>
