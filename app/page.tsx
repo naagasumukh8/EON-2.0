@@ -118,14 +118,12 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Crowd video at bottom of hero */}
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2, overflow: "hidden", lineHeight: 0, height: "300px" }}>
-            {/* Left/right edge fade */}
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, #F0F0F0 0%, transparent 10%, transparent 90%, #F0F0F0 100%)", zIndex: 3, pointerEvents: "none" }} />
-            {/* Top fade so it blends into hero */}
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "80px", background: "linear-gradient(to bottom, #F0F0F0, transparent)", zIndex: 3, pointerEvents: "none" }} />
-            {/* Bottom fade */}
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "40px", background: "linear-gradient(to top, #F0F0F0, transparent)", zIndex: 3, pointerEvents: "none" }} />
+          {/* Crowd video spanning screen edge-to-edge */}
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2, overflow: "hidden", lineHeight: 0, width: "100%", height: "270px" }}>
+            {/* Top gradient fade blending into hero background */}
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "70px", background: "linear-gradient(to bottom, #F0F0F0 20%, rgba(240,240,240,0))", zIndex: 3, pointerEvents: "none" }} />
+            {/* Bottom edge fade */}
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "25px", background: "linear-gradient(to top, #F0F0F0 15%, rgba(240,240,240,0))", zIndex: 3, pointerEvents: "none" }} />
             <video
               autoPlay
               loop
@@ -133,10 +131,11 @@ export default function HomePage() {
               playsInline
               style={{
                 width: "100%",
-                height: "300px",
+                height: "100%",
                 display: "block",
-                objectFit: "contain",
-                objectPosition: "center bottom",
+                objectFit: "cover",
+                objectPosition: "center 28%",
+                filter: "contrast(1.04) brightness(0.98)",
               }}
             >
               <source src="/crowd.mp4" type="video/mp4" />
@@ -283,64 +282,88 @@ export default function HomePage() {
           )}
         </section>
 
-        {/* DARK FOOTER */}
-        <footer style={{ background: "rgb(10,10,12)", position: "relative", overflow: "hidden", padding: "0" }}>
-          {/* Ghost watermark */}
-          <div style={{
-            position: "absolute",
-            bottom: "-20px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            fontSize: "clamp(80px,14vw,180px)",
-            fontWeight: 700,
-            letterSpacing: "-0.04em",
-            color: "rgba(255,255,255,0.04)",
-            whiteSpace: "nowrap",
-            pointerEvents: "none",
-            userSelect: "none",
-            lineHeight: 1,
-            fontFamily: '"Google Sans","Sora","Inter",sans-serif',
-          }}>
-            UnStuck Med
-          </div>
-
+        {/* LAST SLIDE / DARK FOOTER (MATCHING DESIGN SPEC, NO ANTIGRAVITY LOGO) */}
+        <footer style={{ background: "#0D0E12", position: "relative", overflow: "hidden", borderTop: "1px solid rgba(255,255,255,0.06)", minHeight: "440px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
           {/* Top content row */}
-          <div style={{ position: "relative", zIndex: 1, maxWidth: "1200px", margin: "0 auto", padding: "56px 40px 48px", display: "grid", gridTemplateColumns: "1fr auto", gap: "64px", alignItems: "start" }}>
-            {/* Left: brand + tagline */}
+          <div style={{ position: "relative", zIndex: 2, maxWidth: "1240px", width: "100%", margin: "0 auto", padding: "64px 48px 36px", display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: "60px", alignItems: "start" }}>
+            {/* Left: brand + tagline (no Antigravity logo) */}
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
-                <span style={{ fontFamily: '"Google Sans","Sora",sans-serif', fontWeight: 600, fontSize: "15px", color: "#fff", letterSpacing: "-0.01em" }}>UnStuck Med</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+                <span style={{ fontFamily: '"Google Sans","Sora","Inter",sans-serif', fontWeight: 700, fontSize: "19px", color: "#FFFFFF", letterSpacing: "-0.02em" }}>
+                  UnStuck Med
+                </span>
               </div>
-              <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.38)", lineHeight: 1.65, margin: 0, maxWidth: "260px" }}>
-                Autonomous &amp; <span style={{ color: "rgba(255,100,100,0.7)", fontWeight: 500 }}>Human-in-the-Loop</span> Prescription<br />Refill Triage Platform.
+              <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.48)", lineHeight: 1.65, margin: 0, maxWidth: "340px", fontWeight: 400 }}>
+                Autonomous &amp; Human-in-the-Loop Prescription<br />
+                Refill Triage Platform.
               </p>
             </div>
 
             {/* Right: two link columns */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "48px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "56px" }}>
               <div>
-                <p style={{ fontFamily: "monospace", fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.28)", margin: "0 0 16px" }}>Product</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: "11px" }}>
-                  {[{ href: "/dashboard", label: "Queue Worklist" }, { href: "/classify", label: "AI Classifier" }, { href: "/workflow", label: "Workflow Matrix" }].map(l => (
-                    <Link key={l.href} href={l.href} style={{ fontSize: "13px", color: "rgba(255,255,255,0.55)", textDecoration: "none", transition: "color 0.15s" }}>{l.label}</Link>
+                <p style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", margin: "0 0 16px" }}>
+                  PRODUCT
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {[
+                    { href: "/dashboard", label: "Queue Worklist" },
+                    { href: "/classify", label: "AI Classifier" },
+                    { href: "/workflow", label: "Workflow Matrix" },
+                  ].map((l) => (
+                    <Link key={l.label} href={l.href} style={{ fontSize: "13px", color: "rgba(255,255,255,0.72)", textDecoration: "none", transition: "color 0.15s" }}>
+                      {l.label}
+                    </Link>
                   ))}
                 </div>
               </div>
               <div>
-                <p style={{ fontFamily: "monospace", fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.28)", margin: "0 0 16px" }}>Governance</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: "11px" }}>
-                  {[{ href: "/security", label: "Security & Trust" }, { href: "/security", label: "HIPAA Aligned" }, { href: "/security", label: "Zero-PII Pipeline" }].map((l, i) => (
-                    <Link key={i} href={l.href} style={{ fontSize: "13px", color: "rgba(255,255,255,0.55)", textDecoration: "none", transition: "color 0.15s" }}>{l.label}</Link>
+                <p style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", margin: "0 0 16px" }}>
+                  GOVERNANCE
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {[
+                    { href: "/security", label: "Security & Trust" },
+                    { href: "/security", label: "HIPAA Aligned" },
+                    { href: "/security", label: "Zero-PII Pipeline" },
+                  ].map((l, i) => (
+                    <Link key={i} href={l.href} style={{ fontSize: "13px", color: "rgba(255,255,255,0.72)", textDecoration: "none", transition: "color 0.15s" }}>
+                      {l.label}
+                    </Link>
                   ))}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Bottom bar */}
-          <div style={{ position: "relative", zIndex: 1, borderTop: "1px solid rgba(255,255,255,0.05)", maxWidth: "1200px", margin: "0 auto", padding: "18px 40px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.2)", fontFamily: "monospace" }}>© 2026 UnStuck Med</span>
-            <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.2)" }}>Polymath Innovae × Eonexea AI Hackathon</span>
+          {/* Prominent centered watermark exactly as in screenshot */}
+          <div style={{
+            position: "relative",
+            zIndex: 1,
+            width: "100%",
+            textAlign: "center",
+            padding: "10px 24px 28px",
+            userSelect: "none",
+            pointerEvents: "none",
+          }}>
+            <span style={{
+              display: "inline-block",
+              fontSize: "clamp(64px, 12vw, 155px)",
+              fontWeight: 800,
+              letterSpacing: "-0.04em",
+              color: "rgba(255, 255, 255, 0.085)",
+              lineHeight: 0.95,
+              fontFamily: '"Google Sans","Sora","Inter",sans-serif',
+              whiteSpace: "nowrap",
+            }}>
+              UnStuck Med
+            </span>
+          </div>
+
+          {/* Bottom copyright bar */}
+          <div style={{ position: "relative", zIndex: 2, borderTop: "1px solid rgba(255,255,255,0.06)", maxWidth: "1240px", width: "100%", margin: "0 auto", padding: "16px 48px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.28)", fontFamily: "monospace" }}>© 2026 UnStuck Med</span>
+            <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.28)", fontFamily: "monospace" }}>Polymath Innovae × Eonexea AI Hackathon</span>
           </div>
         </footer>
       </div>
