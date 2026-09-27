@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, User, Building2, Stethoscope } from "lucide-react";
+import { ArrowRight, User, Building2, Stethoscope, ShieldCheck, RefreshCw } from "lucide-react";
 import { setCurrentRole, resetDemoData, seedDemoData, type Role } from "../../lib/demo-messages";
 
 type RoleConfig = {
@@ -15,25 +15,25 @@ type RoleConfig = {
 
 const ROLES: RoleConfig[] = [
   {
-    role: "patient", title: "Patient", name: "Alex Rivera",
+    role: "patient", title: "Patient Portal", name: "Alex Rivera",
     credential: "patient@demo.unstuckmed.com", password: "demo1234",
-    color: "#1d4ed8", bg: "#EFF6FF", border: "#BFDBFE",
+    color: "#2563EB", bg: "#EFF6FF", border: "#BFDBFE",
     href: "/patient", Icon: User,
-    access: ["Track refill status in real time", "Message pharmacy & provider", "One-click demo messages", "Get notified on every update"],
+    access: ["Real-time prescription journey tracker", "Instant ETA pickup badges", "Direct care-team communications", "1-click patient demo requests"],
   },
   {
-    role: "pharmacy", title: "Pharmacy", name: "Summit Rx — Central Fill",
+    role: "pharmacy", title: "Pharmacy Queue", name: "Summit Rx — Central Fill",
     credential: "pharmacy@demo.unstuckmed.com", password: "demo1234",
-    color: "#15803d", bg: "#F0FDF4", border: "#BBF7D0",
+    color: "#16A34A", bg: "#F0FDF4", border: "#BBF7D0",
     href: "/pharmacy", Icon: Building2,
-    access: ["See patient messages", "Process & route refills", "Routine auto-resolve, complex to provider", "Reply to patient & provider"],
+    access: ["Real-time incoming refill intake queue", "Deterministic AI triage classification", "Auto-route routine vs. provider escalation", "Direct patient & clinic two-way messaging"],
   },
   {
-    role: "provider", title: "Provider", name: "Dr. Sarah Chen, PharmD",
+    role: "provider", title: "Physician Review", name: "Dr. Marcus Chen, MD",
     credential: "provider@demo.unstuckmed.com", password: "demo1234",
-    color: "#7c3aed", bg: "#F5F3FF", border: "#DDD6FE",
+    color: "#9333EA", bg: "#FAF5FF", border: "#E9D5FF",
     href: "/provider", Icon: Stethoscope,
-    access: ["Review flagged prescriptions", "Approve / Suggest Alternative / Require Visit", "Sign clinical audit notes", "Receive pharmacy escalations"],
+    access: ["Physician review queue for stalled refills", "Clinical context package & safety checks", "1-click eRx approve / alternate / visit", "Direct auditable clinical decisioning"],
   },
 ];
 
@@ -45,83 +45,229 @@ export default function PortalPage() {
     setSelected(role);
     setCurrentRole(role);
     seedDemoData();
-    setTimeout(() => { window.location.href = href; }, 300);
+    setTimeout(() => { window.location.href = href; }, 250);
   }
 
   function handleReset() {
     setResetting(true);
     resetDemoData();
-    setTimeout(() => setResetting(false), 1200);
+    setTimeout(() => setResetting(false), 1000);
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F0F0F0", fontFamily: '"Inter","Sora",sans-serif', display: "flex", flexDirection: "column" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#F0F0F0",
+        fontFamily: '"Google Sans", "Sora", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        display: "flex",
+        flexDirection: "column",
+        color: "rgb(18,19,23)",
+      }}
+    >
       {/* Top bar */}
-      <div style={{ height: "52px", background: "rgba(240,240,240,0.92)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(0,0,0,0.07)", display: "flex", alignItems: "center", padding: "0 32px", justifyContent: "space-between" }}>
-        <Link href="/" style={{ fontWeight: 700, fontSize: "15px", color: "#0D1117", textDecoration: "none", letterSpacing: "-0.02em" }}>
+      <header
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 50,
+          height: "54px",
+          background: "rgba(240, 240, 240, 0.85)",
+          backdropFilter: "blur(18px)",
+          borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 32px",
+          justifyContent: "space-between",
+        }}
+      >
+        <Link
+          href="/"
+          style={{
+            fontFamily: '"Google Sans","Sora",sans-serif',
+            fontWeight: 600,
+            fontSize: "16px",
+            color: "rgb(18,19,23)",
+            textDecoration: "none",
+            letterSpacing: "-0.01em",
+          }}
+        >
           UnStuck Med
         </Link>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ fontSize: "11px", fontFamily: "monospace", color: "#6E7681", background: "#fff", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "3px 12px" }}>
-            Hackathon Demo
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <span
+            style={{
+              fontSize: "10.5px",
+              fontFamily: "ui-monospace, monospace",
+              fontWeight: 600,
+              color: "#6B7280",
+              background: "#FFFFFF",
+              border: "1px solid rgba(0,0,0,0.08)",
+              borderRadius: "9999px",
+              padding: "4px 12px",
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+            }}
+          >
+            Live Evaluation Mode
           </span>
-          <button onClick={handleReset} style={{ background: "none", border: "1px solid #E5E7EB", borderRadius: "8px", padding: "5px 12px", fontSize: "11px", color: "#6E7681", cursor: "pointer", fontWeight: 500 }}>
-            {resetting ? "Reset done" : "Reset demo"}
+          <button
+            onClick={handleReset}
+            style={{
+              background: "#FFFFFF",
+              border: "1px solid rgba(0,0,0,0.08)",
+              borderRadius: "9999px",
+              padding: "5px 14px",
+              fontSize: "11.5px",
+              color: "rgb(60,60,65)",
+              cursor: "pointer",
+              fontWeight: 550,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              transition: "background 0.15s ease",
+            }}
+          >
+            <RefreshCw style={{ width: 11, height: 11 }} />
+            {resetting ? "Resetting…" : "Reset State"}
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* Main */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
-        <div style={{ textAlign: "center", marginBottom: "40px" }}>
-          <div style={{ display: "inline-block", background: "rgb(18,19,23)", color: "#fff", fontFamily: "monospace", fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", padding: "4px 14px", borderRadius: "999px", marginBottom: "16px" }}>
-            Demo Login
+      {/* Main Content Area */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "48px 24px" }}>
+        <div style={{ textAlign: "center", marginBottom: "40px", maxWidth: "600px" }}>
+          <div
+            style={{
+              display: "inline-block",
+              background: "rgb(18,19,23)",
+              color: "#FFFFFF",
+              fontFamily: "ui-monospace, monospace",
+              fontSize: "10.5px",
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              padding: "4px 14px",
+              borderRadius: "9999px",
+              marginBottom: "16px",
+            }}
+          >
+            Multi-Party Refill Ecosystem
           </div>
-          <h1 style={{ fontSize: "clamp(1.8rem, 3vw, 2.5rem)", fontWeight: 700, color: "#0D1117", letterSpacing: "-0.035em", margin: "0 0 10px", lineHeight: 1.15 }}>
-            Choose your portal
+          <h1
+            style={{
+              fontSize: "clamp(2rem, 3.2vw, 2.75rem)",
+              fontWeight: 700,
+              color: "rgb(18,19,23)",
+              letterSpacing: "-0.035em",
+              margin: "0 0 12px",
+              lineHeight: 1.15,
+            }}
+          >
+            Select Stakeholder Portal
           </h1>
-          <p style={{ fontSize: "14px", color: "#6E7681", margin: 0 }}>
-            Switch roles instantly during the demo. All data is pre-seeded.
+          <p style={{ fontSize: "14.5px", color: "rgb(90,90,95)", margin: 0, lineHeight: 1.5 }}>
+            Switch seamlessly between Patient, Pharmacy, and Clinic Provider to evaluate the end-to-end multi-party refill gap resolution in real time.
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(256px, 1fr))", gap: "16px", width: "100%", maxWidth: "860px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px", width: "100%", maxWidth: "960px" }}>
           {ROLES.map(({ role, title, name, credential, password, color, bg, border, href, Icon, access }) => {
             const isSelected = selected === role;
             const isFaded = selected && selected !== role;
             return (
-              <div key={role} style={{ background: "#fff", border: `2px solid ${isSelected ? color : border}`, borderRadius: "18px", padding: "24px", display: "flex", flexDirection: "column", transition: "all 0.2s ease", opacity: isFaded ? 0.45 : 1, boxShadow: isSelected ? `0 0 0 4px ${color}18, 0 8px 24px rgba(0,0,0,0.1)` : "0 2px 8px rgba(0,0,0,0.05)" }}>
+              <div
+                key={role}
+                style={{
+                  background: "#FFFFFF",
+                  border: `1.5px solid ${isSelected ? "rgb(18,19,23)" : "rgba(0,0,0,0.08)"}`,
+                  borderRadius: "20px",
+                  padding: "26px",
+                  display: "flex",
+                  flexDirection: "column",
+                  transition: "all 0.2s ease",
+                  opacity: isFaded ? 0.45 : 1,
+                  boxShadow: isSelected ? "0 0 0 4px rgba(18,19,23,0.1), 0 12px 28px rgba(0,0,0,0.08)" : "0 1px 3px rgba(0,0,0,0.02), 0 10px 24px -6px rgba(0,0,0,0.03)",
+                }}
+              >
                 {/* Header */}
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
-                  <div style={{ width: "38px", height: "38px", borderRadius: "9px", background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Icon style={{ width: 18, height: 18, color }} />
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+                  <div
+                    style={{
+                      width: "44px",
+                      height: "44px",
+                      borderRadius: "12px",
+                      background: bg,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Icon style={{ width: 22, height: 22, color }} />
                   </div>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: "15px", color: "#0D1117", letterSpacing: "-0.02em" }}>{title}</div>
-                    <div style={{ fontSize: "11px", color: "#6E7681", fontWeight: 500 }}>{name}</div>
+                    <div style={{ fontWeight: 650, fontSize: "16px", color: "rgb(18,19,23)", letterSpacing: "-0.01em" }}>
+                      {title}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#6B7280", fontWeight: 500 }}>
+                      {name}
+                    </div>
                   </div>
                 </div>
 
-                {/* Credentials */}
-                <div style={{ background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: "8px", padding: "10px 12px", marginBottom: "14px", fontFamily: "monospace" }}>
-                  <div style={{ fontSize: "9px", color: "#C9D1D9", marginBottom: "3px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Demo credentials</div>
-                  <div style={{ fontSize: "11.5px", color: "#374151", marginBottom: "1px" }}>{credential}</div>
-                  <div style={{ fontSize: "11px", color: "#9CA3AF" }}>Password: {password}</div>
+                {/* Pre-filled Credentials */}
+                <div
+                  style={{
+                    background: "#FAFAFA",
+                    border: "1px solid rgba(0,0,0,0.06)",
+                    borderRadius: "10px",
+                    padding: "10px 14px",
+                    marginBottom: "16px",
+                    fontFamily: "ui-monospace, monospace",
+                  }}
+                >
+                  <div style={{ fontSize: "9px", color: "#9CA3AF", marginBottom: "3px", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
+                    Pre-Authenticated Access
+                  </div>
+                  <div style={{ fontSize: "11.5px", color: "rgb(30,30,35)", fontWeight: 600 }}>{credential}</div>
+                  <div style={{ fontSize: "10.5px", color: "#6B7280" }}>Pass: {password}</div>
                 </div>
 
-                {/* Access */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "5px", marginBottom: "18px" }}>
+                {/* Access capabilities */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "22px", flex: 1 }}>
                   {access.map((item) => (
-                    <div key={item} style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#374151" }}>
-                      <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: color, flexShrink: 0 }} />
-                      {item}
+                    <div key={item} style={{ display: "flex", alignItems: "flex-start", gap: "8px", fontSize: "12.5px", color: "rgb(60,60,65)", lineHeight: 1.4 }}>
+                      <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: color, flexShrink: 0, marginTop: "5px" }} />
+                      <span>{item}</span>
                     </div>
                   ))}
                 </div>
 
-                <button onClick={() => handleSelect(role, href)} disabled={isSelected}
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "11px 20px", borderRadius: "9999px", background: isSelected ? "#9CA3AF" : "rgb(18,19,23)", color: "#fff", border: "none", cursor: isSelected ? "default" : "pointer", fontSize: "14px", fontWeight: 600, letterSpacing: "-0.01em", transition: "all 0.15s", width: "100%" }}>
-                  {isSelected ? "Opening…" : `Enter as ${title}`}
+                <button
+                  onClick={() => handleSelect(role, href)}
+                  disabled={isSelected}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    padding: "12px 22px",
+                    borderRadius: "9999px",
+                    background: isSelected ? "rgba(0,0,0,0.2)" : "rgb(18,19,23)",
+                    color: "#FFFFFF",
+                    border: "none",
+                    cursor: isSelected ? "default" : "pointer",
+                    fontSize: "13.5px",
+                    fontWeight: 600,
+                    letterSpacing: "-0.01em",
+                    transition: "opacity 0.15s ease",
+                    width: "100%",
+                  }}
+                  onMouseEnter={e => { if (!isSelected) e.currentTarget.style.opacity = "0.88"; }}
+                  onMouseLeave={e => { if (!isSelected) e.currentTarget.style.opacity = "1"; }}
+                >
+                  {isSelected ? "Launching Portal…" : `Enter as ${title}`}
                   {!isSelected && <ArrowRight style={{ width: 14, height: 14 }} />}
                 </button>
               </div>
@@ -129,9 +275,8 @@ export default function PortalPage() {
           })}
         </div>
 
-        <p style={{ marginTop: "28px", fontSize: "11px", color: "#C9D1D9", textAlign: "center" }}>
-          Alex Rivera (patient) · Summit Rx (pharmacy) · Dr. Sarah Chen (provider)
-          <br />Messages travel cross-portal in real time using local state. No backend required.
+        <p style={{ marginTop: "32px", fontSize: "12px", color: "#9CA3AF", textAlign: "center", maxWidth: "600px", lineHeight: 1.5 }}>
+          Zero external database latency · In-memory real-time state machine synchronized across portals · Compliant with clinical human sign-off mandate
         </p>
       </div>
     </div>

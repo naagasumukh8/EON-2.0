@@ -29,8 +29,8 @@ function Nav() {
           ))}
         </div>
         <div className="top-nav__right">
-          <Link href="/dashboard" className="btn btn-primary btn-sm">
-            Open Worklist <ArrowRight className="h-3.5 w-3.5" />
+          <Link href="/portal" className="btn btn-primary btn-sm">
+            Enter Portal <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
       </div>
@@ -338,8 +338,8 @@ export default function ClassifyPage() {
               </div>
 
               <div className="flex gap-2">
-                <Link href="/dashboard" className="btn btn-primary flex-1 justify-center text-xs py-2">
-                  Open Worklist <ArrowRight className="h-3.5 w-3.5" />
+                <Link href="/portal" className="btn btn-primary flex-1 justify-center text-xs py-2">
+                  Enter Portal <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
                 <button onClick={() => { setInput(""); setResult(null); setRisk(null); }} className="btn btn-secondary text-xs py-2 px-4">
                   Clear

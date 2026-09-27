@@ -32,8 +32,8 @@ function Nav() {
           ))}
         </div>
         <div className="top-nav__right">
-          <Link href="/dashboard" className="btn btn-primary btn-sm">
-            Open Worklist <ArrowRight className="h-3.5 w-3.5" />
+          <Link href="/portal" className="btn btn-primary btn-sm">
+            Enter Portal <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
       </div>
@@ -353,8 +353,8 @@ export default function GTMPage() {
         <div className="border-t border-ink-200 pt-6 flex items-center justify-between">
           <p className="text-xs text-ink-400">See the product that drives this funnel.</p>
           <div className="flex gap-3">
-            <Link href="/dashboard" className="btn btn-primary btn-sm">
-              Open Worklist <ArrowRight className="h-3.5 w-3.5" />
+            <Link href="/portal" className="btn btn-primary btn-sm">
+              Enter Portal <ArrowRight className="h-3.5 w-3.5" />
             </Link>
             <Link href="/classify" className="btn btn-secondary btn-sm">
               Try AI Classifier

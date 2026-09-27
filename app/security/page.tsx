@@ -29,8 +29,8 @@ function Nav() {
           ))}
         </div>
         <div className="top-nav__right">
-          <Link href="/dashboard" className="btn btn-primary btn-sm">
-            Open Worklist <ArrowRight className="h-3.5 w-3.5" />
+          <Link href="/portal" className="btn btn-primary btn-sm">
+            Enter Portal <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
       </div>
