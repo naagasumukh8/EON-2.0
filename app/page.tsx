@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
-  ArrowRight, Zap, ChevronDown, ChevronUp, Layers, Bot, Check,
+  ArrowRight, ChevronDown, ChevronUp, Layers, Check,
 } from "lucide-react";
 import { CrowdCanvas } from "@/components/ui/skiper39";
 import { TextReveal } from "@/components/ui/text-reveal";
@@ -71,8 +71,8 @@ function Nav() {
             </Link>
           ))}
         </nav>
-        <Link href="/dashboard" style={{ background: "rgb(18,19,23)", color: "#fff", fontSize: "13.5px", fontWeight: 450, padding: "8px 20px", borderRadius: "9999px", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px" }}>
-          Open Worklist <ArrowRight style={{ width: 13, height: 13 }} />
+        <Link href="/portal" style={{ background: "rgb(18,19,23)", color: "#fff", fontSize: "13.5px", fontWeight: 550, padding: "8px 20px", borderRadius: "9999px", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+          Enter Portal <ArrowRight style={{ width: 13, height: 13 }} />
         </Link>
       </div>
     </header>
@@ -268,13 +268,12 @@ export default function HomePage() {
               Built for <TypewriterWords words={["pharmacy staff", "practice teams", "provider review", "cross-org care"]} />
             </p>
             <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
-              <Link href="/dashboard" style={{ background: "rgb(18,19,23)", color: "#fff", fontSize: "15px", fontWeight: 500, padding: "13px 28px", borderRadius: "9999px", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "8px" }}>
-                <Zap style={{ width: 15, height: 15, color: "#8AB4F8" }} />
-                Open Worklist
+              <Link href="/portal" style={{ background: "rgb(18,19,23)", color: "#fff", fontSize: "15px", fontWeight: 550, padding: "13px 28px", borderRadius: "9999px", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                Enter Portal <ArrowRight style={{ width: 15, height: 15 }} />
               </Link>
               <Link href="/classify" style={{ background: "rgba(0,0,0,0.05)", color: "rgb(18,19,23)", fontSize: "15px", fontWeight: 450, padding: "13px 28px", borderRadius: "9999px", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "8px", border: "1px solid rgba(0,0,0,0.09)" }}>
-                <Bot style={{ width: 15, height: 15 }} />
-                Explore AI Classifier
+                <Layers style={{ width: 15, height: 15 }} />
+                How it works
               </Link>
             </div>
           </div>
@@ -315,8 +314,8 @@ export default function HomePage() {
                   <span style={{ fontSize: "48px", fontWeight: 700, color: "#4ADE80", letterSpacing: "-0.05em", lineHeight: 1 }}>192</span>
                   <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.4)", lineHeight: 1.5 }}>minutes of manual coordination<br />replaced per refill</span>
                 </div>
-                <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: "6px", color: "#8AB4F8", fontSize: "14px", fontWeight: 500, textDecoration: "none", width: "fit-content" }}>
-                  Launch worklist <ArrowRight style={{ width: 14, height: 14 }} />
+                <Link href="/portal" style={{ display: "inline-flex", alignItems: "center", gap: "6px", color: "#8AB4F8", fontSize: "14px", fontWeight: 500, textDecoration: "none", width: "fit-content" }}>
+                  Enter Portal <ArrowRight style={{ width: 14, height: 14 }} />
                 </Link>
               </div>
               <div style={{ background: "rgba(255,255,255,0.04)", borderLeft: "1px solid rgba(255,255,255,0.06)", padding: "40px 32px", display: "flex", flexDirection: "column", justifyContent: "center", gap: "10px" }}>
