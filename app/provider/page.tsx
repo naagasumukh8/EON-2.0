@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
   Send, Bell, RefreshCw, CheckCircle2, XCircle, Shuffle, Shield,
-  Stethoscope, Building2, User, AlertTriangle, Clock, ArrowRight
+  Stethoscope, Building2, User, AlertTriangle, Clock, ArrowRight, Zap
 } from "lucide-react";
 import {
   seedDemoData, getThreads, getThreadMessages, markMessagesRead,
@@ -12,8 +12,24 @@ import {
   type Message, type RefillThread, type Notification,
 } from "../../lib/demo-messages";
 import { RoleSwitcher } from "../components/RoleSwitcher";
+import { DemoFlowBar } from "../components/DemoFlowBar";
 
 const PROVIDER_NAME = "Dr. Marcus Chen, MD";
+
+const SPOONFED_PROVIDER_NOTES = [
+  {
+    label: "Sign eRx Renewal",
+    text: "Refill renewal authorized for 90-day supply with 3 repeats. eRx transmitted to Summit Rx.",
+  },
+  {
+    label: "Authorize CCB Alternative",
+    text: "Authorizing generic substitution: Amlodipine 5mg once daily to maintain blood pressure control without delay.",
+  },
+  {
+    label: "Require In-Person Visit",
+    text: "Clinical review indicates an overdue comprehensive metabolic panel (CMP). Follow-up visit required before renewal.",
+  },
+];
 
 function StatusChip({ status }: { status: RefillThread["status"] }) {
   const map: Record<string, { label: string; color: string; bg: string; border: string }> = {
@@ -46,7 +62,7 @@ function StatusChip({ status }: { status: RefillThread["status"] }) {
 
 function RefillPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onClose: () => void; onRefresh: () => void }) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [text, setText] = useState("");
+  const [text, setText] = useState("Renewal authorized under protocol. eRx electronically signed and transmitted to pharmacy.");
   const [sending, setSending] = useState(false);
   const [acting, setActing] = useState<string | null>(null);
   const [tab, setTab] = useState<"review" | "messages">("review");
@@ -69,11 +85,12 @@ function RefillPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
     setTimeout(() => { setActing(null); load(); onRefresh(); }, 400);
   }
 
-  function handleSend() {
-    if (!text.trim()) return;
+  function handleSend(canned?: string) {
+    const t = canned ?? text;
+    if (!t.trim()) return;
     setSending(true);
     const { addMessage } = require("../../lib/demo-messages");
-    addMessage({ from: "provider", to: "pharmacy", text: text.trim(), threadId: thread.id });
+    addMessage({ from: "provider", to: "pharmacy", text: t.trim(), threadId: thread.id });
     setText("");
     setTimeout(() => { setSending(false); load(); onRefresh(); }, 250);
   }
@@ -162,6 +179,104 @@ function RefillPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px", background: "#FCFCFC" }}>
         {tab === "review" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            {/* 1-Click Action Bar */}
+            {canAct && (
+              <div
+                style={{
+                  background: "#FFFFFF",
+                  border: "1.5px solid rgb(18,19,23)",
+                  borderRadius: "16px",
+                  padding: "18px 20px",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "10px",
+                    fontFamily: "ui-monospace, monospace",
+                    fontWeight: 700,
+                    color: "rgb(18,19,23)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                    marginBottom: "8px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                  }}
+                >
+                  <Zap style={{ width: 12, height: 12, color: "#9333EA" }} /> 1-Click Physician Sign-off Actions
+                </div>
+
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                  <button
+                    onClick={() => doAction("approve")}
+                    disabled={acting !== null}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "10px 22px",
+                      borderRadius: "9999px",
+                      background: "rgb(18,19,23)",
+                      color: "#FFFFFF",
+                      border: "none",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "opacity 0.15s ease",
+                    }}
+                  >
+                    <CheckCircle2 style={{ width: 14, height: 14 }} />
+                    {acting === "approve" ? "Signing eRx…" : "1-Click: Approve & Send eRx"}
+                  </button>
+
+                  <button
+                    onClick={() => doAction("alternative")}
+                    disabled={acting !== null}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "10px 18px",
+                      borderRadius: "9999px",
+                      background: "#FFFFFF",
+                      color: "rgb(18,19,23)",
+                      border: "1px solid rgba(0,0,0,0.15)",
+                      fontSize: "12.5px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "opacity 0.15s ease",
+                    }}
+                  >
+                    <Shuffle style={{ width: 13, height: 13 }} />
+                    {acting === "alternative" ? "Routing…" : "1-Click: Authorize Alternative"}
+                  </button>
+
+                  <button
+                    onClick={() => doAction("visit")}
+                    disabled={acting !== null}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "10px 18px",
+                      borderRadius: "9999px",
+                      background: "#FEF2F2",
+                      color: "#DC2626",
+                      border: "1px solid #FECACA",
+                      fontSize: "12.5px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "opacity 0.15s ease",
+                    }}
+                  >
+                    <XCircle style={{ width: 13, height: 13 }} />
+                    {acting === "visit" ? "Updating…" : "1-Click: Require Visit"}
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Patient Context Card */}
             <div
               style={{
@@ -302,106 +417,46 @@ function RefillPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
                 ))}
               </div>
             </div>
-
-            {/* Provider Decision Actions */}
-            {canAct && (
-              <div
-                style={{
-                  background: "#FFFFFF",
-                  border: "1px solid rgba(0,0,0,0.08)",
-                  borderRadius: "16px",
-                  padding: "18px 20px",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "10px",
-                    fontFamily: "ui-monospace, monospace",
-                    fontWeight: 700,
-                    color: "rgb(18,19,23)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.06em",
-                    marginBottom: "10px",
-                  }}
-                >
-                  Physician Sign-Off & eRx Action
-                </div>
-
-                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                  <button
-                    onClick={() => doAction("approve")}
-                    disabled={acting !== null}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      padding: "10px 20px",
-                      borderRadius: "9999px",
-                      background: "rgb(18,19,23)",
-                      color: "#FFFFFF",
-                      border: "none",
-                      fontSize: "12.5px",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      transition: "opacity 0.15s ease",
-                    }}
-                  >
-                    <CheckCircle2 style={{ width: 13, height: 13 }} />
-                    {acting === "approve" ? "Signing eRx…" : "Approve & Send eRx"}
-                  </button>
-
-                  <button
-                    onClick={() => doAction("alternative")}
-                    disabled={acting !== null}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      padding: "10px 18px",
-                      borderRadius: "9999px",
-                      background: "#FFFFFF",
-                      color: "rgb(18,19,23)",
-                      border: "1px solid rgba(0,0,0,0.15)",
-                      fontSize: "12.5px",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      transition: "opacity 0.15s ease",
-                    }}
-                  >
-                    <Shuffle style={{ width: 13, height: 13 }} />
-                    {acting === "alternative" ? "Routing…" : "Authorize Alternative"}
-                  </button>
-
-                  <button
-                    onClick={() => doAction("visit")}
-                    disabled={acting !== null}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      padding: "10px 18px",
-                      borderRadius: "9999px",
-                      background: "#FEF2F2",
-                      color: "#DC2626",
-                      border: "1px solid #FECACA",
-                      fontSize: "12.5px",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      transition: "opacity 0.15s ease",
-                    }}
-                  >
-                    <XCircle style={{ width: 13, height: 13 }} />
-                    {acting === "visit" ? "Updating…" : "Require Visit"}
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
         {tab === "messages" && (
           <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: "10px" }}>
+            {/* 1-Click Spoon-fed Notes */}
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", padding: "4px 0 10px" }}>
+              {SPOONFED_PROVIDER_NOTES.map(p => (
+                <button
+                  key={p.label}
+                  onClick={() => handleSend(p.text)}
+                  style={{
+                    padding: "5px 12px",
+                    borderRadius: "9999px",
+                    border: "1px solid rgba(0,0,0,0.1)",
+                    background: "#FFFFFF",
+                    color: "rgb(20,20,25)",
+                    fontSize: "11.5px",
+                    fontWeight: 550,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    transition: "all 0.15s ease",
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = "rgb(18,19,23)";
+                    e.currentTarget.style.color = "#FFFFFF";
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = "#FFFFFF";
+                    e.currentTarget.style.color = "rgb(20,20,25)";
+                  }}
+                >
+                  <span>{p.label}</span>
+                  <ArrowRight style={{ width: 11, height: 11 }} />
+                </button>
+              ))}
+            </div>
+
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "10px" }}>
               {messages.length === 0 && (
                 <div style={{ textAlign: "center", color: "#9CA3AF", fontSize: "13px", padding: "30px 0" }}>
@@ -473,14 +528,14 @@ function RefillPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
                 }}
               />
               <button
-                onClick={handleSend}
+                onClick={() => handleSend()}
                 disabled={!text.trim() || sending}
                 style={{
                   background: text.trim() ? "rgb(18,19,23)" : "rgba(0,0,0,0.08)",
                   color: text.trim() ? "#FFFFFF" : "#9CA3AF",
                   border: "none",
                   borderRadius: "12px",
-                  padding: "0 18px",
+                  padding: "0 22px",
                   cursor: text.trim() ? "pointer" : "default",
                   display: "flex",
                   alignItems: "center",
@@ -489,7 +544,7 @@ function RefillPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
                   fontWeight: 600,
                 }}
               >
-                <Send style={{ width: 13, height: 13 }} /> Send
+                <Send style={{ width: 13, height: 13 }} /> 1-Click Send
               </button>
             </div>
           </div>
@@ -512,7 +567,11 @@ export default function ProviderPage() {
     setCurrentRole("provider");
     const ts = getThreads();
     setThreads(ts);
-    if (active) setActive(ts.find(t => t.id === active.id) ?? null);
+    // Auto-select pending provider review (e.g. RF-002 Lisinopril) immediately on load!
+    setActive(prev => {
+      if (prev) return ts.find(t => t.id === prev.id) ?? ts[0];
+      return ts.find(t => t.status === "pending_provider") ?? ts[0];
+    });
     setNotifs(getNotifications("provider"));
     setNotifCount(countUnreadNotifs("provider"));
   }
@@ -648,12 +707,15 @@ export default function ProviderPage() {
         </div>
       </nav>
 
+      {/* Guided 1-Click Demo Tour Bar */}
+      <DemoFlowBar currentStep={3} />
+
       {/* Notifications Drawer */}
       {notifPanel && (
         <div
           style={{
             position: "fixed",
-            top: "62px",
+            top: "100px",
             right: "32px",
             zIndex: 200,
             background: "#FFFFFF",
@@ -688,11 +750,11 @@ export default function ProviderPage() {
         style={{
           maxWidth: "1200px",
           margin: "0 auto",
-          padding: "28px 32px",
+          padding: "24px 32px",
           display: "grid",
           gridTemplateColumns: "300px 1fr",
           gap: "24px",
-          minHeight: "calc(100vh - 54px)",
+          minHeight: "calc(100vh - 100px)",
         }}
       >
         {/* Left Column */}
@@ -870,11 +932,6 @@ export default function ProviderPage() {
               </div>
               <div style={{ fontWeight: 600, fontSize: "16px", color: "rgb(18,19,23)", letterSpacing: "-0.01em" }}>
                 Physician Triage Queue
-              </div>
-              <div style={{ fontSize: "13.5px", color: "#6B7280", textAlign: "center", maxWidth: "320px", lineHeight: 1.5 }}>
-                {needsReview.length > 0
-                  ? `${needsReview.length} stalled refill(s) escalated by pharmacy. Select an item to sign off or authorize an alternative.`
-                  : "All clinical escalation queues are clear."}
               </div>
             </div>
           )}

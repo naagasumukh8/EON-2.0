@@ -12,6 +12,22 @@ import {
   type Message, type RefillThread,
 } from "../../lib/demo-messages";
 import { RoleSwitcher } from "../components/RoleSwitcher";
+import { DemoFlowBar } from "../components/DemoFlowBar";
+
+const SPOONFED_PHARMACY_REPLIES = [
+  {
+    label: "Acknowledge Intake",
+    text: "Summit Rx received your refill request for Metformin 500mg. Reviewing insurance and dispensing records now.",
+  },
+  {
+    label: "Notify Provider Escalation",
+    text: "Refill requires doctor authorization. We have compiled your clinical brief and sent it directly to Dr. Marcus Chen.",
+  },
+  {
+    label: "Notify Ready for Pickup",
+    text: "Your refill has been filled and packaged. Ready for pickup at Central Fill Counter #2! ETA: Now.",
+  },
+];
 
 function StatusChip({ status }: { status: RefillThread["status"] }) {
   const map: Record<string, { label: string; color: string; bg: string; border: string }> = {
@@ -44,7 +60,7 @@ function StatusChip({ status }: { status: RefillThread["status"] }) {
 
 function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onClose: () => void; onRefresh: () => void }) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [text, setText] = useState("");
+  const [text, setText] = useState("Summit Rx has checked insurance eligibility. Refill request evaluated under protocol.");
   const [sending, setSending] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [processResult, setProcessResult] = useState<string | null>(null);
@@ -60,10 +76,11 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
   useEffect(() => { load(); }, [load]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
-  function handleSend() {
-    if (!text.trim()) return;
+  function handleSend(canned?: string) {
+    const t = canned ?? text;
+    if (!t.trim()) return;
     setSending(true);
-    addMessage({ from: "pharmacy", to: recipient, text: text.trim(), threadId: thread.id });
+    addMessage({ from: "pharmacy", to: recipient, text: t.trim(), threadId: thread.id });
     setText("");
     setTimeout(() => { setSending(false); load(); onRefresh(); }, 250);
   }
@@ -75,7 +92,7 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
       ? `ROUTINE REFILL — Processed automatically. Patient notified via SMS. Ready for pickup in 2–4 hours.`
       : `PROVIDER REVIEW REQUIRED — ${result.reason}${result.alternative ? ` Recommended substitution: ${result.alternative}.` : ""} Clinical context package routed to Dr. Marcus Chen.`;
     setProcessResult(msg);
-    setTimeout(() => { setProcessing(false); load(); onRefresh(); }, 500);
+    setTimeout(() => { setProcessing(false); load(); onRefresh(); }, 400);
   }
 
   const canProcess = thread.status === "pending_pharmacy";
@@ -158,7 +175,7 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
               gap: "6px",
             }}
           >
-            <Zap style={{ width: 12, height: 12 }} /> Triage Automation Ready
+            <Zap style={{ width: 12, height: 12 }} /> 1-Click Triage Automation Ready
           </div>
           <div style={{ fontSize: "13px", color: "rgb(40,40,45)", marginBottom: "12px", lineHeight: 1.5, fontWeight: 500 }}>
             Patient requested a refill for <strong>{thread.med}</strong>. Run deterministic AI triage to auto-resolve or escalate with full clinical justification.
@@ -170,19 +187,19 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
               display: "inline-flex",
               alignItems: "center",
               gap: "8px",
-              padding: "9px 20px",
+              padding: "10px 22px",
               borderRadius: "9999px",
               background: processing ? "rgba(0,0,0,0.15)" : "rgb(18,19,23)",
               color: "#FFFFFF",
               border: "none",
               cursor: processing ? "default" : "pointer",
-              fontSize: "13px",
+              fontSize: "13.5px",
               fontWeight: 600,
               transition: "opacity 0.15s ease",
             }}
           >
             <Zap style={{ width: 13, height: 13 }} />
-            {processing ? "Evaluating Decision Tree…" : "Process & Route Refill →"}
+            {processing ? "Evaluating Decision Tree…" : "Process & Route Refill (1-Click) →"}
           </button>
           {processResult && (
             <div
@@ -231,6 +248,66 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
           </div>
         </div>
       )}
+
+      {/* 1-Click Spoon-fed Reply Chips */}
+      <div
+        style={{
+          padding: "10px 20px",
+          borderBottom: "1px solid rgba(0,0,0,0.05)",
+          background: "#FAFAFA",
+          flexShrink: 0,
+        }}
+      >
+        <div
+          style={{
+            fontSize: "10px",
+            fontFamily: "ui-monospace, monospace",
+            color: "#6B7280",
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            marginBottom: "6px",
+            display: "flex",
+            alignItems: "center",
+            gap: "5px",
+          }}
+        >
+          <Zap style={{ width: 11, height: 11, color: "#16A34A" }} /> 1-Click Pharmacy Quick Replies
+        </div>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          {SPOONFED_PHARMACY_REPLIES.map(p => (
+            <button
+              key={p.label}
+              onClick={() => handleSend(p.text)}
+              style={{
+                padding: "5px 12px",
+                borderRadius: "9999px",
+                border: "1px solid rgba(0,0,0,0.1)",
+                background: "#FFFFFF",
+                color: "rgb(20,20,25)",
+                fontSize: "11.5px",
+                fontWeight: 550,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                transition: "all 0.15s ease",
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = "rgb(18,19,23)";
+                e.currentTarget.style.color = "#FFFFFF";
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = "#FFFFFF";
+                e.currentTarget.style.color = "rgb(20,20,25)";
+              }}
+            >
+              <span>{p.label}</span>
+              <ArrowRight style={{ width: 11, height: 11 }} />
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Messages */}
       <div style={{ flex: 1, overflowY: "auto", padding: "18px 24px", display: "flex", flexDirection: "column", gap: "12px", background: "#FCFCFC" }}>
@@ -304,33 +381,38 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
           flexShrink: 0,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-          <span style={{ fontSize: "11px", color: "#6B7280", fontWeight: 500 }}>Recipient:</span>
-          {(["patient", "provider"] as const).map(r => {
-            const active = recipient === r;
-            return (
-              <button
-                key={r}
-                onClick={() => setRecipient(r)}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  padding: "4px 12px",
-                  borderRadius: "9999px",
-                  border: `1px solid ${active ? "rgb(18,19,23)" : "rgba(0,0,0,0.1)"}`,
-                  background: active ? "rgb(18,19,23)" : "#FFFFFF",
-                  color: active ? "#FFFFFF" : "rgb(80,80,85)",
-                  fontSize: "11.5px",
-                  fontWeight: active ? 600 : 500,
-                  cursor: "pointer",
-                }}
-              >
-                {r === "patient" ? <User style={{ width: 11, height: 11 }} /> : <Stethoscope style={{ width: 11, height: 11 }} />}
-                {r === "patient" ? "Patient" : "Provider"}
-              </button>
-            );
-          })}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "11px", color: "#6B7280", fontWeight: 500 }}>Recipient:</span>
+            {(["patient", "provider"] as const).map(r => {
+              const active = recipient === r;
+              return (
+                <button
+                  key={r}
+                  onClick={() => setRecipient(r)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    padding: "4px 12px",
+                    borderRadius: "9999px",
+                    border: `1px solid ${active ? "rgb(18,19,23)" : "rgba(0,0,0,0.1)"}`,
+                    background: active ? "rgb(18,19,23)" : "#FFFFFF",
+                    color: active ? "#FFFFFF" : "rgb(80,80,85)",
+                    fontSize: "11.5px",
+                    fontWeight: active ? 600 : 500,
+                    cursor: "pointer",
+                  }}
+                >
+                  {r === "patient" ? <User style={{ width: 11, height: 11 }} /> : <Stethoscope style={{ width: 11, height: 11 }} />}
+                  {r === "patient" ? "Patient" : "Provider"}
+                </button>
+              );
+            })}
+          </div>
+          <span style={{ fontSize: "10.5px", color: "#9CA3AF", fontFamily: "ui-monospace, monospace" }}>
+            Pre-filled with demo message
+          </span>
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
           <textarea
@@ -357,14 +439,14 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
             }}
           />
           <button
-            onClick={handleSend}
+            onClick={() => handleSend()}
             disabled={!text.trim() || sending}
             style={{
               background: text.trim() ? "rgb(18,19,23)" : "rgba(0,0,0,0.08)",
               color: text.trim() ? "#FFFFFF" : "#9CA3AF",
               border: "none",
               borderRadius: "12px",
-              padding: "0 18px",
+              padding: "0 22px",
               cursor: text.trim() ? "pointer" : "default",
               display: "flex",
               alignItems: "center",
@@ -373,7 +455,7 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
               fontWeight: 600,
             }}
           >
-            <Send style={{ width: 13, height: 13 }} /> Send
+            <Send style={{ width: 13, height: 13 }} /> 1-Click Send
           </button>
         </div>
       </div>
@@ -395,7 +477,11 @@ export default function PharmacyPage() {
     setCurrentRole("pharmacy");
     const ts = getThreads();
     setThreads(ts);
-    if (active) setActive(ts.find(t => t.id === active.id) ?? null);
+    // Auto-select first pending refill thread so user never has to search
+    setActive(prev => {
+      if (prev) return ts.find(t => t.id === prev.id) ?? ts[0];
+      return ts.find(t => t.status === "pending_pharmacy") ?? ts[0];
+    });
     setUnread(countUnread("pharmacy"));
     setNotifCount(countUnreadNotifs("pharmacy"));
     setNotifs(getNotifications("pharmacy"));
@@ -533,12 +619,15 @@ export default function PharmacyPage() {
         </div>
       </nav>
 
+      {/* Guided 1-Click Demo Tour Bar */}
+      <DemoFlowBar currentStep={2} />
+
       {/* Notifications Drawer */}
       {notifPanel && (
         <div
           style={{
             position: "fixed",
-            top: "62px",
+            top: "100px",
             right: "32px",
             zIndex: 200,
             background: "#FFFFFF",
@@ -573,11 +662,11 @@ export default function PharmacyPage() {
         style={{
           maxWidth: "1200px",
           margin: "0 auto",
-          padding: "28px 32px",
+          padding: "24px 32px",
           display: "grid",
           gridTemplateColumns: "300px 1fr",
           gap: "24px",
-          minHeight: "calc(100vh - 54px)",
+          minHeight: "calc(100vh - 100px)",
         }}
       >
         {/* Left Column */}
@@ -770,11 +859,6 @@ export default function PharmacyPage() {
               </div>
               <div style={{ fontWeight: 600, fontSize: "16px", color: "rgb(18,19,23)", letterSpacing: "-0.01em" }}>
                 Pharmacy Intake Queue
-              </div>
-              <div style={{ fontSize: "13.5px", color: "#6B7280", textAlign: "center", maxWidth: "320px", lineHeight: 1.5 }}>
-                {pending.length > 0
-                  ? `${pending.length} prescription request(s) waiting. Select an item to run triage classification.`
-                  : "All refill queues are up to date."}
               </div>
             </div>
           )}

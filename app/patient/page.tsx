@@ -3,15 +3,15 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
   Send, RefreshCw, Bell, CheckCircle2, Clock, AlertCircle, AlertTriangle,
-  Info, Building2, Stethoscope, User, Pill, ArrowRight, ShieldCheck
+  Info, Building2, Stethoscope, User, Pill, ArrowRight, ShieldCheck, Zap
 } from "lucide-react";
 import {
   seedDemoData, getThreads, getThreadMessages, addMessage, markMessagesRead,
   getNotifications, countUnread, countUnreadNotifs, timeAgo, setCurrentRole,
-  PATIENT_DEMO_PROMPTS,
   type Message, type RefillThread,
 } from "../../lib/demo-messages";
 import { RoleSwitcher } from "../components/RoleSwitcher";
+import { DemoFlowBar } from "../components/DemoFlowBar";
 
 const PATIENT_NAME = "Alex Rivera";
 const PATIENT_DEMO = {
@@ -20,6 +20,21 @@ const PATIENT_DEMO = {
   allergies: "Sulfa drugs",
   insuranceId: "Aetna AET-88124-X",
 };
+
+const SPOONFED_PATIENT_PROMPTS = [
+  {
+    label: "Request Metformin Refill",
+    text: "Hi, I am running low on my Metformin 500mg (2 days left). Could you please process my refill?",
+  },
+  {
+    label: "Check Pickup ETA",
+    text: "Can you provide an estimated pickup time for my prescription? Thank you!",
+  },
+  {
+    label: "Confirm Pickup Today",
+    text: "Thank you Dr. Chen and Summit Rx! I will pick up my medication at 4:30 PM today.",
+  },
+];
 
 function StatusChip({ status }: { status: RefillThread["status"] }) {
   const map: Record<string, { label: string; color: string; bg: string; border: string }> = {
@@ -227,7 +242,7 @@ function JourneyTracker({ thread }: { thread: RefillThread }) {
 
 function ThreadView({ thread, onBack, onRefresh }: { thread: RefillThread; onBack: () => void; onRefresh: () => void }) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [text, setText] = useState("");
+  const [text, setText] = useState("Hi, I am running low on my Metformin 500mg (2 days left). Could you please process my refill?");
   const [sending, setSending] = useState(false);
   const [recipient, setRecipient] = useState<"pharmacy" | "provider">("pharmacy");
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -247,10 +262,12 @@ function ThreadView({ thread, onBack, onRefresh }: { thread: RefillThread; onBac
     setSending(true);
     addMessage({ from: "patient", to: recipient, text: t.trim(), threadId: thread.id });
     setText("");
-    setTimeout(() => { setSending(false); load(); onRefresh(); }, 250);
+    setTimeout(() => {
+      setSending(false);
+      load();
+      onRefresh();
+    }, 250);
   }
-
-  const prompts = PATIENT_DEMO_PROMPTS.filter(p => p.threadId === thread.id);
 
   return (
     <div
@@ -307,57 +324,59 @@ function ThreadView({ thread, onBack, onRefresh }: { thread: RefillThread; onBac
       {/* Stepper & Live status */}
       <JourneyTracker thread={thread} />
 
-      {/* Interactive Quick Prompts */}
-      {prompts.length > 0 && messages.filter(m => m.from === "patient").length === 0 && (
+      {/* 1-Click Spoon-fed Prompt Pills (ALWAYS VISIBLE) */}
+      <div
+        style={{
+          padding: "12px 20px",
+          borderBottom: "1px solid rgba(0,0,0,0.05)",
+          background: "#FAFAFA",
+          flexShrink: 0,
+        }}
+      >
         <div
           style={{
-            padding: "12px 20px",
-            borderBottom: "1px solid rgba(0,0,0,0.05)",
-            background: "#FAFAFA",
-            flexShrink: 0,
+            fontSize: "10px",
+            fontFamily: "ui-monospace, monospace",
+            color: "#6B7280",
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            marginBottom: "8px",
+            display: "flex",
+            alignItems: "center",
+            gap: "5px",
           }}
         >
-          <div
-            style={{
-              fontSize: "10px",
-              fontFamily: "ui-monospace, monospace",
-              color: "#6B7280",
-              fontWeight: 600,
-              textTransform: "uppercase",
-              letterSpacing: "0.06em",
-              marginBottom: "8px",
-            }}
-          >
-            Quick 1-Click Demo Prompts
-          </div>
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-            {prompts.map(p => (
-              <button
-                key={p.label}
-                onClick={() => handleSend(p.text)}
-                style={{
-                  padding: "6px 14px",
-                  borderRadius: "9999px",
-                  border: "none",
-                  background: "rgb(18,19,23)",
-                  color: "#FFFFFF",
-                  fontSize: "12px",
-                  fontWeight: 550,
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  transition: "opacity 0.15s ease",
-                }}
-                onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
-                onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-              >
-                {p.label} <ArrowRight style={{ width: 12, height: 12 }} />
-              </button>
-            ))}
-          </div>
+          <Zap style={{ width: 11, height: 11, color: "#D97706" }} /> 1-Click Spoon-fed Demo Actions (No Typing Needed)
         </div>
-      )}
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          {SPOONFED_PATIENT_PROMPTS.map(p => (
+            <button
+              key={p.label}
+              onClick={() => handleSend(p.text)}
+              style={{
+                padding: "6px 14px",
+                borderRadius: "9999px",
+                border: "1px solid rgba(0,0,0,0.1)",
+                background: "rgb(18,19,23)",
+                color: "#FFFFFF",
+                fontSize: "12px",
+                fontWeight: 550,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                transition: "opacity 0.15s ease",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+            >
+              <span>{p.label}</span>
+              <ArrowRight style={{ width: 12, height: 12 }} />
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Message Stream */}
       <div style={{ flex: 1, overflowY: "auto", padding: "18px 24px", display: "flex", flexDirection: "column", gap: "12px", background: "#FCFCFC" }}>
@@ -368,7 +387,7 @@ function ThreadView({ thread, onBack, onRefresh }: { thread: RefillThread; onBac
         </div>
         {messages.length === 0 && (
           <div style={{ textAlign: "center", color: "#9CA3AF", fontSize: "13px", padding: "28px 0" }}>
-            No messages sent yet. Use a 1-click prompt above or type a message below.
+            No messages logged yet. Tap any 1-click button above or click Send below.
           </div>
         )}
         {messages.map((m) => {
@@ -427,7 +446,7 @@ function ThreadView({ thread, onBack, onRefresh }: { thread: RefillThread; onBac
         <div ref={bottomRef} />
       </div>
 
-      {/* Compose Dock */}
+      {/* Compose Dock with Pre-filled Demo text */}
       <div
         style={{
           borderTop: "1px solid rgba(0,0,0,0.07)",
@@ -436,35 +455,41 @@ function ThreadView({ thread, onBack, onRefresh }: { thread: RefillThread; onBac
           flexShrink: 0,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-          <span style={{ fontSize: "11px", color: "#6B7280", fontWeight: 500 }}>Recipient:</span>
-          {(["pharmacy", "provider"] as const).map((r) => {
-            const active = recipient === r;
-            return (
-              <button
-                key={r}
-                onClick={() => setRecipient(r)}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  padding: "4px 12px",
-                  borderRadius: "9999px",
-                  border: `1px solid ${active ? "rgb(18,19,23)" : "rgba(0,0,0,0.1)"}`,
-                  background: active ? "rgb(18,19,23)" : "#FFFFFF",
-                  color: active ? "#FFFFFF" : "rgb(80,80,85)",
-                  fontSize: "11.5px",
-                  fontWeight: active ? 600 : 500,
-                  cursor: "pointer",
-                  transition: "all 0.15s ease",
-                }}
-              >
-                {r === "pharmacy" ? <Building2 style={{ width: 11, height: 11 }} /> : <Stethoscope style={{ width: 11, height: 11 }} />}
-                {r === "pharmacy" ? "Pharmacy" : "Provider"}
-              </button>
-            );
-          })}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "11px", color: "#6B7280", fontWeight: 500 }}>Recipient:</span>
+            {(["pharmacy", "provider"] as const).map((r) => {
+              const active = recipient === r;
+              return (
+                <button
+                  key={r}
+                  onClick={() => setRecipient(r)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    padding: "4px 12px",
+                    borderRadius: "9999px",
+                    border: `1px solid ${active ? "rgb(18,19,23)" : "rgba(0,0,0,0.1)"}`,
+                    background: active ? "rgb(18,19,23)" : "#FFFFFF",
+                    color: active ? "#FFFFFF" : "rgb(80,80,85)",
+                    fontSize: "11.5px",
+                    fontWeight: active ? 600 : 500,
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {r === "pharmacy" ? <Building2 style={{ width: 11, height: 11 }} /> : <Stethoscope style={{ width: 11, height: 11 }} />}
+                  {r === "pharmacy" ? "Pharmacy" : "Provider"}
+                </button>
+              );
+            })}
+          </div>
+          <span style={{ fontSize: "10.5px", color: "#9CA3AF", fontFamily: "ui-monospace, monospace" }}>
+            Pre-filled with demo message
+          </span>
         </div>
+
         <div style={{ display: "flex", gap: "10px" }}>
           <textarea
             value={text}
@@ -497,7 +522,7 @@ function ThreadView({ thread, onBack, onRefresh }: { thread: RefillThread; onBac
               color: text.trim() ? "#FFFFFF" : "#9CA3AF",
               border: "none",
               borderRadius: "12px",
-              padding: "0 18px",
+              padding: "0 22px",
               cursor: text.trim() ? "pointer" : "default",
               display: "flex",
               alignItems: "center",
@@ -507,7 +532,7 @@ function ThreadView({ thread, onBack, onRefresh }: { thread: RefillThread; onBac
               transition: "all 0.15s ease",
             }}
           >
-            <Send style={{ width: 13, height: 13 }} /> Send
+            <Send style={{ width: 13, height: 13 }} /> 1-Click Send
           </button>
         </div>
       </div>
@@ -529,7 +554,8 @@ export default function PatientPage() {
     setCurrentRole("patient");
     const ts = getThreads();
     setThreads(ts);
-    if (activeThread) setActiveThread(ts.find(t => t.id === activeThread.id) ?? null);
+    // Auto-select first thread immediately on load so user NEVER has to hunt or click around
+    setActiveThread(prev => (prev ? (ts.find(t => t.id === prev.id) ?? ts[0]) : ts[0]));
     setUnreadCount(countUnread("patient"));
     setNotifCount(countUnreadNotifs("patient"));
     setNotifs(getNotifications("patient"));
@@ -669,12 +695,15 @@ export default function PatientPage() {
         </div>
       </nav>
 
+      {/* Guided 1-Click Demo Tour Bar */}
+      <DemoFlowBar currentStep={activeThread?.status === "approved" || activeThread?.status === "resolved" ? 4 : 1} />
+
       {/* Notifications Drawer */}
       {notifPanel && (
         <div
           style={{
             position: "fixed",
-            top: "62px",
+            top: "100px",
             right: "32px",
             zIndex: 200,
             background: "#FFFFFF",
@@ -709,11 +738,11 @@ export default function PatientPage() {
         style={{
           maxWidth: "1200px",
           margin: "0 auto",
-          padding: "28px 32px",
+          padding: "24px 32px",
           display: "grid",
           gridTemplateColumns: "300px 1fr",
           gap: "24px",
-          minHeight: "calc(100vh - 54px)",
+          minHeight: "calc(100vh - 100px)",
         }}
       >
         {/* Left Column */}
@@ -901,9 +930,6 @@ export default function PatientPage() {
               </div>
               <div style={{ fontWeight: 600, fontSize: "16px", color: "rgb(18,19,23)", letterSpacing: "-0.01em" }}>
                 Select a Prescription
-              </div>
-              <div style={{ fontSize: "13.5px", color: "#6B7280", textAlign: "center", maxWidth: "320px", lineHeight: 1.5 }}>
-                Choose a medication from the list on the left to inspect its live journey, estimated pickup time, and message your care team.
               </div>
             </div>
           )}

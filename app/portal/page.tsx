@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, User, Building2, Stethoscope, ShieldCheck, RefreshCw } from "lucide-react";
 import { setCurrentRole, resetDemoData, seedDemoData, type Role } from "../../lib/demo-messages";
+import { DemoFlowBar } from "../components/DemoFlowBar";
 
 type RoleConfig = {
   role: Role; title: string; name: string;
@@ -133,6 +134,9 @@ export default function PortalPage() {
           </button>
         </div>
       </header>
+
+      {/* Guided 1-Click Demo Tour Bar */}
+      <DemoFlowBar currentStep={1} />
 
       {/* Main Content Area */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "48px 24px" }}>
