@@ -298,6 +298,8 @@ export default function DashboardPage() {
   const [search, setSearch] = useState("");
   const [minutesSaved, setMinutesSaved] = useState(192);
   const [notification, setNotification] = useState<{ msg: string; type: "info" | "success" | "warn" } | null>(null);
+  const [approvalItem, setApprovalItem] = useState<RefillItem | null>(null);
+  const [approvalNote, setApprovalNote] = useState<string>("");
 
   const selectedItem = queue.find(r => r.id === selected);
 
@@ -334,6 +336,32 @@ export default function DashboardPage() {
       msg: `Refill ${id} resolved. ${AVG_MANUAL_MINUTES} minutes added to session savings.`,
       type: "success",
     });
+  };
+
+  // Direct Clinician Approval & Dispatch Handler (Draft-Only / Human-in-the-Loop)
+  const handleApproveAndDispatch = (item: RefillItem, customNote?: string) => {
+    setQueue(prev =>
+      prev.map(r =>
+        r.id === item.id
+          ? { ...r, actionState: "ACTION_SENT", status: "FILLING" }
+          : r
+      )
+    );
+    setMinutesSaved(m => m + AVG_MANUAL_MINUTES);
+    recordAudit({
+      refillId: item.id,
+      actionType: item.nextAction,
+      fromState: item.actionState,
+      toState: "ACTION_SENT",
+      actor: "Dr. Sarah Chen, PharmD (Clinical Staff)",
+      isAutoExecuted: false,
+      notes: customNote || `[HUMAN SIGN-OFF] Dr. Sarah Chen, PharmD approved and dispatched: ${item.nextAction}`,
+    });
+    setNotification({
+      msg: `✅ Clinician sign-off approved & dispatched for ${item.med} (${item.id}) by Dr. S. Chen, PharmD`,
+      type: "success",
+    });
+    setApprovalItem(null);
   };
 
   // State Machine Action Execution Handler
@@ -550,6 +578,7 @@ export default function DashboardPage() {
                     <th>Status</th>
                     <th>State</th>
                     <th>Stuck</th>
+                    <th className="text-center">Action / Sign-Off</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -610,6 +639,42 @@ export default function DashboardPage() {
                             <span className="text-xs text-ink-400">—</span>
                           )}
                         </td>
+                        {/* Direct Action / Human-in-the-Loop Sign-off Column */}
+                        <td className="text-center" onClick={(e) => e.stopPropagation()}>
+                          {row.status === "RESOLVED" ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-ink-400 bg-ink-50 px-2 py-0.5 rounded border border-ink-200">
+                              <CheckCircle className="h-3 w-3 text-ok-600" /> Resolved
+                            </span>
+                          ) : row.actionState === "ACTION_SENT" ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-ok-700 bg-ok-50 px-2 py-0.5 rounded border border-ok-200">
+                              <Check className="h-3 w-3 text-ok-600" /> Dispatched
+                            </span>
+                          ) : row.actionState === "ACTION_CONFIRMED" ? (
+                            <button
+                              onClick={() => handlePerformAction(row)}
+                              className="btn btn-sm btn-primary text-[11px] py-1 px-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded shadow-sm inline-flex items-center gap-1"
+                            >
+                              <Send className="h-3 w-3" /> Dispatch
+                            </button>
+                          ) : mode === "AUTONOMOUS" && canAutoExecute(row.nextAction) ? (
+                            <button
+                              onClick={() => handlePerformAction(row)}
+                              className="btn btn-sm text-[11px] py-1 px-2.5 bg-accent-600 hover:bg-accent-700 text-white rounded shadow-sm inline-flex items-center gap-1 font-semibold"
+                            >
+                              <Zap className="h-3 w-3" /> Auto-Execute
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setApprovalItem(row);
+                                setApprovalNote(`Clinical review verified for ${row.med} (${row.id}). Approved under standard clinical protocol.`);
+                              }}
+                              className="btn btn-sm text-[11px] py-1 px-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded shadow-sm inline-flex items-center gap-1 font-semibold"
+                            >
+                              <Shield className="h-3 w-3" /> Review &amp; Approve
+                            </button>
+                          )}
+                        </td>
                         <td className="text-right">
                           <Eye className={`h-4 w-4 ${isSelected ? "text-accent-600" : "text-ink-300"}`} />
                         </td>
@@ -618,7 +683,7 @@ export default function DashboardPage() {
                   })}
                   {filtered.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="text-center py-12 text-sm text-ink-400">
+                      <td colSpan={9} className="text-center py-12 text-sm text-ink-400">
                         No prescription refills match your search.
                       </td>
                     </tr>
@@ -803,27 +868,28 @@ export default function DashboardPage() {
                   {/* Action Buttons */}
                   <div className="space-y-2">
                     {selectedItem.actionState === "ACTION_DRAFTED" && (
-                      <button
-                        onClick={() => handlePerformAction(selectedItem)}
-                        className="btn btn-primary w-full justify-center text-xs py-2.5"
-                      >
+                      <div>
                         {mode === "AUTONOMOUS" && canAutoExecute(selectedItem.nextAction) ? (
-                          <>
+                          <button
+                            onClick={() => handlePerformAction(selectedItem)}
+                            className="btn btn-primary w-full justify-center text-xs py-2.5"
+                          >
                             <Zap className="h-3.5 w-3.5" />
                             Auto-Execute Action
-                          </>
-                        ) : isTherapyAffecting(selectedItem.nextAction) ? (
-                          <>
-                            <Lock className="h-3.5 w-3.5" />
-                            Review &amp; Approve Action
-                          </>
+                          </button>
                         ) : (
-                          <>
-                            <Check className="h-3.5 w-3.5" />
-                            Confirm Action
-                          </>
+                          <button
+                            onClick={() => {
+                              setApprovalItem(selectedItem);
+                              setApprovalNote(`Clinical review verified for ${selectedItem.med} (${selectedItem.id}). Authorized under standard clinical protocol.`);
+                            }}
+                            className="btn w-full justify-center text-xs py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold flex items-center gap-1.5 shadow-sm"
+                          >
+                            <Shield className="h-3.5 w-3.5" />
+                            Review &amp; Approve Action (Human Sign-off)
+                          </button>
                         )}
-                      </button>
+                      </div>
                     )}
 
                     {selectedItem.actionState === "ACTION_CONFIRMED" && (
@@ -871,6 +937,131 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* ── CLINICIAN SIGN-OFF MODAL (HUMAN-IN-THE-LOOP / DRAFT MODE) ── */}
+      {approvalItem && (
+        <div
+          style={{ position: "fixed", inset: 0, zIndex: 100, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}
+          onClick={() => setApprovalItem(null)}
+        >
+          <div
+            style={{ background: "#FFFFFF", borderRadius: "16px", maxWidth: "560px", width: "100%", boxShadow: "0 20px 40px rgba(0,0,0,0.2)", border: "1px solid rgba(0,0,0,0.1)", overflow: "hidden" }}
+            onClick={(e) => e.stopPropagation()}
+            className="animate-in fade-in zoom-in-95 duration-150"
+          >
+            {/* Modal header */}
+            <div className="bg-amber-50 border-b border-amber-200 px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold">
+                  <Shield className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-amber-950 font-display">
+                    Clinical Human Sign-Off Required
+                  </h3>
+                  <p className="text-[11px] text-amber-800">
+                    Draft-Only Protocol · Provider Review &amp; Sign-off
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setApprovalItem(null)}
+                className="text-amber-800 hover:text-amber-950 p-1 rounded-md"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Modal body */}
+            <div className="p-6 space-y-4 text-xs">
+              {/* Prescription Context */}
+              <div className="bg-ink-50 rounded-xl p-3.5 border border-ink-100 flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-mono font-bold text-ink-500">{approvalItem.id}</span>
+                    <span className="text-ink-300">·</span>
+                    <span className="font-mono text-ink-500">{approvalItem.token}</span>
+                    <span className="badge badge-neutral text-[10px]">{approvalItem.practice}</span>
+                  </div>
+                  <div className="text-base font-bold text-ink-900">{approvalItem.med}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] text-ink-400 uppercase font-semibold">Priority</div>
+                  <div className="font-mono font-bold text-ink-900 text-sm">{approvalItem.priorityScore}/100</div>
+                </div>
+              </div>
+
+              {/* Drafted Action */}
+              <div>
+                <label className="block text-[11px] font-bold text-ink-500 uppercase tracking-wider mb-1.5">
+                  Drafted AI Recommendation
+                </label>
+                <div className="p-3 bg-accent-50/60 border border-accent-200 rounded-lg text-ink-900 font-medium leading-relaxed">
+                  {approvalItem.nextAction}
+                </div>
+              </div>
+
+              {/* Safety verifications */}
+              <div className="space-y-1.5 bg-ok-50/60 border border-ok-200 rounded-lg p-3">
+                <div className="text-[11px] font-bold text-ok-800 uppercase tracking-wider mb-1">
+                  Safety Invariant Checklist
+                </div>
+                <div className="flex items-center gap-2 text-ok-900 text-[11.5px]">
+                  <CheckCircle className="h-3.5 w-3.5 text-ok-600 flex-shrink-0" />
+                  <span>Therapy adherence and historical fill dates verified against EHR</span>
+                </div>
+                <div className="flex items-center gap-2 text-ok-900 text-[11.5px]">
+                  <CheckCircle className="h-3.5 w-3.5 text-ok-600 flex-shrink-0" />
+                  <span>Zero controlled substance contraindication (C-II exclusion enforced)</span>
+                </div>
+              </div>
+
+              {/* Clinician Credential & Note */}
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="text-[11px] font-bold text-ink-500 uppercase tracking-wider">
+                    Attending Signer
+                  </label>
+                  <span className="font-mono text-[10px] text-accent-700 bg-accent-50 px-2 py-0.5 rounded font-semibold">
+                    Lic #CA-89211 (Active)
+                  </span>
+                </div>
+                <div className="p-2.5 bg-white border border-ink-200 rounded-lg mb-2 font-semibold text-ink-800 flex items-center justify-between">
+                  <span>Dr. Sarah Chen, PharmD</span>
+                  <span className="text-[11px] text-ink-400 font-normal">Clinical Staff Pharmacist</span>
+                </div>
+
+                <label className="block text-[11px] font-bold text-ink-500 uppercase tracking-wider mb-1">
+                  Clinical Audit Justification Note
+                </label>
+                <textarea
+                  value={approvalNote}
+                  onChange={(e) => setApprovalNote(e.target.value)}
+                  rows={2}
+                  className="w-full text-xs p-2.5 border border-ink-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-accent-600 font-sans"
+                />
+              </div>
+            </div>
+
+            {/* Modal footer */}
+            <div className="bg-ink-50 border-t border-ink-100 px-6 py-3.5 flex justify-end gap-2.5">
+              <button
+                onClick={() => setApprovalItem(null)}
+                className="btn btn-secondary text-xs py-2 px-4"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleApproveAndDispatch(approvalItem, approvalNote)}
+                className="btn text-xs py-2 px-5 bg-ok-600 hover:bg-ok-700 text-white font-semibold flex items-center gap-1.5 shadow-sm"
+              >
+                <Check className="h-3.5 w-3.5" />
+                Sign &amp; Dispatch to Provider
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

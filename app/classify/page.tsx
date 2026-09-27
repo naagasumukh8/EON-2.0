@@ -432,7 +432,7 @@ export default function ClassifyPage() {
 
                   <div className="flex gap-2">
                     <Link href="/dashboard" className="btn btn-primary flex-1 justify-center text-xs py-2">
-                      View in Shared Queue <ArrowRight className="h-3.5 w-3.5" />
+                      Open Worklist <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                     <button
                       onClick={() => {
