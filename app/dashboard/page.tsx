@@ -1032,12 +1032,23 @@ export default function DashboardPage() {
           onClick={() => setApprovalItem(null)}
         >
           <div
-            style={{ background: "#FFFFFF", borderRadius: "16px", maxWidth: "560px", width: "100%", boxShadow: "0 20px 40px rgba(0,0,0,0.2)", border: "1px solid rgba(0,0,0,0.1)", overflow: "hidden" }}
+            style={{
+              background: "#FFFFFF",
+              borderRadius: "16px",
+              maxWidth: "560px",
+              width: "100%",
+              maxHeight: "calc(100vh - 40px)",
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+              border: "1px solid rgba(0,0,0,0.1)",
+              overflow: "hidden"
+            }}
             onClick={(e) => e.stopPropagation()}
             className="animate-in fade-in zoom-in-95 duration-150"
           >
             {/* Modal header */}
-            <div className="bg-amber-50 border-b border-amber-200 px-6 py-4 flex items-center justify-between">
+            <div className="bg-amber-50 border-b border-amber-200 px-6 py-3.5 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold">
                   <Shield className="h-4 w-4" />
@@ -1059,8 +1070,8 @@ export default function DashboardPage() {
               </button>
             </div>
 
-            {/* Modal body */}
-            <div className="p-6 space-y-4 text-xs">
+            {/* Modal body (scrollable) */}
+            <div className="p-6 space-y-4 text-xs overflow-y-auto flex-1">
               {/* Prescription Context */}
               <div className="bg-ink-50 rounded-xl p-3.5 border border-ink-100 flex items-center justify-between">
                 <div>
@@ -1130,8 +1141,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Modal footer */}
-            <div className="bg-ink-50 border-t border-ink-100 px-6 py-3.5 flex justify-end gap-2.5">
+            {/* Modal footer (pinned, always visible) */}
+            <div className="bg-ink-50 border-t border-ink-100 px-6 py-3.5 flex justify-end gap-2.5 flex-shrink-0">
               <button
                 onClick={() => setApprovalItem(null)}
                 className="btn btn-secondary text-xs py-2 px-4"
