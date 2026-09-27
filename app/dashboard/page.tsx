@@ -360,7 +360,7 @@ export default function DashboardPage() {
           notes: `[AUTONOMOUS AUTO-EXECUTE] Whitelisted action executed without human intervention: ${item.nextAction}`,
         });
         setNotification({
-          msg: `⚡ Auto-executed: ACTION_DRAFTED ➔ ACTION_CONFIRMED ➔ ACTION_SENT for ${item.med} (${item.id})`,
+          msg: `⚡ Auto-executed for ${item.id}`,
           type: "success",
         });
       } else {
@@ -380,13 +380,13 @@ export default function DashboardPage() {
           actor: "Human Staff",
           isAutoExecuted: false,
           notes: isTherapy
-            ? `Therapy-affecting action confirmed by clinician: ${item.nextAction}`
-            : `Action confirmed by human in Draft-Only mode: ${item.nextAction}`,
+            ? `Therapy-affecting action confirmed: ${item.nextAction}`
+            : `Action confirmed in Draft-Only mode: ${item.nextAction}`,
         });
         setNotification({
           msg: isTherapy
-            ? `🛡️ Human confirmed therapy-affecting action: ACTION_DRAFTED ➔ ACTION_CONFIRMED for ${item.id}. Click 'Send & Dispatch' to execute.`
-            : `Human confirmed: ACTION_DRAFTED ➔ ACTION_CONFIRMED for ${item.id}. Click 'Send & Dispatch' to execute.`,
+            ? `Confirmed ${item.id} (clinical sign-off). Click Send to dispatch.`
+            : `Confirmed ${item.id}. Click Send to dispatch.`,
           type: "info",
         });
       }
@@ -406,10 +406,10 @@ export default function DashboardPage() {
         toState: "ACTION_SENT",
         actor: "Human Staff",
         isAutoExecuted: false,
-        notes: `Dispatched action to EHR/PBM/Pharmacy: ${item.nextAction}`,
+        notes: `Dispatched: ${item.nextAction}`,
       });
       setNotification({
-        msg: `Action sent to recipient: ACTION_CONFIRMED ➔ ACTION_SENT for ${item.id}`,
+        msg: `Dispatched action for ${item.id}`,
         type: "success",
       });
     }
@@ -754,8 +754,9 @@ export default function DashboardPage() {
                   )}
 
                   {/* Clinical continuity design note */}
-                  <div className="mt-3 pt-2.5 border-t border-amber-200/60 text-[11px] text-amber-800/80 leading-normal">
-                    <strong>Design Safety Invariant:</strong> This suggestion is a human-reviewed draft, never an auto-transfer. We route around pharmacy inventory bottlenecks only — we deliberately do not suggest alternate providers to protect continuity of care.
+                  <div className="mt-2.5 pt-2 border-t border-amber-200/60 text-[11px] text-amber-800 flex items-center justify-between">
+                    <span>Draft transfer only · Human sign-off required</span>
+                    <span className="text-amber-700/80">Clinical continuity preserved</span>
                   </div>
                 </div>
               )}
@@ -807,17 +808,17 @@ export default function DashboardPage() {
                         {mode === "AUTONOMOUS" && canAutoExecute(selectedItem.nextAction) ? (
                           <>
                             <Zap className="h-3.5 w-3.5" />
-                            Auto-Execute Whitelist Action (Draft ➔ Sent)
+                            Auto-Execute Action
                           </>
                         ) : isTherapyAffecting(selectedItem.nextAction) ? (
                           <>
                             <Lock className="h-3.5 w-3.5" />
-                            Review &amp; Confirm Action (Human Sign-off)
+                            Review &amp; Approve Action
                           </>
                         ) : (
                           <>
                             <Check className="h-3.5 w-3.5" />
-                            Confirm Drafted Action (ACTION_CONFIRMED)
+                            Confirm Action
                           </>
                         )}
                       </button>
@@ -829,13 +830,13 @@ export default function DashboardPage() {
                         className="btn btn-primary w-full justify-center text-xs py-2.5 bg-blue-600 hover:bg-blue-700"
                       >
                         <Send className="h-3.5 w-3.5" />
-                        Send &amp; Dispatch (ACTION_SENT)
+                        Send &amp; Dispatch
                       </button>
                     )}
 
                     {selectedItem.actionState === "ACTION_SENT" && (
-                      <div className="bg-ok-100 border border-ok-200 rounded p-2.5 text-center text-xs font-semibold text-ok-800">
-                        ✓ Action Dispatched to Recipient. Refill in progress.
+                      <div className="bg-ok-100 border border-ok-200 rounded p-2 text-center text-xs font-semibold text-ok-800">
+                        ✓ Dispatched to Recipient
                       </div>
                     )}
                   </div>

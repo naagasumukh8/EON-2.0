@@ -1,137 +1,131 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { Shield, Zap, ArrowRight, Settings2 } from "lucide-react";
+import { Shield, Zap, ArrowRight } from "lucide-react";
 import { useAutonomy } from "../../lib/autonomy";
 
 /**
- * Persistent banner — shows current autonomy mode on EVERY page.
- * Readable by a judge in 2 seconds.
- * Shows mode, 1-line explanation, user vs org status, and instant toggle.
+ * Clean, minimal AI mode banner.
+ * Crisp, modern, single-line presentation without verbose text walls.
  */
 export function AutonomyBanner() {
-  const { mode, setMode, orgDefault, userOverride, resetUserOverride } = useAutonomy();
-
+  const { mode, setMode } = useAutonomy();
   const isDraft = mode === "DRAFT_ONLY";
 
   return (
     <div
       style={{
-        background: isDraft ? "#FFFBEB" : "#EFF6FF",
-        borderBottom: isDraft ? "1px solid #FDE68A" : "1px solid #BFDBFE",
-        transition: "background 0.2s ease, border-color 0.2s ease",
+        background: isDraft ? "#FFFBEB" : "#F0F7FF",
+        borderBottom: isDraft ? "1px solid #FDE68A" : "1px solid #E0EDFE",
+        transition: "all 0.2s ease",
       }}
-      className="sticky top-0 z-50 shadow-sm"
+      className="sticky top-0 z-50 text-xs"
     >
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-3">
-        {/* Left: Mode badge + 1-line explanation */}
-        <div className="flex items-center gap-3 flex-1 min-w-[280px]">
-          {/* Badge */}
-          <div
+      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-1.5 flex items-center justify-between gap-4">
+        {/* Left: Mode badge + concise statement */}
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: "6px",
-              padding: "3px 10px",
+              gap: "4px",
+              padding: "2px 7px",
               borderRadius: "4px",
-              fontSize: "11px",
-              fontWeight: 800,
-              letterSpacing: "0.06em",
+              fontSize: "10.5px",
+              fontWeight: 700,
               fontFamily: "monospace",
-              background: isDraft ? "#92400E" : "#1D4ED8",
-              color: "#ffffff",
-              boxShadow: isDraft ? "0 1px 2px rgba(146,64,14,0.2)" : "0 1px 2px rgba(29,78,216,0.2)",
+              background: isDraft ? "#B45309" : "#2563EB",
+              color: "#fff",
               flexShrink: 0,
             }}
           >
             {isDraft ? (
               <>
-                <Shield style={{ width: 12, height: 12 }} />
-                DRAFT-ONLY
+                <Shield style={{ width: 11, height: 11 }} /> DRAFT-ONLY
               </>
             ) : (
               <>
-                <Zap style={{ width: 12, height: 12 }} />
-                AUTONOMOUS
+                <Zap style={{ width: 11, height: 11 }} /> AUTONOMOUS
               </>
             )}
-          </div>
-
-          {/* 1-Line Explanation */}
-          <p
-            style={{
-              fontSize: "12.5px",
-              fontWeight: 500,
-              color: isDraft ? "#78350F" : "#1E40AF",
-              margin: 0,
-              lineHeight: 1.4,
-            }}
-          >
-            {isDraft ? (
-              <span>
-                <strong>Draft-Only Active:</strong> Every refill requires a human click to move ACTION_DRAFTED ➔ ACTION_CONFIRMED. Nothing runs automatically.
-              </span>
-            ) : (
-              <span>
-                <strong>Autonomous Active:</strong> Whitelisted low-risk tasks (missing info, status SMS) auto-execute. Therapy decisions (new Rx, dosage, PA) ALWAYS require human sign-off.
-              </span>
-            )}
-          </p>
-        </div>
-
-        {/* Right: Controls & Override Status */}
-        <div className="flex items-center gap-3 flex-shrink-0">
-          {/* Override Indicator */}
-          <span
-            style={{
-              fontSize: "11px",
-              color: isDraft ? "#92400E" : "#1D4ED8",
-              opacity: 0.85,
-              fontFamily: "monospace",
-            }}
-            className="hidden md:inline-block"
-          >
-            {userOverride
-              ? `User override (${userOverride === "AUTONOMOUS" ? "Auto" : "Draft"}) > Org default (${orgDefault})`
-              : `Org default (${orgDefault})`}
           </span>
 
-          {/* Instant Toggle Button */}
-          <button
-            onClick={() => setMode(isDraft ? "AUTONOMOUS" : "DRAFT_ONLY")}
+          <span
             style={{
-              fontSize: "11.5px",
-              fontWeight: 600,
-              padding: "4px 12px",
-              borderRadius: "5px",
-              border: isDraft ? "1px solid #B45309" : "1px solid #2563EB",
-              background: isDraft ? "#FEF3C7" : "#DBEAFE",
               color: isDraft ? "#92400E" : "#1E40AF",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              transition: "all 0.15s ease",
+              fontWeight: 500,
+              fontSize: "12px",
             }}
-            className="hover:opacity-90 active:scale-95"
-            title="Click to toggle autonomy mode for this session"
+            className="truncate"
           >
-            Switch to {isDraft ? "Autonomous Mode" : "Draft-Only Mode"}
-          </button>
+            {isDraft
+              ? "All actions require human approval before sending."
+              : "Low-risk actions auto-execute · Therapy changes require human review."}
+          </span>
+        </div>
 
-          {/* Queue link */}
+        {/* Right: Sleek toggle + queue link */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {/* Segmented pill switch */}
+          <div
+            style={{
+              display: "inline-flex",
+              background: isDraft ? "rgba(180, 83, 9, 0.1)" : "rgba(37, 99, 235, 0.1)",
+              borderRadius: "9999px",
+              padding: "2px",
+              border: isDraft ? "1px solid rgba(180, 83, 9, 0.2)" : "1px solid rgba(37, 99, 235, 0.2)",
+            }}
+          >
+            <button
+              onClick={() => setMode("DRAFT_ONLY")}
+              style={{
+                fontSize: "10.5px",
+                fontWeight: 600,
+                padding: "2px 8px",
+                borderRadius: "9999px",
+                border: "none",
+                background: isDraft ? "#fff" : "transparent",
+                color: isDraft ? "#92400E" : "#6B7280",
+                cursor: "pointer",
+                boxShadow: isDraft ? "0 1px 2px rgba(0,0,0,0.08)" : "none",
+                transition: "all 0.15s ease",
+              }}
+            >
+              Draft
+            </button>
+            <button
+              onClick={() => setMode("AUTONOMOUS")}
+              style={{
+                fontSize: "10.5px",
+                fontWeight: 600,
+                padding: "2px 8px",
+                borderRadius: "9999px",
+                border: "none",
+                background: !isDraft ? "#2563EB" : "transparent",
+                color: !isDraft ? "#fff" : "#6B7280",
+                cursor: "pointer",
+                boxShadow: !isDraft ? "0 1px 2px rgba(37,99,235,0.25)" : "none",
+                transition: "all 0.15s ease",
+              }}
+            >
+              ⚡ Auto
+            </button>
+          </div>
+
           <Link
             href="/dashboard"
             style={{
-              fontSize: "12px",
+              fontSize: "11.5px",
               fontWeight: 600,
-              color: isDraft ? "#92400E" : "#1D4ED8",
+              color: isDraft ? "#92400E" : "#2563EB",
               textDecoration: "none",
               display: "inline-flex",
               alignItems: "center",
-              gap: "4px",
+              gap: "3px",
             }}
-            className="hover:underline"
+            className="hover:opacity-80"
           >
-            Queue <ArrowRight style={{ width: 12, height: 12 }} />
+            Queue <ArrowRight style={{ width: 11, height: 11 }} />
           </Link>
         </div>
       </div>
