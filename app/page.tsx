@@ -98,8 +98,8 @@ export default function HomePage() {
         <Nav />
 
         {/* HERO */}
-        <section style={{ position: "relative", minHeight: "92vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "70px 32px 300px", overflow: "hidden" }}>
-          <div style={{ position: "relative", zIndex: 1, maxWidth: "860px", margin: "0 auto", animation: "fadeUp 0.7s ease both" }}>
+        <section style={{ position: "relative", minHeight: "92vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "50px 32px 300px", overflow: "hidden" }}>
+          <div style={{ position: "relative", zIndex: 1, maxWidth: "860px", margin: "0 auto" }}>
             {/* Black UnStuck Med Badge */}
             <div style={{ display: "inline-flex", alignItems: "center", padding: "6px 18px", borderRadius: "9999px", background: "rgb(18,19,23)", color: "#fff", fontSize: "13px", fontWeight: 500, letterSpacing: "-0.01em", marginBottom: "26px" }}>
               UnStuck Med
@@ -124,23 +124,24 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Crowd video spanning screen edge-to-edge */}
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2, overflow: "hidden", lineHeight: 0, width: "100%", height: "270px" }}>
+          {/* Crowd video spanning screen edge-to-edge — positioned higher up */}
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2, overflow: "hidden", lineHeight: 0, width: "100%", height: "clamp(320px, 37vh, 420px)" }}>
             {/* Top gradient fade blending into hero background */}
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "70px", background: "linear-gradient(to bottom, #F0F0F0 20%, rgba(240,240,240,0))", zIndex: 3, pointerEvents: "none" }} />
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "80px", background: "linear-gradient(to bottom, #F0F0F0 25%, rgba(240,240,240,0))", zIndex: 3, pointerEvents: "none" }} />
             {/* Bottom edge fade */}
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "25px", background: "linear-gradient(to top, #F0F0F0 15%, rgba(240,240,240,0))", zIndex: 3, pointerEvents: "none" }} />
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "15px", background: "linear-gradient(to top, #F0F0F0 10%, rgba(240,240,240,0))", zIndex: 3, pointerEvents: "none" }} />
             <video
               autoPlay
               loop
               muted
               playsInline
+              preload="auto"
               style={{
                 width: "100%",
                 height: "100%",
                 display: "block",
                 objectFit: "cover",
-                objectPosition: "center 28%",
+                objectPosition: "center 38%",
                 filter: "contrast(1.04) brightness(0.98)",
               }}
             >
