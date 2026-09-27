@@ -10,6 +10,15 @@ export const metadata: Metadata = {
     description: "Close the refill gap. Unstuck in minutes.",
     type: "website",
   },
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png" },
+    ],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
