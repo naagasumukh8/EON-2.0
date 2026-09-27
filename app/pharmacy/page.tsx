@@ -6,13 +6,12 @@ import {
   Building2, User, Stethoscope, AlertTriangle, Clock, ArrowRight
 } from "lucide-react";
 import {
-  seedDemoData, getThreads, getThreadMessages, getInboxMessages, addMessage,
+  seedDemoData, resetDemoData, getThreads, getThreadMessages, getInboxMessages, addMessage,
   markMessagesRead, getNotifications, countUnread, countUnreadNotifs,
   pharmacyProcessRefill, pharmacyStarted, timeAgo, setCurrentRole,
   type Message, type RefillThread,
 } from "../../lib/demo-messages";
 import { RoleSwitcher } from "../components/RoleSwitcher";
-import { DemoFlowBar } from "../components/DemoFlowBar";
 
 const SPOONFED_PHARMACY_REPLIES = [
   {
@@ -471,6 +470,14 @@ export default function PharmacyPage() {
   const [notifPanel, setNotifPanel] = useState(false);
   const [notifs, setNotifs] = useState<ReturnType<typeof getNotifications>>([]);
   const [tick, setTick] = useState(0);
+  const [resetting, setResetting] = useState(false);
+
+  function handleResetClean() {
+    setResetting(true);
+    resetDemoData(true);
+    load();
+    setTimeout(() => setResetting(false), 500);
+  }
 
   function load() {
     seedDemoData();
@@ -599,7 +606,7 @@ export default function PharmacyPage() {
             </button>
 
             <button
-              onClick={load}
+              onClick={handleResetClean}
               style={{
                 background: "#FFFFFF",
                 border: "1px solid rgba(0,0,0,0.08)",
@@ -610,24 +617,30 @@ export default function PharmacyPage() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                transition: "all 0.2s ease",
               }}
-              title="Refresh Queue"
+              title="Clear all messages & reset to fresh demo state"
             >
-              <RefreshCw style={{ width: 13, height: 13, color: "rgb(80,80,85)" }} />
+              <RefreshCw
+                style={{
+                  width: 13,
+                  height: 13,
+                  color: resetting ? "#15803D" : "rgb(80,80,85)",
+                  transform: resetting ? "rotate(180deg)" : "none",
+                  transition: "transform 0.4s ease",
+                }}
+              />
             </button>
           </div>
         </div>
       </nav>
-
-      {/* Guided 1-Click Demo Tour Bar */}
-      <DemoFlowBar currentStep={2} />
 
       {/* Notifications Drawer */}
       {notifPanel && (
         <div
           style={{
             position: "fixed",
-            top: "100px",
+            top: "62px",
             right: "32px",
             zIndex: 200,
             background: "#FFFFFF",

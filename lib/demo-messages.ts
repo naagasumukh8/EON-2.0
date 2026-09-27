@@ -187,10 +187,55 @@ export function seedDemoData(): void {
   if (!localStorage.getItem(NOTIF_KEY))  setLS(NOTIF_KEY,  SEED_NOTIFS);
 }
 
-export function resetDemoData(): void {
-  setLS(MSG_KEY,    SEED_MESSAGES);
-  setLS(THREAD_KEY, SEED_THREADS);
-  setLS(NOTIF_KEY,  SEED_NOTIFS);
+export function resetDemoData(clearMessages: boolean = true): void {
+  setLS(MSG_KEY, clearMessages ? [] : SEED_MESSAGES);
+  setLS(THREAD_KEY, [
+    {
+      id: "RF-001",
+      med: "Metformin 500mg",
+      dose: "Twice daily",
+      patientName: "Alex Rivera",
+      status: "pending_pharmacy",
+      clinicalSummary: undefined,
+      summaryVisible: false,
+      providerNotified: false,
+      createdAt: Date.now() - 1000 * 60 * 48,
+    },
+    {
+      id: "RF-002",
+      med: "Lisinopril 10mg",
+      dose: "Once daily",
+      patientName: "Alex Rivera",
+      status: "pending_provider",
+      clinicalSummary:
+        "Refill request for Alex Rivera — Lisinopril 10mg (BP maintenance). No remaining refills on file. Last fill: 32 days ago. No overdue visits. Recommend provider renewal review.",
+      summaryVisible: true,
+      providerNotified: true,
+      classifyResult: {
+        priority: "review_required",
+        reason: "No refills remain on original prescription. Provider sign-off required.",
+        alternative: "Amlodipine 5mg",
+        alternativeReason: "Equivalent CCB for BP control if Lisinopril renewal is delayed.",
+      },
+      createdAt: Date.now() - 1000 * 60 * 72,
+    },
+    {
+      id: "RF-003",
+      med: "Atorvastatin 20mg",
+      dose: "Once daily at night",
+      patientName: "Alex Rivera",
+      status: "approved",
+      clinicalSummary: undefined,
+      summaryVisible: false,
+      providerNotified: true,
+      classifyResult: {
+        priority: "routine",
+        reason: "Standard statin maintenance. No refill limit reached. Auto-processed.",
+      },
+      createdAt: Date.now() - 1000 * 60 * 120,
+    },
+  ]);
+  setLS(NOTIF_KEY, []);
 }
 
 /* ── Messages ───────────────────────────────────────────── */

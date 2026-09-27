@@ -6,12 +6,11 @@ import {
   Info, Building2, Stethoscope, User, Pill, ArrowRight, ShieldCheck, Zap
 } from "lucide-react";
 import {
-  seedDemoData, getThreads, getThreadMessages, addMessage, markMessagesRead,
+  seedDemoData, resetDemoData, getThreads, getThreadMessages, addMessage, markMessagesRead,
   getNotifications, countUnread, countUnreadNotifs, timeAgo, setCurrentRole,
   type Message, type RefillThread,
 } from "../../lib/demo-messages";
 import { RoleSwitcher } from "../components/RoleSwitcher";
-import { DemoFlowBar } from "../components/DemoFlowBar";
 
 const PATIENT_NAME = "Alex Rivera";
 const PATIENT_DEMO = {
@@ -548,6 +547,14 @@ export default function PatientPage() {
   const [notifPanel, setNotifPanel] = useState(false);
   const [notifs, setNotifs] = useState<ReturnType<typeof getNotifications>>([]);
   const [tick, setTick] = useState(0);
+  const [resetting, setResetting] = useState(false);
+
+  function handleResetClean() {
+    setResetting(true);
+    resetDemoData(true);
+    load();
+    setTimeout(() => setResetting(false), 500);
+  }
 
   function load() {
     seedDemoData();
@@ -675,7 +682,7 @@ export default function PatientPage() {
             </button>
 
             <button
-              onClick={load}
+              onClick={handleResetClean}
               style={{
                 background: "#FFFFFF",
                 border: "1px solid rgba(0,0,0,0.08)",
@@ -686,24 +693,30 @@ export default function PatientPage() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                transition: "all 0.2s ease",
               }}
-              title="Refresh"
+              title="Clear all messages & reset to fresh demo state"
             >
-              <RefreshCw style={{ width: 13, height: 13, color: "rgb(80,80,85)" }} />
+              <RefreshCw
+                style={{
+                  width: 13,
+                  height: 13,
+                  color: resetting ? "#2563EB" : "rgb(80,80,85)",
+                  transform: resetting ? "rotate(180deg)" : "none",
+                  transition: "transform 0.4s ease",
+                }}
+              />
             </button>
           </div>
         </div>
       </nav>
-
-      {/* Guided 1-Click Demo Tour Bar */}
-      <DemoFlowBar currentStep={activeThread?.status === "approved" || activeThread?.status === "resolved" ? 4 : 1} />
 
       {/* Notifications Drawer */}
       {notifPanel && (
         <div
           style={{
             position: "fixed",
-            top: "100px",
+            top: "62px",
             right: "32px",
             zIndex: 200,
             background: "#FFFFFF",
