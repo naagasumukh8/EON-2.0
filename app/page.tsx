@@ -59,6 +59,7 @@ function Nav() {
         </Link>
         <nav style={{ display: "flex", alignItems: "center", gap: "4px" }}>
           {[
+            { href: "/portal",    label: "Portals" },
             { href: "/dashboard", label: "Worklist" },
             { href: "/classify",  label: "Classifier" },
             { href: "/security",  label: "Security" },

@@ -19,6 +19,7 @@ function Nav() {
         </Link>
         <div className="top-nav__links">
           {[
+            { href: "/portal",    label: "Portals" },
             { href: "/dashboard", label: "Worklist" },
             { href: "/classify",  label: "Classifier" },
             { href: "/security",  label: "Security" },
