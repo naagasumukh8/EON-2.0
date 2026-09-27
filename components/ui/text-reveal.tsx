@@ -34,6 +34,8 @@ export type TextRevealProps = {
   containerTransition?: Transition;
   segmentTransition?: Transition;
   style?: React.CSSProperties;
+  inView?: boolean;
+  viewport?: { once?: boolean; amount?: number | "some" | "all"; margin?: string };
 };
 
 const defaultStaggerTimes: Record<TextRevealPer, number> = {
@@ -179,6 +181,8 @@ export function TextReveal({
   containerTransition,
   segmentTransition,
   style,
+  inView = true,
+  viewport = { once: true, amount: 0.25 },
 }: TextRevealProps) {
   const segments = splitText(children, per);
   const MotionTag = motion[as as keyof typeof motion] as typeof motion.div;
@@ -220,10 +224,12 @@ export function TextReveal({
     <AnimatePresence mode="popLayout">
       {trigger && (
         <MotionTag
-          animate="visible"
+          initial="hidden"
+          {...(inView
+            ? { whileInView: "visible", viewport }
+            : { animate: "visible" })}
           className={className}
           exit="exit"
-          initial="hidden"
           onAnimationComplete={onAnimationComplete}
           onAnimationStart={onAnimationStart}
           style={style}
