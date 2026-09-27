@@ -51,6 +51,202 @@ function StatusChip({ status }: { status: RefillThread["status"] }) {
   );
 }
 
+function JourneyTracker({ thread }: { thread: RefillThread }) {
+  type Stage = {
+    id: string;
+    label: string;
+    sublabel: string;
+    icon: string;
+    done: boolean;
+    active: boolean;
+    blocked?: boolean;
+  };
+
+  const stages: Stage[] = [
+    {
+      id: "request",
+      label: "Refill Requested",
+      sublabel: "Pharmacy received your request",
+      icon: "💊",
+      done: true,
+      active: false,
+    },
+    {
+      id: "pharmacy",
+      label: "Pharmacy Processing",
+      sublabel:
+        thread.status === "pending_pharmacy"
+          ? "Pharmacy is checking your prescription"
+          : "Pharmacy reviewed and forwarded",
+      icon: "🏪",
+      done: thread.status !== "pending_pharmacy",
+      active: thread.status === "pending_pharmacy",
+    },
+    {
+      id: "provider",
+      label: "Provider Review",
+      sublabel:
+        thread.status === "pending_provider"
+          ? "Dr. Chen is reviewing your case"
+          : thread.status === "blocked"
+          ? "Visit required before renewal"
+          : thread.status === "approved" || thread.status === "resolved"
+          ? "Provider approved your refill"
+          : "Waiting for provider",
+      icon: "🩺",
+      done: thread.status === "approved" || thread.status === "resolved",
+      active: thread.status === "pending_provider",
+      blocked: thread.status === "blocked",
+    },
+    {
+      id: "ready",
+      label: "Ready for Pickup",
+      sublabel:
+        thread.status === "approved" || thread.status === "resolved"
+          ? "Your medication is ready"
+          : "Pending provider authorization",
+      icon: "✅",
+      done: thread.status === "approved" || thread.status === "resolved",
+      active: false,
+    },
+  ];
+
+  const nextStepMap: Record<string, string> = {
+    pending_pharmacy: "Your pharmacy is checking refill eligibility and contacting your provider if needed. No action required from you.",
+    pending_provider: "Dr. Chen is reviewing your prescription. You will be notified as soon as a decision is made.",
+    approved: "Your refill has been approved! Contact your pharmacy to confirm pickup time.",
+    blocked: "Your provider requires a visit before renewing this prescription. Please call the clinic to schedule.",
+    resolved: "This refill has been fully resolved.",
+  };
+
+  return (
+    <div
+      style={{
+        background: "#fff",
+        borderBottom: "1px solid #E5E7EB",
+        padding: "16px 20px",
+      }}
+    >
+      {/* Journey steps */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          gap: "0",
+          marginBottom: "14px",
+          position: "relative",
+        }}
+      >
+        {stages.map((stage, idx) => (
+          <React.Fragment key={stage.id}>
+            {/* Step */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
+              {/* Icon circle */}
+              <div
+                style={{
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "16px",
+                  border: "2px solid",
+                  borderColor: stage.blocked
+                    ? "#DC2626"
+                    : stage.done
+                    ? "#15803D"
+                    : stage.active
+                    ? "#1D4ED8"
+                    : "#E5E7EB",
+                  background: stage.blocked
+                    ? "#FEF2F2"
+                    : stage.done
+                    ? "#F0FDF4"
+                    : stage.active
+                    ? "#EFF6FF"
+                    : "#FAFAFA",
+                  position: "relative",
+                  zIndex: 1,
+                  flexShrink: 0,
+                  transition: "all 0.3s ease",
+                  boxShadow: stage.active ? "0 0 0 4px rgba(29,78,216,0.12)" : "none",
+                }}
+              >
+                {stage.blocked ? "⚠️" : stage.done ? "✓" : stage.icon}
+              </div>
+              {/* Label */}
+              <div style={{ marginTop: "6px", textAlign: "center", paddingLeft: "4px", paddingRight: "4px" }}>
+                <div
+                  style={{
+                    fontSize: "10.5px",
+                    fontWeight: stage.active || stage.done ? 700 : 500,
+                    color: stage.blocked
+                      ? "#DC2626"
+                      : stage.done
+                      ? "#15803D"
+                      : stage.active
+                      ? "#1D4ED8"
+                      : "#C9D1D9",
+                    lineHeight: 1.3,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    maxWidth: "80px",
+                  }}
+                >
+                  {stage.label}
+                </div>
+              </div>
+            </div>
+
+            {/* Connector line */}
+            {idx < stages.length - 1 && (
+              <div
+                style={{
+                  height: "2px",
+                  flex: 1,
+                  alignSelf: "flex-start",
+                  marginTop: "17px",
+                  background: stages[idx + 1].done || stages[idx + 1].active
+                    ? "#15803D"
+                    : "#E5E7EB",
+                  transition: "background 0.3s ease",
+                }}
+              />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* What's next */}
+      <div
+        style={{
+          background: thread.status === "blocked" ? "#FEF2F2" : thread.status === "approved" || thread.status === "resolved" ? "#F0FDF4" : "#F0F8FF",
+          border: `1px solid ${thread.status === "blocked" ? "#FECACA" : thread.status === "approved" || thread.status === "resolved" ? "#BBF7D0" : "#BFDBFE"}`,
+          borderRadius: "10px",
+          padding: "10px 14px",
+          display: "flex",
+          gap: "8px",
+          alignItems: "flex-start",
+        }}
+      >
+        <span style={{ fontSize: "14px", flexShrink: 0 }}>
+          {thread.status === "blocked" ? "⚠️" : thread.status === "approved" || thread.status === "resolved" ? "🎉" : "ℹ️"}
+        </span>
+        <div>
+          <div style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "3px", color: thread.status === "blocked" ? "#DC2626" : thread.status === "approved" || thread.status === "resolved" ? "#15803D" : "#1D4ED8" }}>
+            What happens next
+          </div>
+          <div style={{ fontSize: "12.5px", color: "#374151", lineHeight: 1.5 }}>
+            {nextStepMap[thread.status] ?? "Your refill is in progress."}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ThreadView({
   thread,
   onBack,
@@ -108,7 +304,7 @@ function ThreadView({
       {/* Thread header */}
       <div
         style={{
-          padding: "16px 20px",
+          padding: "14px 20px",
           borderBottom: "1px solid #E5E7EB",
           display: "flex",
           alignItems: "center",
@@ -138,10 +334,18 @@ function ThreadView({
         <StatusChip status={thread.status} />
       </div>
 
+      {/* Journey Tracker — always visible above messages */}
+      <JourneyTracker thread={thread} />
+
       {/* Messages */}
       <div style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div style={{ textAlign: "center", marginBottom: "4px" }}>
+          <span style={{ fontSize: "10px", color: "#C9D1D9", fontWeight: 500 }}>
+            Messages between you and your care team
+          </span>
+        </div>
         {messages.length === 0 && (
-          <div style={{ textAlign: "center", color: "#C9D1D9", fontSize: "13px", paddingTop: "32px" }}>
+          <div style={{ textAlign: "center", color: "#C9D1D9", fontSize: "13px", paddingTop: "12px" }}>
             No messages yet. Start the conversation.
           </div>
         )}
@@ -249,6 +453,7 @@ function ThreadView({
     </div>
   );
 }
+
 
 export default function PatientPage() {
   const [threads, setThreads] = useState<RefillThread[]>([]);
