@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { Send, RefreshCw, Bell, CheckCircle, Clock, AlertCircle, Zap } from "lucide-react";
+import { Send, RefreshCw, Bell, CheckCircle, Clock, AlertCircle, Zap, Building2, Stethoscope, AlertTriangle, Info } from "lucide-react";
 import {
   seedDemoData, getThreads, getThreadMessages, addMessage, markMessagesRead,
   getNotifications, countUnread, countUnreadNotifs, timeAgo, setCurrentRole,
