@@ -56,9 +56,9 @@ function Nav() {
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 32px", height: "54px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Link href="/" style={{ fontFamily: '"Google Sans","Sora",sans-serif', fontWeight: 600, fontSize: "16px", color: "rgb(18,19,23)", textDecoration: "none", letterSpacing: "-0.01em", display: "flex", alignItems: "center", gap: "8px" }}>
           <img
-            src="/icon.png"
+            src="/turtle-logo.png"
             alt="UnStuck Med Logo"
-            style={{ width: "24px", height: "24px", objectFit: "contain", display: "inline-block" }}
+            style={{ height: "28px", width: "auto", objectFit: "contain", display: "inline-block", flexShrink: 0 }}
           />
           <span>UnStuck Med</span>
         </Link>

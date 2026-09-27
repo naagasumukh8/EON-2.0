@@ -634,9 +634,9 @@ export default function ProviderPage() {
               }}
             >
               <img
-                src="/icon.png"
+                src="/turtle-logo.png"
                 alt="UnStuck Med Logo"
-                style={{ width: "24px", height: "24px", objectFit: "contain", display: "inline-block" }}
+                style={{ height: "28px", width: "auto", objectFit: "contain", display: "inline-block", flexShrink: 0 }}
               />
               <span>UnStuck Med</span>
             </Link>
