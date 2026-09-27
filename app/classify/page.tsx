@@ -1,10 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import {
-  ArrowRight, Zap, RefreshCw, CheckCircle, AlertTriangle,
-  Info, ChevronDown, ChevronUp, Sparkles, Shield
-} from "lucide-react";
+import { ArrowRight, RefreshCw, Sparkles, Shield } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 
 const BLOCK_RULES = [
@@ -14,12 +11,10 @@ const BLOCK_RULES = [
     label: "No Refills Remaining",
     emoji: "💊",
     confidence: 94,
-    description: "Prescription has zero refills left. A new eRx from the attending provider is required before dispensing.",
-    nextAction: "Draft new eRx renewal request to attending provider with last fill date, dosage, and adherence history.",
+    description: "Prescription has zero refills left. New provider authorization required.",
+    nextAction: "Draft eRx renewal request to attending provider with last fill date & adherence history.",
     actor: "Provider",
     timeline: "< 4 hours via eRx",
-    timelineBaseline: "3–7 days manual",
-    reasoning: "Pattern: prescription expiry / refill_count = 0. Provider clinical authorization required for new Rx.",
   },
   {
     id: "INSURANCE",
@@ -27,12 +22,10 @@ const BLOCK_RULES = [
     label: "Insurance Prior Auth Hold",
     emoji: "📋",
     confidence: 91,
-    description: "Health plan / PBM placed a coverage restriction: prior authorization, step therapy, or formulary tier exclusion.",
-    nextAction: "Submit PA justification form to PBM with clinical diagnosis code and prior treatment history.",
+    description: "Payer restriction detected: prior authorization or step therapy required.",
+    nextAction: "Submit PA justification form with clinical diagnosis and prior treatment history.",
     actor: "Practice Staff",
     timeline: "< 6 hours via portal",
-    timelineBaseline: "5–10 days manual",
-    reasoning: "Pattern: PBM / prior-auth / step therapy keywords. Payer administrative intervention required.",
   },
   {
     id: "VISIT",
@@ -40,12 +33,10 @@ const BLOCK_RULES = [
     label: "Clinical Visit Required",
     emoji: "🩺",
     confidence: 88,
-    description: "Attending provider requires an in-person or telehealth consultation before re-authorizing maintenance therapy.",
+    description: "Provider requires an in-person or telehealth visit before renewal.",
     nextAction: "Send appointment scheduling link to patient portal with privacy-compliant generic reminder.",
     actor: "Patient",
     timeline: "Instant scheduling",
-    timelineBaseline: "3–5 days phone tag",
-    reasoning: "Pattern: visit / clinical consult required. Provider safety review required before dispensing.",
   },
   {
     id: "MISSING_INFO",
@@ -53,12 +44,10 @@ const BLOCK_RULES = [
     label: "Demographic Data Mismatch",
     emoji: "🪪",
     confidence: 89,
-    description: "EHR and pharmacy profile mismatch detected for date of birth, insurance ID, or prescriber NPI discrepancy.",
-    nextAction: "Contact patient via secure SMS to verify demographic details. Auto-executable in Autonomous Mode.",
+    description: "EHR profile mismatch detected for date of birth or member ID.",
+    nextAction: "Send secure SMS demographic verification link to patient.",
     actor: "Practice Staff",
     timeline: "< 1 hour via SMS",
-    timelineBaseline: "1–3 days manual",
-    reasoning: "Pattern: mismatch / missing demographic data. Administrative data verification required.",
   },
   {
     id: "PHARMACY_STOCK",
@@ -66,31 +55,23 @@ const BLOCK_RULES = [
     label: "Pharmacy Inventory Shortage",
     emoji: "🏪",
     confidence: 93,
-    description: "Dispensing pharmacy reports zero on-hand units or regional distributor supply shortage.",
-    nextAction: "Query nearby partner pharmacies for verified stock. Draft transfer request for human clinician approval.",
+    description: "Dispensing pharmacy reports zero on-hand units or wholesaler backorder.",
+    nextAction: "Query partner pharmacy network for verified stock and route electronic transfer.",
     actor: "Pharmacy",
     timeline: "< 30 min partner transfer",
-    timelineBaseline: "Patient calls 5 pharmacies",
-    reasoning: "Pattern: pharmacy inventory bottleneck. Suggest partner pharmacy transfer (simulated inventory).",
   },
 ];
 
 const HIGH_RISK_MEDS = ["metformin", "lisinopril", "metoprolol", "atorvastatin", "amlodipine", "warfarin", "insulin", "digoxin", "carvedilol", "losartan", "hydrochlorothiazide"];
 const MED_RISK_MEDS  = ["levothyroxine", "sertraline", "escitalopram", "fluoxetine", "omeprazole", "pantoprazole"];
 
-function scoreRisk(text: string): { score: number; reason: string; medClass: string } {
+function scoreRisk(text: string): { score: number; label: string } {
   const lower = text.toLowerCase();
   const isHighRisk = HIGH_RISK_MEDS.some(m => lower.includes(m));
   const isMedRisk  = !isHighRisk && MED_RISK_MEDS.some(m => lower.includes(m));
-  if (isHighRisk) {
-    const med = HIGH_RISK_MEDS.find(m => lower.includes(m));
-    return { score: 85, reason: `High-risk chronic medication (${med}) detected. Continuous adherence is clinically time-sensitive.`, medClass: "chronic_high_risk" };
-  }
-  if (isMedRisk) {
-    const med = MED_RISK_MEDS.find(m => lower.includes(m));
-    return { score: 55, reason: `Chronic standard medication (${med}) detected. Routine maintenance therapy.`, medClass: "chronic_standard" };
-  }
-  return { score: 25, reason: "Acute / symptomatic medication detected. Standard clinical triage priority.", medClass: "acute" };
+  if (isHighRisk) return { score: 85, label: "High Risk (Cardiovascular / Endocrine)" };
+  if (isMedRisk)  return { score: 55, label: "Standard Maintenance" };
+  return { score: 25, label: "Acute / Standard" };
 }
 
 const AMBIGUOUS_RESULT = {
@@ -98,13 +79,10 @@ const AMBIGUOUS_RESULT = {
   label: "Conflicting Signals — Human Escalation",
   emoji: "⚠️",
   confidence: 42,
-  description: "Input contains contradictory signals across multiple categories. The system refuses to hallucinate a false decision.",
-  nextAction: "Escalate to attending clinician for manual triage review with multi-signal audit attached.",
+  description: "Contradictory signals detected across multiple categories. Automatic guess rejected.",
+  nextAction: "Escalate to attending clinician for human judgment with multi-signal audit attached.",
   actor: "Senior Clinician",
   timeline: "Manual Review",
-  timelineBaseline: "N/A",
-  reasoning: "Multiple competing keyword clusters detected simultaneously. Conflicting signals prevent confident automated resolution.",
-  isFailure: true,
 };
 
 const SAMPLES = [
@@ -125,12 +103,11 @@ function classify(text: string) {
 }
 
 export default function ClassifyPage() {
-  const [input, setInput]               = useState("");
-  const [result, setResult]             = useState<any>(null);
-  const [risk, setRisk]                 = useState<any>(null);
-  const [loading, setLoading]           = useState(false);
-  const [elapsed, setElapsed]           = useState<number | null>(null);
-  const [showTaxonomy, setShowTaxonomy] = useState(false);
+  const [input, setInput]         = useState("");
+  const [result, setResult]       = useState<any>(null);
+  const [risk, setRisk]           = useState<any>(null);
+  const [loading, setLoading]     = useState(false);
+  const [elapsed, setElapsed]     = useState<number | null>(null);
 
   const runClassifier = async (inputText?: string) => {
     const textToRun = inputText ?? input;
@@ -139,7 +116,7 @@ export default function ClassifyPage() {
     setResult(null);
     setRisk(null);
     const t0 = Date.now();
-    await new Promise(r => setTimeout(r, 450));
+    await new Promise(r => setTimeout(r, 380));
     setElapsed(parseFloat(((Date.now() - t0) / 1000).toFixed(1)));
     const res = classify(textToRun);
     setRisk(scoreRisk(textToRun));
@@ -151,9 +128,11 @@ export default function ClassifyPage() {
         id: "UNKNOWN",
         label: "Unclassified Context",
         emoji: "❓",
-        confidence: 15,
-        description: "No known block patterns identified. Please provide additional context from the pharmacy or EHR note.",
-        reasoning: "Zero pattern matches detected. Context insufficient for deterministic classification.",
+        confidence: 20,
+        description: "No known block patterns matched.",
+        nextAction: "Provide additional context from the EHR note or pharmacy fax.",
+        actor: "Staff",
+        timeline: "Pending",
       });
     } else {
       setResult(res);
@@ -170,97 +149,82 @@ export default function ClassifyPage() {
     <div style={{ background: "#F0F0F0", color: "rgb(18,19,23)", fontFamily: '"Google Sans","Sora",-apple-system,BlinkMacSystemFont,sans-serif', minHeight: "100vh" }}>
       <AppHeader activePath="/classify" />
 
-      <main style={{ maxWidth: "860px", margin: "0 auto", padding: "40px 24px 80px", display: "flex", flexDirection: "column", gap: "20px" }}>
-        {/* Page Title */}
+      <main style={{ maxWidth: "820px", margin: "0 auto", padding: "40px 24px 80px", display: "flex", flexDirection: "column", gap: "18px" }}>
+        {/* Title */}
         <div>
-          <h1 style={{ fontSize: "clamp(2rem, 3.4vw, 2.75rem)", fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.035em", color: "rgb(18,19,23)", margin: "0 0 8px" }}>
+          <h1 style={{ fontSize: "clamp(2rem, 3.4vw, 2.75rem)", fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.035em", color: "rgb(18,19,23)", margin: "0 0 6px" }}>
             Refill Triage Classifier
           </h1>
-          <p style={{ fontSize: "15px", color: "rgba(18,19,23,0.55)", lineHeight: 1.5, margin: 0, maxWidth: "620px" }}>
-            Instant root cause diagnosis, clinical risk score, and automated routing.
+          <p style={{ fontSize: "15px", color: "rgba(18,19,23,0.55)", margin: 0 }}>
+            Instant root cause diagnosis and automated routing.
           </p>
         </div>
 
-        {/* Quick-Pick Scenarios */}
-        <div
-          style={{
-            background: "#FFFFFF",
-            borderRadius: "24px",
-            border: "1px solid rgba(0,0,0,0.08)",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 12px 28px -6px rgba(0,0,0,0.03)",
-            padding: "16px 20px",
-          }}
-        >
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
-            {SAMPLES.map((s, i) => {
-              const isSelected = input === s.text;
-              return (
-                <button
-                  key={i}
-                  onClick={() => handlePickSample(s.text)}
-                  style={{
-                    padding: "8px 18px",
-                    borderRadius: "9999px",
-                    fontSize: "13px",
-                    fontWeight: isSelected ? 600 : 500,
-                    cursor: "pointer",
-                    transition: "all 0.16s ease",
-                    background: isSelected ? "rgb(18,19,23)" : "rgba(0,0,0,0.04)",
-                    color: isSelected ? "#FFFFFF" : "rgb(18,19,23)",
-                    border: isSelected ? "1px solid rgb(18,19,23)" : "1px solid rgba(0,0,0,0.07)",
-                  }}
-                  onMouseEnter={e => {
-                    if (!isSelected) e.currentTarget.style.background = "rgba(0,0,0,0.07)";
-                  }}
-                  onMouseLeave={e => {
-                    if (!isSelected) e.currentTarget.style.background = "rgba(0,0,0,0.04)";
-                  }}
-                >
-                  {s.label}
-                </button>
-              );
-            })}
-          </div>
+        {/* Quick Scenario Pills */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+          {SAMPLES.map((s, i) => {
+            const isSelected = input === s.text;
+            return (
+              <button
+                key={i}
+                onClick={() => handlePickSample(s.text)}
+                style={{
+                  padding: "8px 18px",
+                  borderRadius: "9999px",
+                  fontSize: "13px",
+                  fontWeight: isSelected ? 600 : 500,
+                  cursor: "pointer",
+                  transition: "all 0.16s ease",
+                  background: isSelected ? "rgb(18,19,23)" : "#FFFFFF",
+                  color: isSelected ? "#FFFFFF" : "rgb(18,19,23)",
+                  border: isSelected ? "1px solid rgb(18,19,23)" : "1px solid rgba(0,0,0,0.08)",
+                  boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
+                }}
+              >
+                {s.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Input Card */}
         <div
           style={{
             background: "#FFFFFF",
-            borderRadius: "24px",
+            borderRadius: "22px",
             border: "1px solid rgba(0,0,0,0.08)",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 12px 28px -6px rgba(0,0,0,0.03)",
-            padding: "20px 24px",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 10px 24px -6px rgba(0,0,0,0.03)",
+            padding: "18px 20px",
             display: "flex",
             flexDirection: "column",
-            gap: "14px",
+            gap: "12px",
           }}
         >
           <textarea
             style={{
               width: "100%",
-              padding: "16px",
-              borderRadius: "16px",
-              border: "1px solid rgba(0,0,0,0.09)",
+              padding: "14px",
+              borderRadius: "14px",
+              border: "1px solid rgba(0,0,0,0.08)",
               background: "#FAFAFA",
               fontFamily: '"Google Sans","Sora",sans-serif',
-              fontSize: "14px",
-              lineHeight: 1.6,
+              fontSize: "13.5px",
+              lineHeight: 1.55,
               color: "rgb(18,19,23)",
               outline: "none",
               resize: "none",
               boxSizing: "border-box",
             }}
-            rows={4}
-            placeholder="Paste clinic note, pharmacy notification, or EHR message..."
+            rows={3}
+            placeholder="Paste clinic note, pharmacy fax, or select a scenario above..."
             value={input}
             onChange={e => { setInput(e.target.value); setResult(null); setRisk(null); }}
           />
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12.5px", color: "rgba(18,19,23,0.55)" }}>
-              <Shield style={{ width: 14, height: 14, color: "#166534" }} />
-              HIPAA-Safe · Automatic PII scrubbed
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "rgba(18,19,23,0.5)" }}>
+              <Shield style={{ width: 13, height: 13, color: "#166534" }} />
+              HIPAA-Safe · Auto PII scrubbed
             </div>
 
             <button
@@ -269,46 +233,40 @@ export default function ClassifyPage() {
               style={{
                 background: "rgb(18,19,23)",
                 color: "#FFFFFF",
-                fontSize: "13.5px",
+                fontSize: "13px",
                 fontWeight: 600,
-                padding: "10px 24px",
+                padding: "9px 22px",
                 borderRadius: "9999px",
                 border: "none",
                 cursor: loading || !input.trim() ? "not-allowed" : "pointer",
                 opacity: loading || !input.trim() ? 0.45 : 1,
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "8px",
+                gap: "6px",
                 transition: "opacity 0.15s ease",
-              }}
-              onMouseEnter={e => {
-                if (!loading && input.trim()) e.currentTarget.style.opacity = "0.88";
-              }}
-              onMouseLeave={e => {
-                if (!loading && input.trim()) e.currentTarget.style.opacity = "1";
               }}
             >
               {loading ? (
                 <>
-                  <RefreshCw style={{ width: 14, height: 14, animation: "spin 1s linear infinite" }} /> Classifying…
+                  <RefreshCw style={{ width: 13, height: 13, animation: "spin 1s linear infinite" }} /> Classifying…
                 </>
               ) : (
                 <>
-                  <Sparkles style={{ width: 14, height: 14 }} /> Classify Refill
+                  <Sparkles style={{ width: 13, height: 13 }} /> Classify Refill
                 </>
               )}
             </button>
           </div>
         </div>
 
-        {/* Empty State */}
-        {!result && !loading && (
+        {/* Loading */}
+        {loading && (
           <div
             style={{
               background: "#FFFFFF",
-              borderRadius: "24px",
-              border: "1px dashed rgba(0,0,0,0.12)",
-              padding: "44px 24px",
+              borderRadius: "22px",
+              border: "1px solid rgba(0,0,0,0.08)",
+              padding: "36px 20px",
               textAlign: "center",
               display: "flex",
               flexDirection: "column",
@@ -316,298 +274,136 @@ export default function ClassifyPage() {
               justifyContent: "center",
             }}
           >
-            <div style={{ fontSize: "32px", marginBottom: "10px" }}>⚡</div>
-            <p style={{ fontSize: "15px", fontWeight: 650, color: "rgb(18,19,23)", margin: "0 0 4px" }}>
-              Ready for Triage
-            </p>
-            <p style={{ fontSize: "13px", color: "rgba(18,19,23,0.5)", margin: 0, maxWidth: "360px" }}>
-              Choose a scenario above or paste any clinic text to diagnose root cause and clinical routing.
+            <RefreshCw style={{ width: 28, height: 28, color: "rgb(18,19,23)", animation: "spin 1s linear infinite", marginBottom: "10px" }} />
+            <p style={{ fontSize: "14px", fontWeight: 600, color: "rgb(18,19,23)", margin: 0 }}>
+              Classifying clinical signals…
             </p>
           </div>
         )}
 
-        {/* Loading State */}
-        {loading && (
+        {/* ONE UNIFIED, ULTRA-CLEAN RESULT CARD (NO NESTED BOXES) */}
+        {result && !loading && (
           <div
             style={{
               background: "#FFFFFF",
               borderRadius: "24px",
               border: "1px solid rgba(0,0,0,0.08)",
-              padding: "44px 24px",
-              textAlign: "center",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 16px 36px -8px rgba(0,0,0,0.05)",
+              padding: "26px 28px",
               display: "flex",
               flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
+              gap: "18px",
             }}
           >
-            <RefreshCw style={{ width: 32, height: 32, color: "rgb(18,19,23)", animation: "spin 1s linear infinite", marginBottom: "14px" }} />
-            <p style={{ fontSize: "15px", fontWeight: 650, color: "rgb(18,19,23)", margin: "0 0 4px" }}>
-              Analyzing Clinical Tokens…
-            </p>
-            <p style={{ fontSize: "13px", color: "rgba(18,19,23,0.5)", margin: 0 }}>
-              Cross-referencing safety rules and provider protocols
-            </p>
-          </div>
-        )}
-
-        {/* Classification Result */}
-        {result && !loading && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            {/* Main Result Card */}
-            <div
-              style={{
-                background: "#FFFFFF",
-                borderRadius: "24px",
-                border: "1px solid rgba(0,0,0,0.08)",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 16px 36px -8px rgba(0,0,0,0.05)",
-                padding: "32px",
-              }}
-            >
-              {/* Header Row */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
+            {/* Top row: Emoji + Title + Confidence */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{ width: "42px", height: "42px", borderRadius: "14px", background: "rgba(0,0,0,0.03)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", flexShrink: 0 }}>
+                  {result.emoji}
+                </div>
                 <div>
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "11px", fontWeight: 650, color: "rgba(18,19,23,0.45)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>
-                    <span>{result.emoji ?? "📋"}</span> Triage Diagnosis · {elapsed}s
-                  </div>
-                  <h2 style={{ fontSize: "24px", fontWeight: 700, letterSpacing: "-0.025em", color: "rgb(18,19,23)", margin: 0 }}>
+                  <h2 style={{ fontSize: "20px", fontWeight: 700, letterSpacing: "-0.02em", color: "rgb(18,19,23)", margin: 0 }}>
                     {result.label}
                   </h2>
-                </div>
-
-                <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "16px" }}>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      background: result.confidence >= 80 ? "#F0FDF4" : "#FFFBEB",
-                      color: result.confidence >= 80 ? "#15803D" : "#B45309",
-                      border: `1px solid ${result.confidence >= 80 ? "#BBF7D0" : "#FDE68A"}`,
-                      padding: "4px 12px",
-                      borderRadius: "9999px",
-                      fontSize: "12px",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {result.confidence}% Match
-                  </span>
+                  <div style={{ fontSize: "13px", color: "rgba(18,19,23,0.55)", marginTop: "2px" }}>
+                    {result.description}
+                  </div>
                 </div>
               </div>
 
-              <p style={{ fontSize: "14.5px", color: "rgba(18,19,23,0.7)", lineHeight: 1.6, margin: "0 0 20px" }}>
-                {result.description}
-              </p>
-
-              {/* Reasoning Trail */}
-              <div
+              <span
                 style={{
-                  background: "rgba(0,0,0,0.025)",
-                  border: "1px solid rgba(0,0,0,0.06)",
-                  borderRadius: "16px",
-                  padding: "16px 18px",
-                  marginBottom: "16px",
+                  background: result.confidence >= 80 ? "#F0FDF4" : "#FFFBEB",
+                  color: result.confidence >= 80 ? "#15803D" : "#B45309",
+                  border: `1px solid ${result.confidence >= 80 ? "#BBF7D0" : "#FDE68A"}`,
+                  padding: "4px 12px",
+                  borderRadius: "9999px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  whiteSpace: "nowrap",
                 }}
               >
-                <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: "rgba(18,19,23,0.5)", marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <Info style={{ width: 13, height: 13, color: "rgb(18,19,23)" }} /> Reasoning Trail
-                </div>
-                <p style={{ fontFamily: "monospace", fontSize: "12px", color: "rgba(18,19,23,0.8)", lineHeight: 1.6, margin: 0 }}>
-                  {result.reasoning}
-                </p>
-              </div>
+                {result.confidence}% Match · {elapsed}s
+              </span>
+            </div>
 
-              {/* Recommended Action */}
-              {!result.isFailure ? (
-                <div
-                  style={{
-                    background: "#F0FDF4",
-                    borderRadius: "16px",
-                    border: "1px solid rgba(22,101,52,0.15)",
-                    padding: "16px 18px",
-                    marginBottom: "18px",
-                  }}
-                >
-                  <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: "#166534", marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
-                    <CheckCircle style={{ width: 14, height: 14, color: "#166534" }} /> Recommended Next Action
-                  </div>
-                  <p style={{ fontSize: "13.5px", color: "#14532D", fontWeight: 550, lineHeight: 1.5, margin: 0 }}>
-                    {result.nextAction}
-                  </p>
+            {/* Clean Action Callout */}
+            <div
+              style={{
+                background: "#F9FAFB",
+                borderRadius: "16px",
+                padding: "14px 18px",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "10px",
+                border: "1px solid rgba(0,0,0,0.04)",
+              }}
+            >
+              <span style={{ fontSize: "16px", marginTop: "1px" }}>⚡</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(18,19,23,0.45)", marginBottom: "3px" }}>
+                  Recommended Action
                 </div>
-              ) : (
-                <div
-                  style={{
-                    background: "#FFFBEB",
-                    borderRadius: "16px",
-                    border: "1px solid rgba(180,83,9,0.2)",
-                    padding: "16px 18px",
-                    marginBottom: "18px",
-                  }}
-                >
-                  <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: "#92400E", marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
-                    <AlertTriangle style={{ width: 14, height: 14, color: "#B45309" }} /> Self-Aware Boundary Guardrail
-                  </div>
-                  <p style={{ fontSize: "13px", color: "#78350F", lineHeight: 1.5, margin: 0 }}>
-                    Refusing to hallucinate a false decision when signals contradict. Routed to senior clinician for human judgment.
-                  </p>
+                <div style={{ fontSize: "14px", fontWeight: 600, color: "rgb(18,19,23)", lineHeight: 1.45 }}>
+                  {result.nextAction}
                 </div>
-              )}
-
-              {/* Meta stats */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px" }}>
-                <div style={{ background: "rgba(0,0,0,0.02)", borderRadius: "14px", padding: "14px 16px", border: "1px solid rgba(0,0,0,0.05)" }}>
-                  <div style={{ fontSize: "11px", color: "rgba(18,19,23,0.45)", textTransform: "uppercase", fontWeight: 700, marginBottom: "6px" }}>
-                    👤 Assigned Actor
-                  </div>
-                  <span style={{ display: "inline-block", background: "rgb(18,19,23)", color: "#FFFFFF", padding: "4px 12px", borderRadius: "9999px", fontSize: "12px", fontWeight: 600 }}>
-                    {result.actor}
-                  </span>
-                </div>
-
-                <div style={{ background: "rgba(0,0,0,0.02)", borderRadius: "14px", padding: "14px 16px", border: "1px solid rgba(0,0,0,0.05)" }}>
-                  <div style={{ fontSize: "11px", color: "rgba(18,19,23,0.45)", textTransform: "uppercase", fontWeight: 700, marginBottom: "6px" }}>
-                    ⏱️ Turnaround
-                  </div>
-                  <div style={{ fontSize: "13.5px", fontWeight: 700, color: "#166534" }}>{result.timeline}</div>
-                  <div style={{ fontSize: "11px", color: "rgba(18,19,23,0.4)", textDecoration: "line-through" }}>{result.timelineBaseline}</div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div style={{ display: "flex", gap: "10px" }}>
-                <Link
-                  href="/portal"
-                  style={{
-                    background: "rgb(18,19,23)",
-                    color: "#FFFFFF",
-                    fontSize: "13.5px",
-                    fontWeight: 600,
-                    padding: "11px 24px",
-                    borderRadius: "9999px",
-                    textDecoration: "none",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                    flex: 1,
-                    transition: "opacity 0.15s ease",
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
-                  onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-                >
-                  Open in Portal <ArrowRight style={{ width: 14, height: 14 }} />
-                </Link>
-
-                <button
-                  onClick={() => { setInput(""); setResult(null); setRisk(null); }}
-                  style={{
-                    background: "rgba(0,0,0,0.05)",
-                    color: "rgb(18,19,23)",
-                    border: "1px solid rgba(0,0,0,0.08)",
-                    fontSize: "13px",
-                    fontWeight: 550,
-                    padding: "11px 20px",
-                    borderRadius: "9999px",
-                    cursor: "pointer",
-                    transition: "background 0.15s ease",
-                  }}
-                >
-                  Clear
-                </button>
               </div>
             </div>
 
-            {/* Clinical Risk Card */}
-            {risk && (
-              <div
+            {/* Inline Metadata Pills */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
+              <span style={{ fontSize: "12px", background: "rgba(0,0,0,0.035)", padding: "5px 12px", borderRadius: "9999px", color: "rgb(18,19,23)", fontWeight: 550 }}>
+                👤 Assigned: {result.actor}
+              </span>
+              <span style={{ fontSize: "12px", background: "rgba(0,0,0,0.035)", padding: "5px 12px", borderRadius: "9999px", color: "rgb(18,19,23)", fontWeight: 550 }}>
+                ⏱️ Turnaround: {result.timeline}
+              </span>
+              {risk && (
+                <span style={{ fontSize: "12px", background: risk.score >= 70 ? "#FEF2F2" : "rgba(0,0,0,0.035)", color: risk.score >= 70 ? "#DC2626" : "rgb(18,19,23)", padding: "5px 12px", borderRadius: "9999px", fontWeight: 550 }}>
+                  🛡️ Risk: {risk.score}/100 ({risk.label})
+                </span>
+              )}
+            </div>
+
+            {/* Bottom Actions */}
+            <div style={{ display: "flex", gap: "10px", paddingTop: "4px" }}>
+              <Link
+                href="/portal"
                 style={{
-                  background: "#FFFFFF",
-                  borderRadius: "24px",
-                  border: "1px solid rgba(0,0,0,0.08)",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 12px 28px -6px rgba(0,0,0,0.03)",
-                  padding: "24px 28px",
+                  background: "rgb(18,19,23)",
+                  color: "#FFFFFF",
+                  fontSize: "13.5px",
+                  fontWeight: 600,
+                  padding: "10px 22px",
+                  borderRadius: "9999px",
+                  textDecoration: "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  transition: "opacity 0.15s ease",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-                  <span style={{ fontSize: "11.5px", fontWeight: 700, color: "rgba(18,19,23,0.5)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                    Clinical Priority Score
-                  </span>
-                  <span style={{ fontFamily: "monospace", fontSize: "16px", fontWeight: 750, color: "rgb(18,19,23)" }}>
-                    {risk.score}/100
-                  </span>
-                </div>
-                <div style={{ height: "8px", background: "rgba(0,0,0,0.06)", borderRadius: "9999px", overflow: "hidden", marginBottom: "12px" }}>
-                  <div
-                    style={{
-                      height: "100%",
-                      borderRadius: "9999px",
-                      transition: "width 0.4s ease",
-                      width: `${risk.score}%`,
-                      background: risk.score >= 75 ? "#DC2626" : risk.score >= 45 ? "#B45309" : "#6E7681",
-                    }}
-                  />
-                </div>
-                <p style={{ fontSize: "13px", color: "rgba(18,19,23,0.65)", lineHeight: 1.5, margin: 0 }}>
-                  {risk.reason}
-                </p>
-              </div>
-            )}
+                Execute in Portal <ArrowRight style={{ width: 14, height: 14 }} />
+              </Link>
+
+              <button
+                onClick={() => { setInput(""); setResult(null); setRisk(null); }}
+                style={{
+                  background: "transparent",
+                  color: "rgba(18,19,23,0.7)",
+                  border: "1px solid rgba(0,0,0,0.1)",
+                  fontSize: "13px",
+                  fontWeight: 550,
+                  padding: "10px 18px",
+                  borderRadius: "9999px",
+                  cursor: "pointer",
+                }}
+              >
+                Clear
+              </button>
+            </div>
           </div>
         )}
-
-        {/* Collapsible Reference Taxonomy */}
-        <div
-          style={{
-            background: "#FFFFFF",
-            borderRadius: "24px",
-            border: "1px solid rgba(0,0,0,0.08)",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 12px 28px -6px rgba(0,0,0,0.03)",
-            overflow: "hidden",
-          }}
-        >
-          <button
-            onClick={() => setShowTaxonomy(!showTaxonomy)}
-            style={{
-              width: "100%",
-              padding: "18px 24px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              textAlign: "left",
-            }}
-          >
-            <div>
-              <p style={{ fontSize: "15px", fontWeight: 650, color: "rgb(18,19,23)", margin: 0 }}>
-                📋 5 Root-Cause Block Categories
-              </p>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12.5px", color: "rgba(18,19,23,0.5)" }}>
-              {showTaxonomy ? "Hide" : "Show"}
-              {showTaxonomy ? <ChevronUp style={{ width: 14, height: 14 }} /> : <ChevronDown style={{ width: 14, height: 14 }} />}
-            </div>
-          </button>
-
-          {showTaxonomy && (
-            <div style={{ padding: "0 24px 24px", borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: "18px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "12px" }}>
-              {BLOCK_RULES.map(r => (
-                <div key={r.id} style={{ padding: "16px", borderRadius: "16px", border: "1px solid rgba(0,0,0,0.06)", background: "rgba(0,0,0,0.02)" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
-                    <span style={{ fontSize: "13.5px", fontWeight: 650, color: "rgb(18,19,23)" }}>
-                      {r.emoji} {r.label}
-                    </span>
-                    <span style={{ fontFamily: "monospace", fontSize: "11px", color: "rgba(18,19,23,0.4)" }}>{r.confidence}%</span>
-                  </div>
-                  <p style={{ fontSize: "12px", color: "rgba(18,19,23,0.6)", lineHeight: 1.5, margin: "0 0 8px" }}>{r.description}</p>
-                  <p style={{ fontSize: "11.5px", color: "rgba(18,19,23,0.5)", margin: 0 }}>
-                    Actor: <strong style={{ color: "rgb(18,19,23)" }}>{r.actor}</strong>
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </main>
     </div>
   );
