@@ -278,7 +278,7 @@ function SavingsCounter({ minutesSaved }: { minutesSaved: number }) {
         <TrendingUp className="h-3.5 w-3.5" /> Hours Saved This Session
       </div>
       <div className="text-3xl font-display font-extrabold text-ok-700 my-1">{hrs} hrs</div>
-      <div className="text-xs text-ok-700/70">{displayed} min saved · {AVG_MANUAL_MINUTES} min baseline per stuck refill</div>
+      <div className="text-xs text-ok-700/70">{displayed} min saved</div>
     </div>
   );
 }
