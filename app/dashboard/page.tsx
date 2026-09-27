@@ -683,23 +683,24 @@ export default function DashboardPage() {
                                 setApprovalNote(`Clinical review verified for ${row.med} (${row.id}). Approved under standard clinical protocol.`);
                               }}
                               style={{
-                                background: "#FFFFFF",
-                                color: "rgb(18,19,23)",
-                                border: "1px solid rgba(0,0,0,0.12)",
+                                background: "#D97706",
+                                color: "#FFFFFF",
+                                border: "none",
                                 borderRadius: "9999px",
-                                padding: "5px 14px",
+                                padding: "6px 14px",
                                 fontSize: "12px",
                                 fontWeight: 600,
                                 cursor: "pointer",
                                 display: "inline-flex",
                                 alignItems: "center",
-                                gap: "4px",
+                                gap: "5px",
+                                boxShadow: "0 1px 3px rgba(217, 119, 6, 0.35)",
                                 transition: "all 0.15s ease",
                               }}
-                              onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,0,0,0.04)")}
-                              onMouseLeave={e => (e.currentTarget.style.background = "#FFFFFF")}
+                              onMouseEnter={e => (e.currentTarget.style.background = "#B45309")}
+                              onMouseLeave={e => (e.currentTarget.style.background = "#D97706")}
                             >
-                              <Shield style={{ width: 12, height: 12, color: "#B45309" }} /> Review & Sign
+                              <Shield style={{ width: 12, height: 12, color: "#FFFFFF" }} /> Review & Sign
                             </button>
                           )}
                         </td>
@@ -862,7 +863,7 @@ export default function DashboardPage() {
                           }}
                           style={{
                             width: "100%",
-                            background: "rgb(18,19,23)",
+                            background: "#D97706",
                             color: "#FFFFFF",
                             border: "none",
                             borderRadius: "9999px",
@@ -874,9 +875,13 @@ export default function DashboardPage() {
                             alignItems: "center",
                             justifyContent: "center",
                             gap: "6px",
+                            boxShadow: "0 2px 8px rgba(217, 119, 6, 0.35)",
+                            transition: "all 0.15s ease",
                           }}
+                          onMouseEnter={e => (e.currentTarget.style.background = "#B45309")}
+                          onMouseLeave={e => (e.currentTarget.style.background = "#D97706")}
                         >
-                          <Shield style={{ width: 14, height: 14 }} /> Review & Sign-Off Action
+                          <Shield style={{ width: 14, height: 14, color: "#FFFFFF" }} /> Review & Sign-Off Action
                         </button>
                       )}
 
