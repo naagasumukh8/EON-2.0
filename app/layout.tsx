@@ -24,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <link rel="preload" href="/crowd.mp4" as="video" type="video/mp4" />
       </head>
-      <body className="antialiased bg-white text-ink-900 font-sans">
+      <body className="antialiased bg-[#F0F0F0] text-ink-900 font-sans">
         <AutonomyProvider>
           {children}
         </AutonomyProvider>

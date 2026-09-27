@@ -251,7 +251,7 @@ export default function ClassifyPage() {
   };
 
   return (
-    <div className="page-frame min-h-screen bg-white">
+    <div className="page-frame min-h-screen bg-[#F0F0F0]">
       <Nav />
       <AutonomyBanner />
       <div className="max-w-screen-xl mx-auto px-6 py-8">

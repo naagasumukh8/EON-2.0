@@ -114,7 +114,7 @@ export default function WorkflowPage() {
   const activeRefillData = activeRefillStep ? refillSteps[activeRefillStep - 1] : null;
 
   return (
-    <div className="page-frame">
+    <div className="page-frame min-h-screen bg-[#F0F0F0]">
       <Nav />
 
       <div className="container py-8 space-y-6">

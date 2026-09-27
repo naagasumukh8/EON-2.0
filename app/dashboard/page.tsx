@@ -498,7 +498,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="page-frame min-h-screen bg-white">
+    <div className="page-frame min-h-screen bg-[#F0F0F0]">
       <Nav />
       <AutonomyBanner />
       {/* ── System notification toast ────────────────────── */}

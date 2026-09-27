@@ -144,7 +144,7 @@ const CAVEATS = [
 
 export default function SecurityPage() {
   return (
-    <div className="page-frame min-h-screen bg-white">
+    <div className="page-frame min-h-screen bg-[#F0F0F0]">
       <Nav />
 
       <div className="max-w-4xl mx-auto px-6 py-8">

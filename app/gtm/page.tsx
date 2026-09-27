@@ -491,11 +491,11 @@ export default function GTMPage() {
   };
 
   return (
-    <div className="page-frame min-h-screen bg-[#FAFAFA] text-ink-900 font-sans pb-24">
+    <div className="page-frame min-h-screen bg-[#F0F0F0] text-ink-900 font-sans pb-24">
       <Nav />
 
       {/* ── HEADER ────────────────────────────────────────────── */}
-      <section className="border-b border-ink-100 bg-white pt-10 pb-12">
+      <section className="border-b border-black/10 bg-[#F0F0F0] pt-10 pb-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-50 border border-accent-200 text-accent-700 text-xs font-mono font-bold uppercase tracking-wider mb-4">
             <Compass className="h-3.5 w-3.5" /> Track 03: Strategize the Funnel
@@ -529,7 +529,7 @@ export default function GTMPage() {
       </section>
 
       {/* ── EVALUATION RUBRIC CRITERIA BAR ────────────────────── */}
-      <section className="bg-white border-b border-ink-100 py-4">
+      <section className="bg-[#F0F0F0] border-b border-black/10 py-4">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-ink-400 mb-3 flex items-center gap-2">
             <BarChart3 className="h-3.5 w-3.5 text-accent-600" />
