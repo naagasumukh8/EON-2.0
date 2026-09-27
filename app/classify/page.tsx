@@ -12,9 +12,6 @@ function Nav() {
     <nav className="top-nav">
       <div className="top-nav__inner">
         <Link href="/" className="top-nav__logo">
-          <div className="w-7 h-7 bg-ink-900 rounded flex items-center justify-center flex-shrink-0">
-            <span className="font-mono text-white text-xs font-bold">Rx</span>
-          </div>
           <span className="top-nav__wordmark">UnStuck Med</span>
         </Link>
         <div className="top-nav__links">
