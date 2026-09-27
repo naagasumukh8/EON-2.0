@@ -683,19 +683,28 @@ export default function HomePage() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "8px",
-                background: "rgba(183, 191, 217, 0.1)",
-                border: "1px solid rgba(33, 34, 38, 0.08)",
-                color: "rgb(18, 19, 23)",
-                padding: "9px 18px",
+                background: showWorkflow
+                  ? "rgba(183, 191, 217, 0.12)"
+                  : "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)",
+                border: showWorkflow
+                  ? "1px solid rgba(33, 34, 38, 0.12)"
+                  : "1px solid rgba(37, 99, 235, 0.3)",
+                color: showWorkflow ? "rgb(18, 19, 23)" : "#FFFFFF",
+                padding: "10px 22px",
                 borderRadius: "9999px",
-                fontSize: "13.5px",
-                fontWeight: 450,
+                fontSize: "14px",
+                fontWeight: 500,
                 cursor: "pointer",
+                boxShadow: showWorkflow
+                  ? "none"
+                  : "0 4px 18px -4px rgba(37, 99, 235, 0.55), 0 1px 4px rgba(37,99,235,0.2)",
+                transition: "all 0.2s ease",
+                letterSpacing: "-0.01em",
               }}
-              className="hover:bg-black/5"
+              className={showWorkflow ? "hover:bg-black/5" : "hover:scale-[1.02] active:scale-95"}
             >
-              <Layers style={{ width: 14, height: 14, color: "#2563EB" }} />
-              <span>{showWorkflow ? "Hide Actor Matrix" : "See Full Workflow Table"}</span>
+              <Layers style={{ width: 15, height: 15, color: showWorkflow ? "#2563EB" : "rgba(255,255,255,0.85)" }} />
+              <span>{showWorkflow ? "Hide Actor Matrix" : "See the full workflow table"}</span>
               {showWorkflow ? <ChevronUp style={{ width: 13, height: 13 }} /> : <ChevronDown style={{ width: 13, height: 13 }} />}
             </button>
           </div>
