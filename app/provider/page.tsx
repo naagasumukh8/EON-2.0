@@ -5,7 +5,7 @@ import { Send, Bell, RefreshCw, CheckCircle, XCircle, Shuffle, Shield } from "lu
 import {
   seedDemoData, getThreads, getThreadMessages, markMessagesRead,
   getNotifications, countUnreadNotifs, providerApprove, providerSuggestAlternative,
-  providerRequireVisit, timeAgo, setCurrentRole,
+  providerRequireVisit, providerStartedReview, timeAgo, setCurrentRole,
   type Message, type RefillThread, type Notification,
 } from "../../lib/demo-messages";
 import { RoleSwitcher } from "../components/RoleSwitcher";
@@ -295,7 +295,10 @@ export default function ProviderPage() {
             </div>
             {pending.length === 0 && <div style={{ padding: "18px", textAlign: "center", color: "#C9D1D9", fontSize: "12px" }}>No pending reviews</div>}
             {pending.map(t => (
-              <button key={t.id} onClick={() => setActive(t)}
+              <button key={t.id} onClick={() => {
+                setActive(t);
+                providerStartedReview(t.id);
+              }}
                 style={{ width: "100%", background: active?.id === t.id ? "#F5F3FF" : "#fff", border: "none", borderBottom: "1px solid #F3F4F6", padding: "11px 15px", textAlign: "left", cursor: "pointer" }}>
                 <div style={{ fontWeight: 700, fontSize: "12.5px", color: "#0D1117", marginBottom: "2px" }}>{t.med}</div>
                 <div style={{ fontSize: "10.5px", color: "#6E7681", marginBottom: "5px" }}>{t.patientName}</div>

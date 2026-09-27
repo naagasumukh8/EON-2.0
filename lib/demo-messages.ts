@@ -23,10 +23,12 @@ export interface RefillThread {
   dose: string;
   patientName: string;
   status: "pending_pharmacy" | "pending_provider" | "approved" | "blocked" | "resolved";
-  clinicalSummary?: string;   // replaces "AI draft"
+  clinicalSummary?: string;
   summaryVisible: boolean;
   providerNotified: boolean;
   classifyResult?: ClassifyResult;
+  eta?: string;           // human-readable ETA string shown to patient
+  statusStep?: string;    // current micro-step shown in patient tracker
   createdAt: number;
 }
 
@@ -280,26 +282,43 @@ export function classifyRefill(thread: RefillThread): ClassifyResult {
 }
 
 /* ── Process refill at pharmacy ─────────────────────────── */
+
+/** Step 1: Call this when pharmacy OPENS a refill to start processing — patient gets "started" notification */
+export function pharmacyStarted(threadId: string): void {
+  const thread = getThread(threadId);
+  if (!thread) return;
+  updateThread(threadId, { statusStep: "Pharmacy is reviewing your request" });
+  // Only notify if patient hasn't already been notified for this step
+  addNotification({
+    for: "patient",
+    text: `Pharmacy has started reviewing your ${thread.med} refill. We will update you at each step.`,
+    refillId: threadId,
+  });
+}
+
+/** Step 2: Classify and route — sends patient updates at each sub-step */
 export function pharmacyProcessRefill(threadId: string): { result: ClassifyResult; thread: RefillThread } {
   const thread = getThread(threadId)!;
   const result = classifyRefill(thread);
 
   if (result.priority === "routine") {
-    // Auto-resolve: update status, notify patient
+    // Auto-resolve
     updateThread(threadId, {
       status: "resolved",
       classifyResult: result,
       summaryVisible: false,
+      eta: "2–4 hours",
+      statusStep: "Processed — ready for pickup",
     });
     addMessage({
       from: "pharmacy",
       to: "patient",
-      text: `Your refill for ${thread.med} has been processed. It is a routine maintenance refill — no provider visit needed. Your prescription is ready for pickup. Please contact us to confirm pickup time.`,
+      text: `Your refill for ${thread.med} has been processed. It qualifies as a routine maintenance refill — no provider visit needed. Your prescription is ready. Estimated pickup time: 2–4 hours from now. Please call us to confirm.`,
       threadId,
     });
-    addNotification({ for: "patient", text: `Your ${thread.med} refill is ready for pickup.`, refillId: threadId });
+    addNotification({ for: "patient", text: `Your ${thread.med} refill is ready. Estimated pickup: 2–4 hours.`, refillId: threadId });
   } else {
-    // Needs provider review: escalate
+    // Needs provider review — tell patient each step
     const summary = `Refill request — ${thread.patientName}, ${thread.med} (${threadId}). ${result.reason}${result.alternative ? ` Possible alternative: ${result.alternative} — ${result.alternativeReason}` : ""} Patient has been waiting. Please review.`;
     updateThread(threadId, {
       status: "pending_provider",
@@ -307,13 +326,23 @@ export function pharmacyProcessRefill(threadId: string): { result: ClassifyResul
       clinicalSummary: summary,
       summaryVisible: true,
       classifyResult: result,
+      statusStep: "Forwarded to Dr. Chen for clinical review",
+      eta: "1–3 hours pending provider decision",
+    });
+    // Patient: step-by-step messages
+    addMessage({
+      from: "pharmacy",
+      to: "patient",
+      text: `Update on your ${thread.med} refill: Our system reviewed your request and determined that provider authorization is required. Reason: ${result.reason}`,
+      threadId,
     });
     addMessage({
       from: "pharmacy",
       to: "patient",
-      text: `Hi Alex, your refill for ${thread.med} requires your provider Dr. Chen to review it. Reason: ${result.reason} We have forwarded all details. You will be notified as soon as the provider acts.`,
+      text: `Your refill has now been forwarded to Dr. Chen for clinical review. You will receive a notification as soon as the provider acts — typically within 1–3 hours. No action needed from you.`,
       threadId,
     });
+    // Provider message
     addMessage({
       from: "pharmacy",
       to: "provider",
@@ -321,46 +350,71 @@ export function pharmacyProcessRefill(threadId: string): { result: ClassifyResul
       threadId,
     });
     addNotification({ for: "provider", text: `Refill review needed: ${thread.patientName} — ${thread.med} (${threadId}).`, refillId: threadId });
-    addNotification({ for: "patient", text: `Your ${thread.med} refill has been forwarded to Dr. Chen for review.`, refillId: threadId });
+    addNotification({ for: "patient", text: `Your ${thread.med} refill is now with Dr. Chen for review. ETA: 1–3 hrs.`, refillId: threadId });
   }
 
   return { result, thread: getThread(threadId)! };
 }
 
 /* ── Provider actions ───────────────────────────────────── */
+
+/** Call when provider OPENS a flagged refill to review — patient sees "Provider is reviewing" */
+export function providerStartedReview(threadId: string): void {
+  const thread = getThread(threadId);
+  if (!thread || thread.status !== "pending_provider") return;
+  updateThread(threadId, { statusStep: "Dr. Chen is actively reviewing your case" });
+  addNotification({
+    for: "patient",
+    text: `Dr. Chen has opened your ${thread?.med ?? ""} refill for review. A decision is expected shortly.`,
+    refillId: threadId,
+  });
+}
+
 export function providerApprove(threadId: string, providerName: string): void {
   const thread = getThread(threadId)!;
-  updateThread(threadId, { status: "approved" });
+  updateThread(threadId, {
+    status: "approved",
+    eta: "2–4 hours",
+    statusStep: "Approved — pharmacy notified, preparing your prescription",
+  });
   addMessage({ from: "provider", to: "pharmacy",
-    text: `eRx authorized for ${thread.med} (${threadId}). Renewal approved under standard protocol. Signed: ${providerName}. Please dispense.`, threadId });
+    text: `eRx authorized for ${thread.med} (${threadId}). Renewal approved under standard protocol. Signed: ${providerName}. Please dispense as soon as possible.`, threadId });
   addMessage({ from: "provider", to: "patient",
-    text: `Hi Alex, Dr. Chen has approved your refill for ${thread.med}. Your pharmacy will dispense shortly. No visit required.`, threadId });
-  addNotification({ for: "pharmacy", text: `Provider approved: ${thread.med} (${threadId}). Ready to dispense.`, refillId: threadId });
-  addNotification({ for: "patient", text: `Your ${thread.med} refill has been approved by Dr. Chen!`, refillId: threadId });
+    text: `Dr. Chen has reviewed and approved your refill for ${thread.med}. Your pharmacy has been notified and is preparing your prescription. Estimated pickup time: 2–4 hours from now.`, threadId });
+  addNotification({ for: "pharmacy", text: `Provider approved: ${thread.med} (${threadId}). Please dispense. ETA communicated to patient: 2–4 hrs.`, refillId: threadId });
+  addNotification({ for: "patient", text: `Approved! Your ${thread.med} will be ready in approximately 2–4 hours.`, refillId: threadId });
 }
 
 export function providerSuggestAlternative(threadId: string, providerName: string): void {
   const thread = getThread(threadId)!;
   const alt = thread.classifyResult?.alternative ?? "an alternative medication";
   const altReason = thread.classifyResult?.alternativeReason ?? "Clinically equivalent option.";
-  updateThread(threadId, { status: "approved" });
+  updateThread(threadId, {
+    status: "approved",
+    eta: "2–4 hours",
+    statusStep: `Alternative authorized: ${alt} — pharmacy preparing`,
+  });
   addMessage({ from: "provider", to: "pharmacy",
-    text: `Alternative authorized for ${thread.med} (${threadId}): dispense ${alt} instead. Reason: ${altReason} Signed: ${providerName}.`, threadId });
+    text: `Alternative authorized for ${thread.med} (${threadId}): dispense ${alt} instead. Reason: ${altReason} Signed: ${providerName}. Please dispense promptly.`, threadId });
   addMessage({ from: "provider", to: "patient",
-    text: `Hi Alex, Dr. Chen has authorized ${alt} as an alternative to ${thread.med}. Reason: ${altReason} Your pharmacy has been notified and will have it ready.`, threadId });
-  addNotification({ for: "pharmacy", text: `Alternative authorized: dispense ${alt} for ${thread.med} (${threadId}).`, refillId: threadId });
-  addNotification({ for: "patient", text: `Alternative approved: ${alt} ready at your pharmacy!`, refillId: threadId });
+    text: `Dr. Chen has authorized ${alt} as an alternative to ${thread.med}. Reason: ${altReason} Your pharmacy has been notified. Estimated pickup time: 2–4 hours.`, threadId });
+  addNotification({ for: "pharmacy", text: `Alternative authorized: dispense ${alt} for ${thread.med} (${threadId}). ETA to patient: 2–4 hrs.`, refillId: threadId });
+  addNotification({ for: "patient", text: `Alternative approved: ${alt} ready in approximately 2–4 hours.`, refillId: threadId });
 }
 
 export function providerRequireVisit(threadId: string, providerName: string): void {
   const thread = getThread(threadId)!;
-  updateThread(threadId, { status: "blocked" });
+  updateThread(threadId, {
+    status: "blocked",
+    eta: undefined,
+    statusStep: "Visit required — refill on hold until appointment",
+  });
   addMessage({ from: "provider", to: "pharmacy",
     text: `${thread.med} (${threadId}) — patient visit required before renewal. Refill on hold. Signed: ${providerName}.`, threadId });
   addMessage({ from: "provider", to: "patient",
-    text: `Hi Alex, Dr. Chen needs to see you before renewing ${thread.med}. Please call the clinic to schedule. Your pharmacy has been informed.`, threadId });
+    text: `Dr. Chen requires a clinical review visit before renewing your ${thread.med}. Please call Summit Clinic to schedule. Once your visit is complete, your refill will be processed within 24 hours.`, threadId });
   addNotification({ for: "pharmacy", text: `Visit required before dispensing ${thread.med} (${threadId}).`, refillId: threadId });
-  addNotification({ for: "patient", text: `Action needed: Schedule a visit for your ${thread.med} refill.`, refillId: threadId });
+  addNotification({ for: "patient", text: `Action needed: Schedule a visit with Dr. Chen to continue your ${thread.med} refill.`, refillId: threadId });
 }
 
 /* ── Role session ────────────────────────────────────────── */

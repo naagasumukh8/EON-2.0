@@ -52,13 +52,14 @@ function JourneyTracker({ thread }: { thread: RefillThread }) {
       blocked: false },
   ];
 
-  const nextMap: Record<string, string> = {
-    pending_pharmacy: "Your pharmacy is checking eligibility. No action needed from you.",
-    pending_provider: "Dr. Chen is reviewing your prescription. You will be notified immediately.",
-    approved:  "Approved! Contact your pharmacy for pickup time.",
-    resolved:  "Your pharmacy processed this as a routine refill — it is ready!",
-    blocked:   "Your provider requires a visit before renewal. Please call the clinic.",
+  const defaultStep: Record<string, string> = {
+    pending_pharmacy: "Your pharmacy is checking prescription eligibility.",
+    pending_provider: "Dr. Chen is reviewing your prescription. You will be notified when a decision is made.",
+    approved:  "Approved. Your pharmacy is preparing your prescription.",
+    resolved:  "Processed as a routine refill — your prescription is ready.",
+    blocked:   "A clinic visit is required before your refill can be renewed.",
   };
+  const currentStep = thread.statusStep ?? defaultStep[thread.status] ?? "Your refill is in progress.";
 
   return (
     <div style={{ padding: "16px 20px", borderBottom: "1px solid #E5E7EB", background: "#fff" }}>
@@ -99,13 +100,19 @@ function JourneyTracker({ thread }: { thread: RefillThread }) {
             : <Info style={{ width: 14, height: 14, color: "#1D4ED8" }} />
           }
         </div>
-        <div>
+        <div style={{ flex: 1 }}>
           <div style={{ fontSize: "9.5px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "3px", color: thread.status === "blocked" ? "#DC2626" : (thread.status === "approved" || thread.status === "resolved") ? "#15803D" : "#1D4ED8" }}>
-            What happens next
+            Current status
           </div>
-          <div style={{ fontSize: "12.5px", color: "#374151", lineHeight: 1.5 }}>
-            {nextMap[thread.status] ?? "Your refill is in progress."}
+          <div style={{ fontSize: "12.5px", color: "#374151", lineHeight: 1.5, marginBottom: thread.eta ? "6px" : 0 }}>
+            {currentStep}
           </div>
+          {thread.eta && (
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: (thread.status === "approved" || thread.status === "resolved") ? "#D1FAE5" : "#DBEAFE", border: `1px solid ${(thread.status === "approved" || thread.status === "resolved") ? "#6EE7B7" : "#93C5FD"}`, borderRadius: "999px", padding: "2px 10px", fontSize: "11px", fontWeight: 700, color: (thread.status === "approved" || thread.status === "resolved") ? "#065F46" : "#1E40AF" }}>
+              <Clock style={{ width: 10, height: 10 }} />
+              ETA: {thread.eta}
+            </div>
+          )}
         </div>
       </div>
     </div>

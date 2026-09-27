@@ -5,7 +5,7 @@ import { Send, Bell, RefreshCw, Zap, MessageSquare, CheckCircle } from "lucide-r
 import {
   seedDemoData, getThreads, getThreadMessages, getInboxMessages, addMessage,
   markMessagesRead, getNotifications, countUnread, countUnreadNotifs,
-  pharmacyProcessRefill, timeAgo, setCurrentRole,
+  pharmacyProcessRefill, pharmacyStarted, timeAgo, setCurrentRole,
   type Message, type RefillThread,
 } from "../../lib/demo-messages";
 import { RoleSwitcher } from "../components/RoleSwitcher";
@@ -56,8 +56,8 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
     setProcessing(true);
     const { result } = pharmacyProcessRefill(thread.id);
     const msg = result.priority === "routine"
-      ? `✅ ROUTINE REFILL — Processed automatically. Patient notified. Added to completed worklist.`
-      : `⚠️ REVIEW REQUIRED — ${result.reason}${result.alternative ? ` Alternative flagged: ${result.alternative}.` : ""} Forwarded to Dr. Chen.`;
+      ? `ROUTINE — Processed automatically. Patient notified. Ready for pickup in 2–4 hours.`
+      : `REVIEW REQUIRED — ${result.reason}${result.alternative ? ` Alternative flagged: ${result.alternative}.` : ""} Forwarded to Dr. Chen.`;
     setProcessResult(msg);
     setTimeout(() => { setProcessing(false); load(); onRefresh(); }, 500);
   }
@@ -79,8 +79,8 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
       {/* Process Refill action panel */}
       {canProcess && (
         <div style={{ padding: "14px 18px", borderBottom: "1px solid #E5E7EB", background: "#FFFBEB", flexShrink: 0 }}>
-          <div style={{ fontSize: "10px", fontWeight: 700, color: "#92400E", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>
-            ⚡ Refill Action Required
+          <div style={{ fontSize: "10px", fontWeight: 700, color: "#92400E", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px", display: "flex", alignItems: "center", gap: "5px" }}>
+            <Zap style={{ width: 11, height: 11 }} /> Refill Action Required
           </div>
           <div style={{ fontSize: "12.5px", color: "#374151", marginBottom: "10px", lineHeight: 1.5 }}>
             Patient is requesting a refill for <strong>{thread.med}</strong>. Click below to classify and route automatically.
@@ -241,7 +241,10 @@ export default function PharmacyPage() {
             {pending.map(t => {
               const u = getInboxMessages("pharmacy").filter(m => m.threadId === t.id && !m.read).length;
               return (
-                <button key={t.id} onClick={() => setActive(t)}
+                <button key={t.id} onClick={() => {
+                  setActive(t);
+                  if (t.status === "pending_pharmacy") pharmacyStarted(t.id);
+                }}
                   style={{ width: "100%", background: active?.id === t.id ? "#F0F0F0" : "#fff", border: "none", borderBottom: "1px solid #F3F4F6", padding: "11px 15px", textAlign: "left", cursor: "pointer" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px" }}>
                     <span style={{ fontWeight: 600, fontSize: "12.5px", color: "#0D1117" }}>{t.med}</span>
