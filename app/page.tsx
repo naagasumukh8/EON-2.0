@@ -109,7 +109,7 @@ export default function HomePage() {
             <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
               <Link href="/dashboard" style={{ background: "rgb(18,19,23)", color: "#fff", fontSize: "15px", fontWeight: 500, padding: "13px 28px", borderRadius: "9999px", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "8px", transition: "opacity 0.15s" }}>
                 <Zap style={{ width: 15, height: 15, color: "#8AB4F8" }} />
-                Open Refill Queue
+                Open Worklist
               </Link>
               <Link href="/classify" style={{ background: "rgba(0,0,0,0.05)", color: "rgb(18,19,23)", fontSize: "15px", fontWeight: 450, padding: "13px 28px", borderRadius: "9999px", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "8px", border: "1px solid rgba(0,0,0,0.09)", transition: "background 0.15s" }}>
                 <Bot style={{ width: 15, height: 15 }} />
