@@ -18,9 +18,6 @@ export function AppHeader({
     { href: "/portal",    label: "Portals" },
     { href: "/dashboard", label: "Worklist" },
     { href: "/classify",  label: "Classifier" },
-    { href: "/security",  label: "Security" },
-    { href: "/workflow",  label: "Workflow" },
-    { href: "/gtm",       label: "GTM / Funnel" },
   ];
 
   return (

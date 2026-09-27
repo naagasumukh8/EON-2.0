@@ -4,7 +4,7 @@ import Link from "next/link";
 import {
   ArrowRight, CheckCircle, AlertTriangle, Zap,
   Search, Eye, X, TrendingUp, Shield,
-  Building2, MapPin, Check, RefreshCw, Send, Lock
+  Building2, MapPin, Check, RefreshCw, Send, ChevronRight
 } from "lucide-react";
 import { useAutonomy, type ActionState, AVG_MANUAL_MINUTES } from "../../lib/autonomy";
 import { AutonomyBanner } from "../components/AutonomyBanner";
@@ -56,7 +56,7 @@ const RAW_QUEUE = [
     actor: "Provider",
     practice: "CareFirst Family Health",
     insurance: "BlueCross PPO",
-    nextAction: "Draft new eRx renewal request to attending provider (therapy-affecting: requires human confirmation)",
+    nextAction: "Draft new eRx renewal request to attending provider with last fill date and adherence history.",
   },
   {
     id: "RF-009",
@@ -70,7 +70,7 @@ const RAW_QUEUE = [
     actor: "Pharmacy",
     practice: "Summit Medical Group",
     insurance: "Aetna Health",
-    nextAction: "Pharmacy inventory exhausted: suggest alternative partner pharmacy transfer",
+    nextAction: "Primary dispensing inventory depleted: suggest partner pharmacy transfer.",
   },
   {
     id: "RF-002",
@@ -84,7 +84,7 @@ const RAW_QUEUE = [
     actor: "Staff",
     practice: "Summit Clinic",
     insurance: "Aetna Health",
-    nextAction: "Submit PA justification form to Aetna PBM (clinical argument: requires human confirmation)",
+    nextAction: "Submit PA justification form to Aetna PBM with diagnosis codes and treatment notes.",
   },
   {
     id: "RF-005",
@@ -98,7 +98,7 @@ const RAW_QUEUE = [
     actor: "Staff",
     practice: "ClearPath Primary Care",
     insurance: "Humana Choice",
-    nextAction: "send missing-info request via SMS to verify patient DOB mismatch",
+    nextAction: "Send missing-info request via secure SMS to verify patient DOB mismatch.",
   },
   {
     id: "RF-003",
@@ -112,7 +112,7 @@ const RAW_QUEUE = [
     actor: "Patient",
     practice: "Valley Medical",
     insurance: "Cigna Premier",
-    nextAction: "send patient status update and scheduling link to patient portal",
+    nextAction: "Send patient status update and scheduling link to patient portal.",
   },
   {
     id: "RF-007",
@@ -126,7 +126,7 @@ const RAW_QUEUE = [
     actor: "Provider",
     practice: "Summit Clinic",
     insurance: "Aetna Health",
-    nextAction: "Urgent: 4 days stuck: draft new Rx renewal with provider escalation",
+    nextAction: "Urgent: 4 days stalled: draft new Rx renewal with provider escalation.",
   },
   {
     id: "RF-004",
@@ -140,7 +140,7 @@ const RAW_QUEUE = [
     actor: "Pharmacy",
     practice: "MedReach Health",
     insurance: "UnitedHealthcare",
-    nextAction: "Pharmacist verification and bottle labeling in progress",
+    nextAction: "Pharmacist verification and bottle labeling in progress.",
   },
   {
     id: "RF-006",
@@ -154,7 +154,7 @@ const RAW_QUEUE = [
     actor: "Done",
     practice: "Valley Medical",
     insurance: "Cigna Premier",
-    nextAction: "Patient notified for contactless pickup",
+    nextAction: "Patient notified for contactless pickup.",
   },
 ];
 
@@ -166,55 +166,40 @@ const INITIAL_QUEUE: RefillItem[] = RAW_QUEUE.map(r => ({
 
 /* ── Status badges ────────────────────────────────────── */
 function StatusBadge({ status }: { status: string }) {
-  if (status === "BLOCKED") return <span className="badge badge-blocked"><AlertTriangle className="h-2.5 w-2.5" />Blocked</span>;
-  if (status === "FILLING") return <span className="badge badge-progress"><RefreshCw className="h-2.5 w-2.5" />Filling</span>;
-  if (status === "RESOLVED") return <span className="badge badge-resolved"><CheckCircle className="h-2.5 w-2.5" />Resolved</span>;
-  return <span className="badge badge-neutral">{status}</span>;
-}
-
-function ActionStateBadge({ state }: { state: ActionState }) {
-  if (state === "ACTION_DRAFTED") {
+  if (status === "BLOCKED") {
     return (
-      <span className="font-mono text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-warn-50 text-warn-700 border border-warn-200">
-        Drafted
+      <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11px", fontWeight: 650, color: "#B45309", background: "#FFFBEB", border: "1px solid #FDE68A", padding: "3px 9px", borderRadius: "9999px" }}>
+        ⚠️ Blocked
       </span>
     );
   }
-  if (state === "ACTION_CONFIRMED") {
+  if (status === "FILLING") {
     return (
-      <span className="font-mono text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-        Confirmed
+      <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11px", fontWeight: 650, color: "#2563EB", background: "#EFF6FF", border: "1px solid #BFDBFE", padding: "3px 9px", borderRadius: "9999px" }}>
+        🔄 Filling
       </span>
     );
   }
   return (
-    <span className="font-mono text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-ok-50 text-ok-700 border border-ok-200">
-      Sent
+    <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11px", fontWeight: 650, color: "#166534", background: "#F0FDF4", border: "1px solid #BBF7D0", padding: "3px 9px", borderRadius: "9999px" }}>
+      ✅ Resolved
     </span>
   );
 }
 
-function PriorityBar({ score }: { score: number }) {
+function PriorityIndicator({ score }: { score: number }) {
   const color = score >= 75 ? "#DC2626" : score >= 45 ? "#B45309" : "#6E7681";
   return (
-    <div className="flex items-center gap-2">
-      <div className="w-14 h-1.5 bg-ink-100 rounded-full overflow-hidden">
-        <div className="h-full rounded-full transition-all" style={{ width: `${score}%`, background: color }} />
+    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <div style={{ width: "42px", height: "6px", background: "rgba(0,0,0,0.06)", borderRadius: "9999px", overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${score}%`, background: color, borderRadius: "9999px" }} />
       </div>
-      <span className="text-xs font-mono text-ink-400">{score}</span>
+      <span style={{ fontSize: "11.5px", fontFamily: "monospace", fontWeight: 650, color: "rgb(18,19,23)" }}>{score}</span>
     </div>
   );
 }
 
-const ACTOR_COLORS: Record<string, string> = {
-  Provider: "bg-accent-50 text-accent-700 border-accent-100",
-  Staff:    "bg-ink-100 text-ink-700 border-ink-200",
-  Pharmacy: "bg-warn-50 text-warn-700 border-warn-200",
-  Patient:  "bg-ok-50 text-ok-700 border-ok-200",
-  Done:     "bg-ok-50 text-ok-700 border-ok-200",
-};
-
-/* ── Savings counter (animates each resolve) ────────────── */
+/* ── Animated Savings Counter ──────────────────────────── */
 function SavingsCounter({ minutesSaved }: { minutesSaved: number }) {
   const [displayed, setDisplayed] = useState(minutesSaved);
   const prev = useRef(minutesSaved);
@@ -238,24 +223,24 @@ function SavingsCounter({ minutesSaved }: { minutesSaved: number }) {
   return (
     <div
       style={{
-        background: "#ffffff",
-        borderRadius: "20px",
-        border: "1px solid rgba(0, 0, 0, 0.08)",
-        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.02), 0 12px 28px -6px rgba(0, 0, 0, 0.03)",
+        background: "#FFFFFF",
+        borderRadius: "24px",
+        border: "1px solid rgba(0,0,0,0.08)",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 12px 28px -6px rgba(0,0,0,0.03)",
         padding: "24px 28px",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(18,19,23,0.4)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11.5px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(18,19,23,0.45)" }}>
         <TrendingUp style={{ width: 14, height: 14, color: "#166534" }} /> Hours Saved This Session
       </div>
       <div style={{ fontSize: "38px", fontWeight: 750, letterSpacing: "-0.03em", color: "rgb(18,19,23)", margin: "8px 0 4px" }}>
         {hrs} hrs
       </div>
-      <div style={{ fontSize: "12.5px", fontWeight: 600, color: "#166534" }}>
-        {displayed} min saved
+      <div style={{ fontSize: "13px", fontWeight: 600, color: "#166534" }}>
+        {displayed} min automated
       </div>
     </div>
   );
@@ -265,33 +250,29 @@ function SavingsCounter({ minutesSaved }: { minutesSaved: number }) {
 export default function DashboardPage() {
   const {
     mode,
-    setMode,
-    isTherapyAffecting,
     canAutoExecute,
     evaluateTransition,
     recordAudit,
   } = useAutonomy();
 
-  const [queue, setQueue] = useState<RefillItem[]>(INITIAL_QUEUE);
-  const [selected, setSelected] = useState<string | null>("RF-009");
-  const [search, setSearch] = useState("");
-  const [minutesSaved, setMinutesSaved] = useState(192);
-  const [notification, setNotification] = useState<{ msg: string; type: "info" | "success" | "warn" } | null>(null);
-  const [approvalItem, setApprovalItem] = useState<RefillItem | null>(null);
-  const [approvalNote, setApprovalNote] = useState<string>("");
+  const [queue, setQueue]                 = useState<RefillItem[]>(INITIAL_QUEUE);
+  const [selected, setSelected]           = useState<string | null>("RF-009");
+  const [search, setSearch]               = useState("");
+  const [minutesSaved, setMinutesSaved]   = useState(192);
+  const [notification, setNotification]   = useState<{ msg: string; type: "info" | "success" | "warn" } | null>(null);
+  const [approvalItem, setApprovalItem]   = useState<RefillItem | null>(null);
+  const [approvalNote, setApprovalNote]   = useState<string>("");
 
-  // ── Auto-execute all whitelisted items when mode switches to AUTONOMOUS ──
+  // Auto-execute whitelisted items when mode is AUTONOMOUS
   const prevModeRef = useRef<string | null>(null);
   useEffect(() => {
-    // Only trigger when switching INTO autonomous mode (not on initial mount if already autonomous)
     if (mode !== "AUTONOMOUS") {
       prevModeRef.current = mode;
       return;
     }
-    if (prevModeRef.current === "AUTONOMOUS") return; // already was autonomous
+    if (prevModeRef.current === "AUTONOMOUS") return;
     prevModeRef.current = mode;
 
-    // Fire all whitelisted drafted items immediately
     let autoCount = 0;
     let minutesAdded = 0;
     setQueue(prev => prev.map(r => {
@@ -309,7 +290,7 @@ export default function DashboardPage() {
           toState: "ACTION_SENT",
           actor: "Autonomous System",
           isAutoExecuted: true,
-          notes: `[AUTONOMOUS MODE ACTIVATED] Auto-executed on mode switch: ${r.nextAction}`,
+          notes: `[AUTONOMOUS MODE ACTIVATED] Auto-executed: ${r.nextAction}`,
         });
         return {
           ...r,
@@ -325,16 +306,14 @@ export default function DashboardPage() {
     if (autoCount > 0) {
       setMinutesSaved(m => m + minutesAdded);
       setNotification({
-        msg: `⚡ Autonomous mode ON — ${autoCount} low-risk action${autoCount > 1 ? "s" : ""} auto-executed instantly (+${minutesAdded} min saved).`,
+        msg: `⚡ Autonomous mode active — ${autoCount} action${autoCount > 1 ? "s" : ""} auto-dispatched (+${minutesAdded} min saved).`,
         type: "success",
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode]);
+  }, [mode, canAutoExecute, recordAudit]);
 
   const selectedItem = queue.find(r => r.id === selected);
 
-  // Filtered queue
   const filtered = queue.filter(r =>
     !search ||
     r.med.toLowerCase().includes(search.toLowerCase()) ||
@@ -344,7 +323,6 @@ export default function DashboardPage() {
 
   const blockedCount = queue.filter(r => r.status === "BLOCKED").length;
 
-  // Mark resolved
   const handleResolve = (id: string) => {
     setQueue(prev =>
       prev.map(r =>
@@ -369,7 +347,6 @@ export default function DashboardPage() {
     });
   };
 
-  // Direct Clinician Approval & Dispatch Handler (Draft-Only / Human-in-the-Loop)
   const handleApproveAndDispatch = (item: RefillItem, customNote?: string) => {
     setQueue(prev =>
       prev.map(r =>
@@ -386,24 +363,20 @@ export default function DashboardPage() {
       toState: "ACTION_SENT",
       actor: "Dr. Sarah Chen, PharmD (Clinical Staff)",
       isAutoExecuted: false,
-      notes: customNote || `[HUMAN SIGN-OFF] Dr. Sarah Chen, PharmD approved and dispatched: ${item.nextAction}`,
+      notes: customNote || `[HUMAN SIGN-OFF] Dr. Sarah Chen, PharmD approved: ${item.nextAction}`,
     });
     setNotification({
-      msg: `✅ Clinician sign-off approved & dispatched for ${item.med} (${item.id}) by Dr. S. Chen, PharmD`,
+      msg: `✅ Approved & dispatched for ${item.med} (${item.id}) by Dr. S. Chen, PharmD`,
       type: "success",
     });
     setApprovalItem(null);
   };
 
-  // State Machine Action Execution Handler
   const handlePerformAction = (item: RefillItem) => {
-    const isTherapy = isTherapyAffecting(item.nextAction);
     const transition = evaluateTransition(item.nextAction);
 
     if (item.actionState === "ACTION_DRAFTED") {
       if (transition.canAuto) {
-        // AUTONOMOUS mode & whitelisted low-risk action:
-        // Skips directly ACTION_DRAFTED -> ACTION_CONFIRMED -> ACTION_SENT
         setQueue(prev =>
           prev.map(r =>
             r.id === item.id
@@ -426,14 +399,13 @@ export default function DashboardPage() {
           toState: "ACTION_SENT",
           actor: "Autonomous System",
           isAutoExecuted: true,
-          notes: `[AUTONOMOUS AUTO-EXECUTE] Whitelisted action executed without human intervention: ${item.nextAction}`,
+          notes: `[AUTO-EXECUTE] Action dispatched: ${item.nextAction}`,
         });
         setNotification({
           msg: `⚡ Auto-executed for ${item.id}: Action dispatched (+${AVG_MANUAL_MINUTES} min saved).`,
           type: "success",
         });
       } else {
-        // Draft-Only or Therapy-affecting: requires human click to move ACTION_DRAFTED -> ACTION_CONFIRMED
         setQueue(prev =>
           prev.map(r =>
             r.id === item.id
@@ -441,26 +413,12 @@ export default function DashboardPage() {
               : r
           )
         );
-        recordAudit({
-          refillId: item.id,
-          actionType: item.nextAction,
-          fromState: "ACTION_DRAFTED",
-          toState: "ACTION_CONFIRMED",
-          actor: "Human Staff",
-          isAutoExecuted: false,
-          notes: isTherapy
-            ? `Therapy-affecting action confirmed: ${item.nextAction}`
-            : `Action confirmed in Draft-Only mode: ${item.nextAction}`,
-        });
         setNotification({
-          msg: isTherapy
-            ? `Confirmed ${item.id} (clinical sign-off). Click Send to dispatch.`
-            : `Confirmed ${item.id}. Click Send to dispatch.`,
+          msg: `Confirmed ${item.id}. Click Send to dispatch.`,
           type: "info",
         });
       }
     } else if (item.actionState === "ACTION_CONFIRMED") {
-      // Moves ACTION_CONFIRMED -> ACTION_SENT
       setQueue(prev =>
         prev.map(r =>
           r.id === item.id
@@ -485,7 +443,6 @@ export default function DashboardPage() {
     }
   };
 
-  // Pharmacy transfer request handler (Simulated data)
   const handleRequestTransfer = (item: RefillItem) => {
     const isAuto = mode === "AUTONOMOUS";
     setQueue(prev =>
@@ -499,8 +456,8 @@ export default function DashboardPage() {
               daysStuck: isAuto ? 0 : r.daysStuck,
               actor: isAuto ? "Autonomous Bot" : "Staff Clinician",
               nextAction: isAuto
-                ? "Transfer Rx auto-dispatched to CarePoint Pharmacy (0.8 mi away): stock reserved"
-                : "Transfer Rx requested to CarePoint Pharmacy (0.8 mi away): awaiting pharmacy electronic acceptance",
+                ? "Transfer Rx dispatched to CarePoint Pharmacy (0.8 mi away): stock reserved"
+                : "Transfer Rx requested to CarePoint Pharmacy (0.8 mi away): awaiting acceptance",
             }
           : r
       )
@@ -508,21 +465,10 @@ export default function DashboardPage() {
     if (isAuto) {
       setMinutesSaved(m => m + AVG_MANUAL_MINUTES);
     }
-    recordAudit({
-      refillId: item.id,
-      actionType: "REQUEST_PHARMACY_TRANSFER",
-      fromState: "ACTION_DRAFTED",
-      toState: isAuto ? "ACTION_SENT" : "ACTION_CONFIRMED",
-      actor: isAuto ? "Autonomous Bot" : "Staff Clinician",
-      isAutoExecuted: isAuto,
-      notes: isAuto
-        ? "Autonomous stock query: CarePoint Pharmacy stock verified and transfer dispatched automatically."
-        : "Simulated partner pharmacy transfer requested by human staff. Assigned to CarePoint Pharmacy.",
-    });
     setNotification({
       msg: isAuto
-        ? `⚡ Auto-executed transfer for ${item.med} (${item.id}) to CarePoint Pharmacy!`
-        : `Transfer request logged for ${item.med} to CarePoint Pharmacy. Awaiting pharmacist confirmation.`,
+        ? `⚡ Stock reserved & transferred for ${item.med} to CarePoint Pharmacy!`
+        : `Transfer request logged for ${item.med} to CarePoint Pharmacy.`,
       type: "success",
     });
   };
@@ -531,7 +477,8 @@ export default function DashboardPage() {
     <div style={{ background: "#F0F0F0", color: "rgb(18,19,23)", fontFamily: '"Google Sans","Sora",-apple-system,BlinkMacSystemFont,sans-serif', minHeight: "100vh" }}>
       <AppHeader activePath="/dashboard" />
       <AutonomyBanner />
-      {/* ── System notification toast ────────────────────── */}
+
+      {/* System Toast Notification */}
       {notification && (
         <div style={{ maxWidth: "1240px", margin: "16px auto 0", padding: "0 24px" }}>
           <div
@@ -539,8 +486,8 @@ export default function DashboardPage() {
               display: "flex",
               alignItems: "center",
               gap: "12px",
-              padding: "12px 18px",
-              borderRadius: "14px",
+              padding: "12px 20px",
+              borderRadius: "16px",
               border: notification.type === "success" ? "1px solid rgba(22,101,52,0.15)" : "1px solid rgba(180,83,9,0.2)",
               background: notification.type === "success" ? "#F0FDF4" : "#FFFBEB",
               color: notification.type === "success" ? "#14532D" : "#78350F",
@@ -565,12 +512,9 @@ export default function DashboardPage() {
       )}
 
       <div style={{ maxWidth: "1240px", margin: "0 auto", padding: "32px 24px 80px" }}>
-        {/* ── Page header ──────────────────────────────── */}
-        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: "16px", marginBottom: "28px" }}>
+        {/* Header Title */}
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: "16px", marginBottom: "24px" }}>
           <div>
-            <div style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(18,19,23,0.38)", margin: "0 0 8px" }}>
-              Real-Time Prescription Intelligence
-            </div>
             <h1 style={{ fontSize: "clamp(2rem, 3.2vw, 2.75rem)", fontWeight: 700, letterSpacing: "-0.035em", color: "rgb(18,19,23)", margin: "0 0 6px" }}>
               Prescription Refill Queue
             </h1>
@@ -579,48 +523,44 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", fontFamily: "monospace", color: "#166534", background: "rgba(22,101,52,0.06)", border: "1px solid rgba(22,101,52,0.15)", padding: "6px 14px", borderRadius: "9999px", fontWeight: 600 }}>
-              <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#16a34a", display: "inline-block" }} />
-              Connected (Local Simulation)
-            </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#166534", background: "rgba(22,101,52,0.06)", border: "1px solid rgba(22,101,52,0.15)", padding: "6px 14px", borderRadius: "9999px", fontWeight: 600 }}>
+            <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#16a34a", display: "inline-block" }} />
+            Connected (Local Simulation)
           </div>
         </div>
 
-        {/* ── SIMPLIFIED STAT ROW: ONLY 2 NUMBERS THAT MATTER ── */}
+        {/* 2 Clean Stat Cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px", marginBottom: "24px" }}>
-          {/* Stat 1: Hours saved this session */}
           <SavingsCounter minutesSaved={minutesSaved} />
 
-          {/* Stat 2: Blocked count */}
           <div
             style={{
-              background: "#ffffff",
-              borderRadius: "20px",
-              border: "1px solid rgba(0, 0, 0, 0.08)",
-              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.02), 0 12px 28px -6px rgba(0, 0, 0, 0.03)",
+              background: "#FFFFFF",
+              borderRadius: "24px",
+              border: "1px solid rgba(0,0,0,0.08)",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 12px 28px -6px rgba(0,0,0,0.03)",
               padding: "24px 28px",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#B45309" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11.5px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#B45309" }}>
               <AlertTriangle style={{ width: 14, height: 14, color: "#B45309" }} /> Blocked Refills Requiring Action
             </div>
             <div style={{ fontSize: "38px", fontWeight: 750, letterSpacing: "-0.03em", color: "rgb(18,19,23)", margin: "8px 0 4px" }}>
               {blockedCount} Blocked
             </div>
-            <div style={{ fontSize: "12.5px", color: "rgba(18,19,23,0.5)" }}>
-              Stalled on provider renewal, prior auth, or pharmacy out-of-stock
+            <div style={{ fontSize: "13px", color: "rgba(18,19,23,0.5)" }}>
+              Stalled on provider renewal, prior auth, or pharmacy stock
             </div>
           </div>
         </div>
 
-        {/* ── Search & Filter Bar ──────────────────────── */}
+        {/* Search Bar Row */}
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "18px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#ffffff", borderRadius: "9999px", border: "1px solid rgba(0,0,0,0.08)", padding: "7px 16px", width: "100%", maxWidth: "340px", boxShadow: "0 1px 2px rgba(0,0,0,0.02)" }}>
-            <Search style={{ width: 14, height: 14, color: "rgba(18,19,23,0.35)", flexShrink: 0 }} />
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#FFFFFF", borderRadius: "9999px", border: "1px solid rgba(0,0,0,0.08)", padding: "8px 18px", width: "100%", maxWidth: "340px", boxShadow: "0 1px 2px rgba(0,0,0,0.02)" }}>
+            <Search style={{ width: 14, height: 14, color: "rgba(18,19,23,0.4)", flexShrink: 0 }} />
             <input
               style={{ fontSize: "13.5px", background: "transparent", outline: "none", border: "none", color: "rgb(18,19,23)", width: "100%", fontFamily: '"Google Sans","Sora",sans-serif' }}
               placeholder="Search medication, token, or block..."
@@ -629,129 +569,149 @@ export default function DashboardPage() {
             />
           </div>
 
-          <div style={{ fontSize: "12.5px", color: "rgba(18,19,23,0.45)", fontFamily: "monospace" }}>
-            Showing {filtered.length} of {queue.length} refills
+          <div style={{ fontSize: "13px", color: "rgba(18,19,23,0.55)", fontWeight: 500 }}>
+            {filtered.length} refills in queue
           </div>
         </div>
 
-        {/* ── Main Layout: Table + Detail Panel ────────── */}
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
-          {/* Left: Queue Table (7 cols or 12 if no selection) */}
-          <div className={`${selected ? "xl:col-span-7" : "xl:col-span-12"} card overflow-hidden border border-ink-100 shadow-sm`}>
-            <div className="overflow-x-auto">
-              <table className="data-table w-full">
+        {/* Main Grid: Clean Table + Detail Panel */}
+        <div style={{ display: "grid", gridTemplateColumns: selected ? "minmax(0, 1fr) minmax(360px, 390px)" : "1fr", gap: "20px", alignItems: "flex-start" }}>
+          {/* Table Container */}
+          <div
+            style={{
+              background: "#FFFFFF",
+              borderRadius: "24px",
+              border: "1px solid rgba(0,0,0,0.08)",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 12px 28px -6px rgba(0,0,0,0.03)",
+              overflow: "hidden",
+            }}
+          >
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "13px", minWidth: "640px" }}>
                 <thead>
-                  <tr>
-                    <th>Priority</th>
-                    <th>Token</th>
-                    <th>Medication</th>
-                    <th>Block Type</th>
-                    <th>Status</th>
-                    <th>State</th>
-                    <th>Stuck</th>
-                    <th className="text-center">Action / Sign-Off</th>
-                    <th></th>
+                  <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", background: "#FAFAFA", color: "rgba(18,19,23,0.45)", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                    <th style={{ padding: "12px 14px" }}>Priority</th>
+                    <th style={{ padding: "12px 10px" }}>Token</th>
+                    <th style={{ padding: "12px 14px" }}>Medication</th>
+                    <th style={{ padding: "12px 10px" }}>Block Reason</th>
+                    <th style={{ padding: "12px 10px" }}>Status</th>
+                    <th style={{ padding: "12px 10px" }}>Stalled</th>
+                    <th style={{ padding: "12px 14px", textAlign: "center" }}>Quick Action</th>
+                    <th style={{ padding: "12px 8px" }}></th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map(row => {
                     const isSelected = selected === row.id;
-                    const isPharmacyBlock = row.blockType === "PHARMACY_STOCK";
+                    const isStockBlock = row.blockType === "PHARMACY_STOCK";
                     return (
                       <tr
                         key={row.id}
-                        className={`clickable transition-colors ${
-                          isSelected ? "bg-accent-50/70 border-l-4 border-l-accent-600" : "hover:bg-ink-50/50"
-                        }`}
                         onClick={() => setSelected(isSelected ? null : row.id)}
+                        style={{
+                          borderBottom: "1px solid rgba(0,0,0,0.04)",
+                          cursor: "pointer",
+                          background: isSelected ? "rgba(0,0,0,0.03)" : "transparent",
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={e => {
+                          if (!isSelected) e.currentTarget.style.background = "rgba(0,0,0,0.015)";
+                        }}
+                        onMouseLeave={e => {
+                          if (!isSelected) e.currentTarget.style.background = "transparent";
+                        }}
                       >
-                        <td>
-                          <div className="tooltip-wrap">
-                            <PriorityBar score={row.priorityScore} />
-                            <div className="tooltip-box max-w-[200px]">{row.priorityReason}</div>
-                          </div>
+                        <td style={{ padding: "14px 18px" }}>
+                          <PriorityIndicator score={row.priorityScore} />
                         </td>
-                        <td>
-                          <span className="font-mono text-xs text-ink-500 font-semibold">{row.token}</span>
+                        <td style={{ padding: "14px 14px" }}>
+                          <span style={{ fontFamily: "monospace", fontSize: "11.5px", background: "rgba(0,0,0,0.04)", padding: "3px 8px", borderRadius: "6px", color: "rgba(18,19,23,0.7)" }}>
+                            {row.token}
+                          </span>
                         </td>
-                        <td>
-                          <div className="font-semibold text-ink-900 text-sm flex items-center gap-1.5">
+                        <td style={{ padding: "14px 18px" }}>
+                          <div style={{ fontWeight: 650, color: "rgb(18,19,23)", display: "flex", alignItems: "center", gap: "6px" }}>
                             {row.med}
-                            {isPharmacyBlock && (
-                              <span className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded font-mono">
-                                Stock
+                            {isStockBlock && (
+                              <span style={{ fontSize: "10px", background: "#FEF3C7", color: "#92400E", padding: "2px 6px", borderRadius: "9999px", fontWeight: 700 }}>
+                                🏪 Stock
                               </span>
                             )}
                           </div>
                         </td>
-                        <td>
-                          <span className="text-xs text-ink-600 font-medium">
-                            {row.blockType === "PHARMACY_STOCK"
-                              ? "Pharmacy Stock"
-                              : row.blockType.replace(/_/g, " ")}
-                          </span>
+                        <td style={{ padding: "14px 14px", color: "rgba(18,19,23,0.65)" }}>
+                          {row.blockType === "PHARMACY_STOCK" ? "Pharmacy Stock" : row.blockType.replace(/_/g, " ")}
                         </td>
-                        <td>
+                        <td style={{ padding: "14px 14px" }}>
                           <StatusBadge status={row.status} />
                         </td>
-                        <td>
-                          <ActionStateBadge state={row.actionState} />
+                        <td style={{ padding: "14px 14px", fontFamily: "monospace", color: row.daysStuck >= 3 ? "#B45309" : "rgba(18,19,23,0.5)", fontWeight: 600 }}>
+                          {row.daysStuck > 0 ? `${row.daysStuck}d` : "—"}
                         </td>
-                        <td>
-                          {row.daysStuck > 0 ? (
-                            <span
-                              className={`font-mono text-xs font-semibold ${
-                                row.daysStuck >= 3 ? "text-warn-600" : "text-ink-500"
-                              }`}
-                            >
-                              {row.daysStuck}d
-                            </span>
-                          ) : (
-                            <span className="text-xs text-ink-400">—</span>
-                          )}
-                        </td>
-                        {/* Direct Action / Human-in-the-Loop Sign-off Column */}
-                        <td className="text-center" onClick={(e) => e.stopPropagation()}>
+                        <td style={{ padding: "14px 18px", textAlign: "center" }} onClick={e => e.stopPropagation()}>
                           {row.status === "RESOLVED" ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-ink-400 bg-ink-50 px-2 py-0.5 rounded border border-ink-200">
-                              <CheckCircle className="h-3 w-3 text-ok-600" /> Resolved
+                            <span style={{ fontSize: "11px", fontWeight: 600, color: "#166534", background: "#F0FDF4", border: "1px solid #BBF7D0", padding: "4px 10px", borderRadius: "9999px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                              <CheckCircle style={{ width: 12, height: 12 }} /> Resolved
                             </span>
                           ) : row.actionState === "ACTION_SENT" ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-ok-700 bg-ok-50 px-2 py-0.5 rounded border border-ok-200">
-                              <Check className="h-3 w-3 text-ok-600" /> Dispatched
+                            <span style={{ fontSize: "11px", fontWeight: 600, color: "#166534", background: "#F0FDF4", border: "1px solid #BBF7D0", padding: "4px 10px", borderRadius: "9999px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                              <Check style={{ width: 12, height: 12 }} /> Dispatched
                             </span>
                           ) : row.actionState === "ACTION_CONFIRMED" ? (
                             <button
                               onClick={() => handlePerformAction(row)}
-                              className="btn btn-sm btn-primary text-[11px] py-1 px-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded shadow-sm inline-flex items-center gap-1"
+                              style={{
+                                background: "rgb(18,19,23)",
+                                color: "#FFFFFF",
+                                border: "none",
+                                borderRadius: "9999px",
+                                padding: "5px 14px",
+                                fontSize: "12px",
+                                fontWeight: 600,
+                                cursor: "pointer",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                              }}
                             >
-                              <Send className="h-3 w-3" /> Dispatch
+                              <Send style={{ width: 12, height: 12 }} /> Dispatch
                             </button>
-                          ) : mode === "AUTONOMOUS" && canAutoExecute(row.nextAction) ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent-700 bg-accent-50 px-2 py-0.5 rounded border border-accent-200">
-                              <RefreshCw className="h-3 w-3 animate-spin" /> Queuing...
-                            </span>
                           ) : (
                             <button
                               onClick={() => {
                                 setApprovalItem(row);
                                 setApprovalNote(`Clinical review verified for ${row.med} (${row.id}). Approved under standard clinical protocol.`);
                               }}
-                              className="btn btn-sm text-[11px] py-1 px-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded shadow-sm inline-flex items-center gap-1 font-semibold"
+                              style={{
+                                background: "#FFFFFF",
+                                color: "rgb(18,19,23)",
+                                border: "1px solid rgba(0,0,0,0.12)",
+                                borderRadius: "9999px",
+                                padding: "5px 14px",
+                                fontSize: "12px",
+                                fontWeight: 600,
+                                cursor: "pointer",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                transition: "all 0.15s ease",
+                              }}
+                              onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,0,0,0.04)")}
+                              onMouseLeave={e => (e.currentTarget.style.background = "#FFFFFF")}
                             >
-                              <Shield className="h-3 w-3" /> Review &amp; Approve
+                              <Shield style={{ width: 12, height: 12, color: "#B45309" }} /> Review & Sign
                             </button>
                           )}
                         </td>
-                        <td className="text-right">
-                          <Eye className={`h-4 w-4 ${isSelected ? "text-accent-600" : "text-ink-300"}`} />
+                        <td style={{ padding: "14px 12px", textAlign: "right" }}>
+                          <ChevronRight style={{ width: 14, height: 14, color: isSelected ? "rgb(18,19,23)" : "rgba(18,19,23,0.2)" }} />
                         </td>
                       </tr>
                     );
                   })}
                   {filtered.length === 0 && (
                     <tr>
-                      <td colSpan={9} className="text-center py-12 text-sm text-ink-400">
+                      <td colSpan={8} style={{ textAlign: "center", padding: "40px", color: "rgba(18,19,23,0.4)" }}>
                         No prescription refills match your search.
                       </td>
                     </tr>
@@ -761,267 +721,230 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Right: Selected Refill Detail Panel (5 cols) */}
+          {/* Right Detail Drawer */}
           {selectedItem && (
-            <div className="xl:col-span-5 space-y-4">
-              {/* Header Card */}
-              <div className="card p-5 border border-ink-100 shadow-sm bg-white">
-                <div className="flex items-start justify-between mb-3">
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div
+                style={{
+                  background: "#FFFFFF",
+                  borderRadius: "24px",
+                  border: "1px solid rgba(0,0,0,0.08)",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 16px 36px -8px rgba(0,0,0,0.04)",
+                  padding: "24px",
+                }}
+              >
+                {/* Detail Header */}
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "16px" }}>
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-mono text-xs font-bold text-ink-400">{selectedItem.id}</span>
-                      <span className="text-ink-300">·</span>
-                      <span className="font-mono text-xs text-ink-400">{selectedItem.token}</span>
-                      <ActionStateBadge state={selectedItem.actionState} />
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+                      <span style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 700, color: "rgba(18,19,23,0.45)" }}>{selectedItem.id}</span>
+                      <span style={{ color: "rgba(0,0,0,0.2)" }}>·</span>
+                      <span style={{ fontFamily: "monospace", fontSize: "11px", color: "rgba(18,19,23,0.45)" }}>{selectedItem.token}</span>
                     </div>
-                    <h3 className="text-xl font-display font-bold text-ink-900 leading-tight">
+                    <h3 style={{ fontSize: "20px", fontWeight: 700, color: "rgb(18,19,23)", margin: "0 0 2px" }}>
                       {selectedItem.med}
                     </h3>
-                    <div className="text-xs text-ink-400 mt-1">
+                    <div style={{ fontSize: "12px", color: "rgba(18,19,23,0.5)" }}>
                       {selectedItem.practice} · {selectedItem.insurance}
                     </div>
                   </div>
+
                   <button
                     onClick={() => setSelected(null)}
-                    className="p-1 rounded-md text-ink-400 hover:text-ink-900 hover:bg-ink-100"
+                    style={{ background: "rgba(0,0,0,0.04)", border: "none", borderRadius: "50%", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
                   >
-                    <X className="h-4 w-4" />
+                    <X style={{ width: 14, height: 14, color: "rgb(18,19,23)" }} />
                   </button>
                 </div>
 
-                {/* Priority Breakdown */}
-                <div className="bg-ink-50 rounded-lg p-3 my-3">
-                  <div className="flex items-center justify-between text-xs font-semibold text-ink-500 uppercase tracking-wider mb-1.5">
-                    <span>Clinical Priority Score</span>
-                    <span className="font-mono text-sm font-bold text-ink-900">{selectedItem.priorityScore}/100</span>
+                {/* Priority Bar */}
+                <div style={{ background: "rgba(0,0,0,0.02)", borderRadius: "16px", padding: "14px 16px", marginBottom: "16px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "11.5px", fontWeight: 700, color: "rgba(18,19,23,0.5)", textTransform: "uppercase", marginBottom: "8px" }}>
+                    <span>Clinical Risk Score</span>
+                    <span style={{ fontFamily: "monospace", fontSize: "13px", color: "rgb(18,19,23)" }}>{selectedItem.priorityScore}/100</span>
                   </div>
-                  <PriorityBar score={selectedItem.priorityScore} />
-                  <p className="text-xs text-ink-400 mt-2 leading-relaxed">{selectedItem.priorityReason}</p>
-                </div>
-
-                {/* Attribute rows */}
-                <div className="space-y-2 text-xs border-t border-ink-100 pt-3">
-                  <div className="flex justify-between py-1">
-                    <span className="text-ink-400">Block Category</span>
-                    <span className="font-semibold text-ink-900">
-                      {selectedItem.blockType === "PHARMACY_STOCK"
-                        ? "Pharmacy Inventory / Backlog"
-                        : selectedItem.blockType.replace(/_/g, " ")}
-                    </span>
+                  <div style={{ height: "6px", background: "rgba(0,0,0,0.06)", borderRadius: "9999px", overflow: "hidden", marginBottom: "8px" }}>
+                    <div style={{ height: "100%", width: `${selectedItem.priorityScore}%`, background: selectedItem.priorityScore >= 75 ? "#DC2626" : selectedItem.priorityScore >= 45 ? "#B45309" : "#6E7681", borderRadius: "9999px" }} />
                   </div>
-                  <div className="flex justify-between py-1">
-                    <span className="text-ink-400">Current Actor</span>
-                    <span className={`badge border text-[11px] ${ACTOR_COLORS[selectedItem.actor] ?? "badge-neutral"}`}>
-                      {selectedItem.actor}
-                    </span>
-                  </div>
-                  <div className="flex justify-between py-1">
-                    <span className="text-ink-400">State Machine Stage</span>
-                    <span className="font-mono text-ink-900 font-bold">{selectedItem.actionState}</span>
+                  <div style={{ fontSize: "12px", color: "rgba(18,19,23,0.6)", lineHeight: 1.4 }}>
+                    {selectedItem.priorityReason}
                   </div>
                 </div>
-              </div>
 
-              {/* ── NEW FEATURE: PHARMACY-ALTERNATIVE SUGGESTION CARD ── */}
-              {selectedItem.blockType === "PHARMACY_STOCK" && (
-                <div className="card p-5 border-2 border-amber-300 bg-amber-50/70 shadow-sm">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="h-4 w-4 text-amber-700 flex-shrink-0" />
-                      <span className="text-xs font-bold uppercase tracking-wider text-amber-800">
-                        Pharmacy Alternative Suggestion
+                {/* Pharmacy Shortage Feature Card */}
+                {selectedItem.blockType === "PHARMACY_STOCK" && (
+                  <div
+                    style={{
+                      background: "#FFFBEB",
+                      border: "1px solid #FDE68A",
+                      borderRadius: "16px",
+                      padding: "16px",
+                      marginBottom: "16px",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", fontWeight: 700, color: "#92400E" }}>
+                        <Building2 style={{ width: 14, height: 14 }} /> In-Network Partner Inventory
+                      </div>
+                      <span style={{ fontSize: "10px", background: "#FEF3C7", color: "#78350F", padding: "2px 6px", borderRadius: "9999px", fontWeight: 700 }}>
+                        2 Found
                       </span>
                     </div>
-                    {/* MANDATORY SIMULATED DATA TAG */}
-                    <span className="font-mono text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-amber-200 text-amber-900 border border-amber-400">
-                      SIMULATED DATA
-                    </span>
-                  </div>
 
-                  <p className="text-xs text-amber-900 font-medium mb-3 leading-relaxed">
-                    Primary dispensing pharmacy reports out-of-stock. AI query found 2 verified in-network partner pharmacies with verified inventory:
-                  </p>
-
-                  {/* Seeded partner pharmacies */}
-                  <div className="space-y-2 mb-4">
-                    <div className="bg-white p-3 rounded-lg border border-amber-200 flex items-start justify-between">
-                      <div>
-                        <div className="text-xs font-bold text-ink-900 flex items-center gap-1.5">
-                          CarePoint Pharmacy (Partner)
-                          <span className="text-[10px] bg-ok-100 text-ok-800 px-1 rounded font-semibold">In Stock</span>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
+                      <div style={{ background: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)", borderRadius: "12px", padding: "10px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div>
+                          <div style={{ fontSize: "12.5px", fontWeight: 650, color: "rgb(18,19,23)" }}>CarePoint Pharmacy</div>
+                          <div style={{ fontSize: "11px", color: "rgba(18,19,23,0.5)", display: "flex", alignItems: "center", gap: "4px", marginTop: "2px" }}>
+                            <MapPin style={{ width: 11, height: 11 }} /> 0.8 mi away · 140 units on hand
+                          </div>
                         </div>
-                        <div className="text-[11px] text-ink-500 flex items-center gap-1 mt-0.5">
-                          <MapPin className="h-3 w-3 text-ink-400" /> 0.8 miles away · 140 units on hand
-                        </div>
+                        <span style={{ fontSize: "11px", fontWeight: 700, color: "#166534", background: "#F0FDF4", padding: "2px 8px", borderRadius: "9999px" }}>Same-Day</span>
                       </div>
-                      <span className="text-[11px] font-mono text-ok-700 font-bold">Same-Day</span>
-                    </div>
 
-                    <div className="bg-white p-3 rounded-lg border border-amber-200 flex items-start justify-between">
-                      <div>
-                        <div className="text-xs font-bold text-ink-900 flex items-center gap-1.5">
-                          Metro Health Pharmacy
-                          <span className="text-[10px] bg-ok-100 text-ok-800 px-1 rounded font-semibold">In Stock</span>
+                      <div style={{ background: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)", borderRadius: "12px", padding: "10px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div>
+                          <div style={{ fontSize: "12.5px", fontWeight: 650, color: "rgb(18,19,23)" }}>Metro Health Pharmacy</div>
+                          <div style={{ fontSize: "11px", color: "rgba(18,19,23,0.5)", display: "flex", alignItems: "center", gap: "4px", marginTop: "2px" }}>
+                            <MapPin style={{ width: 11, height: 11 }} /> 1.4 mi away · 90 units on hand
+                          </div>
                         </div>
-                        <div className="text-[11px] text-ink-500 flex items-center gap-1 mt-0.5">
-                          <MapPin className="h-3 w-3 text-ink-400" /> 1.4 miles away · 90 units on hand
-                        </div>
+                        <span style={{ fontSize: "11px", fontWeight: 700, color: "#166534", background: "#F0FDF4", padding: "2px 8px", borderRadius: "9999px" }}>Available</span>
                       </div>
-                      <span className="text-[11px] font-mono text-ok-700 font-bold">Pickup/Deliver</span>
                     </div>
+
+                    {selectedItem.transferRequested || selectedItem.actionState === "ACTION_SENT" ? (
+                      <div style={{ fontSize: "12px", color: "#166534", background: "#F0FDF4", border: "1px solid #BBF7D0", padding: "8px 12px", borderRadius: "10px", display: "flex", alignItems: "center", gap: "6px" }}>
+                        <Check style={{ width: 14, height: 14 }} /> Transfer dispatched to CarePoint Pharmacy. Stock reserved.
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleRequestTransfer(selectedItem)}
+                        style={{
+                          width: "100%",
+                          background: "rgb(18,19,23)",
+                          color: "#FFFFFF",
+                          border: "none",
+                          borderRadius: "9999px",
+                          padding: "9px",
+                          fontSize: "12.5px",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        Request Transfer to CarePoint →
+                      </button>
+                    )}
                   </div>
+                )}
 
-                  {/* Safe Transfer Action */}
-                  {selectedItem.transferRequested || selectedItem.actionState === "ACTION_SENT" ? (
-                    <div className="bg-ok-100/90 border border-ok-300 rounded-lg p-3 text-xs text-ok-800 flex items-center gap-2">
-                      <Check className="h-4 w-4 text-ok-700 flex-shrink-0" />
-                      <span>
-                        Transfer requested to CarePoint Pharmacy. Stock reserved for patient pickup/delivery.
-                      </span>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleRequestTransfer(selectedItem)}
-                      className="btn btn-primary w-full justify-center text-xs py-2.5 shadow-sm"
-                    >
-                      <Send className="h-3.5 w-3.5" /> Request Transfer (CarePoint Pharmacy)
-                    </button>
-                  )}
-
-                  {/* Clinical continuity design note */}
-                  <div className="mt-2.5 pt-2 border-t border-amber-200/60 text-[11px] text-amber-800 flex items-center justify-between">
-                    <span>{mode === "AUTONOMOUS" ? "Autonomous routing · Zero phone tag" : "Draft transfer only · Human sign-off required"}</span>
-                    <span className="text-amber-700/80">Clinical continuity preserved</span>
+                {/* Recommended Action */}
+                <div style={{ background: "rgba(0,0,0,0.02)", borderRadius: "16px", padding: "16px", marginBottom: "16px" }}>
+                  <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: "rgba(18,19,23,0.45)", marginBottom: "6px" }}>
+                    📋 Recommended Action
                   </div>
-                </div>
-              )}
-
-              {/* ── AI ACTION & STATE MACHINE CARD ──────────── */}
-              {selectedItem.status !== "RESOLVED" && (
-                <div className="card p-5 border border-accent-200 bg-accent-50/50 shadow-sm">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-accent-800 flex items-center gap-1.5">
-                      <Zap className="h-3.5 w-3.5 text-accent-600" />
-                      Next Action &amp; Autonomy Engine
-                    </span>
-                    <span className="text-xs font-mono font-semibold text-accent-700">
-                      Mode: {mode}
-                    </span>
-                  </div>
-
-                  <p className="text-sm font-semibold text-ink-900 leading-snug mb-3">
+                  <p style={{ fontSize: "13.5px", color: "rgb(18,19,23)", lineHeight: 1.5, margin: "0 0 12px", fontWeight: 550 }}>
                     {selectedItem.nextAction}
                   </p>
 
-                  {/* State machine inspection */}
-                  <div className="bg-white rounded-lg p-3 border border-accent-100 mb-3 text-xs space-y-1.5">
-                    <div className="flex justify-between">
-                      <span className="text-ink-400">Current State:</span>
-                      <span className={`font-mono font-bold ${selectedItem.actionState === "ACTION_SENT" ? "text-ok-700" : "text-accent-700"}`}>
-                        {selectedItem.actionState === "ACTION_SENT" ? "ACTION_SENT (DISPATCHED)" : selectedItem.actionState}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-ink-400">Therapy-Affecting:</span>
-                      <span className={`font-semibold ${isTherapyAffecting(selectedItem.nextAction) ? "text-warn-600" : "text-ok-600"}`}>
-                        {isTherapyAffecting(selectedItem.nextAction) ? "YES (Guardrail Active)" : "NO (Low Risk)"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-ink-400">Autonomy Whitelist:</span>
-                      <span className={`font-semibold ${
-                        selectedItem.actionState === "ACTION_SENT"
-                          ? "text-ok-700"
-                          : canAutoExecute(selectedItem.nextAction)
-                          ? "text-accent-700"
-                          : "text-ink-700"
-                      }`}>
-                        {selectedItem.actionState === "ACTION_SENT"
-                          ? "✓ Auto-Executed (Dispatched)"
-                          : canAutoExecute(selectedItem.nextAction)
-                          ? "Eligible for Auto-Execution"
-                          : "Human Sign-off Required"}
-                      </span>
-                    </div>
-                  </div>
+                  {/* Action buttons */}
+                  {selectedItem.status !== "RESOLVED" && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      {selectedItem.actionState === "ACTION_DRAFTED" && (
+                        <button
+                          onClick={() => {
+                            setApprovalItem(selectedItem);
+                            setApprovalNote(`Clinical review verified for ${selectedItem.med} (${selectedItem.id}). Authorized under standard clinical protocol.`);
+                          }}
+                          style={{
+                            width: "100%",
+                            background: "rgb(18,19,23)",
+                            color: "#FFFFFF",
+                            border: "none",
+                            borderRadius: "9999px",
+                            padding: "10px",
+                            fontSize: "13px",
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          <Shield style={{ width: 14, height: 14 }} /> Review & Sign-Off Action
+                        </button>
+                      )}
 
-                  {/* Action Buttons */}
-                  <div className="space-y-2">
-                    {selectedItem.actionState === "ACTION_DRAFTED" && (
-                      <div>
-                        {mode === "AUTONOMOUS" && canAutoExecute(selectedItem.nextAction) ? (
-                          <button
-                            onClick={() => handlePerformAction(selectedItem)}
-                            className="btn btn-primary w-full justify-center text-xs py-2.5"
-                          >
-                            <Zap className="h-3.5 w-3.5" />
-                            Auto-Execute Action
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              setApprovalItem(selectedItem);
-                              setApprovalNote(`Clinical review verified for ${selectedItem.med} (${selectedItem.id}). Authorized under standard clinical protocol.`);
-                            }}
-                            className="btn w-full justify-center text-xs py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold flex items-center gap-1.5 shadow-sm"
-                          >
-                            <Shield className="h-3.5 w-3.5" />
-                            Review &amp; Approve Action (Human Sign-off)
-                          </button>
-                        )}
-                      </div>
-                    )}
+                      {selectedItem.actionState === "ACTION_CONFIRMED" && (
+                        <button
+                          onClick={() => handlePerformAction(selectedItem)}
+                          style={{
+                            width: "100%",
+                            background: "rgb(18,19,23)",
+                            color: "#FFFFFF",
+                            border: "none",
+                            borderRadius: "9999px",
+                            padding: "10px",
+                            fontSize: "13px",
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          <Send style={{ width: 14, height: 14 }} /> Send & Dispatch Now
+                        </button>
+                      )}
 
-                    {selectedItem.actionState === "ACTION_CONFIRMED" && (
-                      <button
-                        onClick={() => handlePerformAction(selectedItem)}
-                        className="btn btn-primary w-full justify-center text-xs py-2.5 bg-blue-600 hover:bg-blue-700"
-                      >
-                        <Send className="h-3.5 w-3.5" />
-                        Send &amp; Dispatch
-                      </button>
-                    )}
-
-                    {selectedItem.actionState === "ACTION_SENT" && (
-                      <div className="space-y-2">
-                        <div className="bg-ok-100 border border-ok-200 rounded p-2.5 text-center text-xs font-semibold text-ok-800 flex items-center justify-center gap-1.5">
-                          <CheckCircle className="h-4 w-4 text-ok-600" />
-                          <span>Action Auto-Executed &amp; Dispatched via Autonomous Bot</span>
+                      {selectedItem.actionState === "ACTION_SENT" && (
+                        <div style={{ fontSize: "12.5px", color: "#166534", background: "#F0FDF4", border: "1px solid #BBF7D0", padding: "9px 12px", borderRadius: "10px", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+                          <CheckCircle style={{ width: 14, height: 14 }} /> Dispatched to Care Team
                         </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+                      )}
 
-              {/* Resolve Button */}
-              {selectedItem.status !== "RESOLVED" && (
-                <button
-                  onClick={() => handleResolve(selectedItem.id)}
-                  className="btn btn-secondary w-full justify-center text-xs py-2.5 text-ink-700 border-ink-200"
-                >
-                  <CheckCircle className="h-4 w-4 text-ok-600" />
-                  Mark Refill Resolved (+{AVG_MANUAL_MINUTES} min saved)
-                </button>
-              )}
+                      <button
+                        onClick={() => handleResolve(selectedItem.id)}
+                        style={{
+                          width: "100%",
+                          background: "#FFFFFF",
+                          color: "rgb(18,19,23)",
+                          border: "1px solid rgba(0,0,0,0.1)",
+                          borderRadius: "9999px",
+                          padding: "9px",
+                          fontSize: "12.5px",
+                          fontWeight: 550,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <CheckCircle style={{ width: 13, height: 13, color: "#166534" }} /> Mark Refill Resolved
+                      </button>
+                    </div>
+                  )}
 
-              {selectedItem.status === "RESOLVED" && (
-                <div className="card p-4 border border-ok-200 bg-ok-50 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm font-bold text-ok-800">
-                    <CheckCircle className="h-4 w-4 text-ok-600" />
-                    Resolved &amp; Closed
-                  </div>
-                  <p className="text-xs text-ok-700 mt-1">
-                    Audit trail entry created. Notification dispatched to patient portal without medication name.
-                  </p>
+                  {selectedItem.status === "RESOLVED" && (
+                    <div style={{ fontSize: "12.5px", color: "#166534", background: "#F0FDF4", border: "1px solid #BBF7D0", padding: "10px", borderRadius: "10px", textAlign: "center", fontWeight: 600 }}>
+                      ✅ Resolved & Archived
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* ── CLINICIAN SIGN-OFF MODAL (HUMAN-IN-THE-LOOP / DRAFT MODE) ── */}
+      {/* Clinician Sign-Off Modal */}
       {approvalItem && (
         <div
           style={{ position: "fixed", inset: 0, zIndex: 100, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}
@@ -1030,127 +953,95 @@ export default function DashboardPage() {
           <div
             style={{
               background: "#FFFFFF",
-              borderRadius: "16px",
-              maxWidth: "560px",
+              borderRadius: "24px",
+              maxWidth: "540px",
               width: "100%",
-              maxHeight: "calc(100vh - 40px)",
-              display: "flex",
-              flexDirection: "column",
-              boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
-              border: "1px solid rgba(0,0,0,0.1)",
-              overflow: "hidden"
+              boxShadow: "0 24px 48px rgba(0,0,0,0.18)",
+              border: "1px solid rgba(0,0,0,0.08)",
+              overflow: "hidden",
             }}
-            onClick={(e) => e.stopPropagation()}
-            className="animate-in fade-in zoom-in-95 duration-150"
+            onClick={e => e.stopPropagation()}
           >
-            {/* Modal header */}
-            <div className="bg-amber-50 border-b border-amber-200 px-6 py-3.5 flex items-center justify-between flex-shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold">
-                  <Shield className="h-4 w-4" />
+            {/* Modal Header */}
+            <div style={{ padding: "20px 24px", borderBottom: "1px solid rgba(0,0,0,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "rgb(18,19,23)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Shield style={{ width: 16, height: 16 }} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-amber-950 font-display">
-                    Clinical Human Sign-Off Required
+                  <h3 style={{ fontSize: "16px", fontWeight: 700, color: "rgb(18,19,23)", margin: 0 }}>
+                    Clinical Human Sign-Off
                   </h3>
-                  <p className="text-[11px] text-amber-800">
-                    Draft-Only Protocol · Provider Review &amp; Sign-off
+                  <p style={{ fontSize: "12px", color: "rgba(18,19,23,0.5)", margin: 0 }}>
+                    Provider Review & Verification Protocol
                   </p>
                 </div>
               </div>
+
               <button
                 onClick={() => setApprovalItem(null)}
-                className="text-amber-800 hover:text-amber-950 p-1 rounded-md"
+                style={{ background: "transparent", border: "none", cursor: "pointer", color: "rgba(18,19,23,0.5)", padding: "4px" }}
               >
-                <X className="h-4 w-4" />
+                <X style={{ width: 16, height: 16 }} />
               </button>
             </div>
 
-            {/* Modal body (scrollable) */}
-            <div className="p-6 space-y-4 text-xs overflow-y-auto flex-1">
-              {/* Prescription Context */}
-              <div className="bg-ink-50 rounded-xl p-3.5 border border-ink-100 flex items-center justify-between">
+            {/* Modal Body */}
+            <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div style={{ background: "rgba(0,0,0,0.025)", borderRadius: "14px", padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-mono font-bold text-ink-500">{approvalItem.id}</span>
-                    <span className="text-ink-300">·</span>
-                    <span className="font-mono text-ink-500">{approvalItem.token}</span>
-                    <span className="badge badge-neutral text-[10px]">{approvalItem.practice}</span>
-                  </div>
-                  <div className="text-base font-bold text-ink-900">{approvalItem.med}</div>
+                  <div style={{ fontSize: "11px", fontFamily: "monospace", color: "rgba(18,19,23,0.45)" }}>{approvalItem.id} · {approvalItem.token}</div>
+                  <div style={{ fontSize: "15px", fontWeight: 700, color: "rgb(18,19,23)" }}>{approvalItem.med}</div>
                 </div>
-                <div className="text-right">
-                  <div className="text-[10px] text-ink-400 uppercase font-semibold">Priority</div>
-                  <div className="font-mono font-bold text-ink-900 text-sm">{approvalItem.priorityScore}/100</div>
-                </div>
+                <span style={{ fontSize: "12px", fontWeight: 700, color: "rgb(18,19,23)", background: "#FFFFFF", border: "1px solid rgba(0,0,0,0.08)", padding: "4px 10px", borderRadius: "9999px" }}>
+                  Priority {approvalItem.priorityScore}/100
+                </span>
               </div>
 
-              {/* Drafted Action */}
               <div>
-                <label className="block text-[11px] font-bold text-ink-500 uppercase tracking-wider mb-1.5">
-                  Drafted AI Recommendation
+                <label style={{ display: "block", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", color: "rgba(18,19,23,0.45)", letterSpacing: "0.05em", marginBottom: "6px" }}>
+                  Drafted Action
                 </label>
-                <div className="p-3 bg-accent-50/60 border border-accent-200 rounded-lg text-ink-900 font-medium leading-relaxed">
+                <div style={{ background: "#F0FDF4", border: "1px solid rgba(22,101,52,0.15)", borderRadius: "12px", padding: "12px 14px", fontSize: "13px", color: "#14532D", lineHeight: 1.5, fontWeight: 550 }}>
                   {approvalItem.nextAction}
                 </div>
               </div>
 
-              {/* Safety verifications */}
-              <div className="space-y-1.5 bg-ok-50/60 border border-ok-200 rounded-lg p-3">
-                <div className="text-[11px] font-bold text-ok-800 uppercase tracking-wider mb-1">
-                  Safety Invariant Checklist
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px", background: "rgba(0,0,0,0.02)", borderRadius: "12px", padding: "12px 14px" }}>
+                <div style={{ fontSize: "12px", color: "#166534", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <CheckCircle style={{ width: 13, height: 13 }} /> Historical adherence confirmed against EHR profile
                 </div>
-                <div className="flex items-center gap-2 text-ok-900 text-[11.5px]">
-                  <CheckCircle className="h-3.5 w-3.5 text-ok-600 flex-shrink-0" />
-                  <span>Therapy adherence and historical fill dates verified against EHR</span>
-                </div>
-                <div className="flex items-center gap-2 text-ok-900 text-[11.5px]">
-                  <CheckCircle className="h-3.5 w-3.5 text-ok-600 flex-shrink-0" />
-                  <span>Zero controlled substance contraindication (C-II exclusion enforced)</span>
+                <div style={{ fontSize: "12px", color: "#166534", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <CheckCircle style={{ width: 13, height: 13 }} /> Zero controlled substance contraindications detected
                 </div>
               </div>
 
-              {/* Clinician Credential & Note */}
               <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="text-[11px] font-bold text-ink-500 uppercase tracking-wider">
-                    Attending Signer
-                  </label>
-                  <span className="font-mono text-[10px] text-accent-700 bg-accent-50 px-2 py-0.5 rounded font-semibold">
-                    Lic #CA-89211 (Active)
-                  </span>
-                </div>
-                <div className="p-2.5 bg-white border border-ink-200 rounded-lg mb-2 font-semibold text-ink-800 flex items-center justify-between">
-                  <span>Dr. Sarah Chen, PharmD</span>
-                  <span className="text-[11px] text-ink-400 font-normal">Clinical Staff Pharmacist</span>
-                </div>
-
-                <label className="block text-[11px] font-bold text-ink-500 uppercase tracking-wider mb-1">
-                  Clinical Audit Justification Note
+                <label style={{ display: "block", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", color: "rgba(18,19,23,0.45)", letterSpacing: "0.05em", marginBottom: "6px" }}>
+                  Clinical Justification Note
                 </label>
                 <textarea
                   value={approvalNote}
-                  onChange={(e) => setApprovalNote(e.target.value)}
+                  onChange={e => setApprovalNote(e.target.value)}
                   rows={2}
-                  className="w-full text-xs p-2.5 border border-ink-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-accent-600 font-sans"
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "12px", border: "1px solid rgba(0,0,0,0.1)", fontSize: "13px", color: "rgb(18,19,23)", outline: "none", resize: "none", boxSizing: "border-box", fontFamily: '"Google Sans","Sora",sans-serif' }}
                 />
               </div>
             </div>
 
-            {/* Modal footer (pinned, always visible) */}
-            <div className="bg-ink-50 border-t border-ink-100 px-6 py-3.5 flex justify-end gap-2.5 flex-shrink-0">
+            {/* Modal Footer */}
+            <div style={{ padding: "14px 24px", borderTop: "1px solid rgba(0,0,0,0.06)", background: "#FAFAFA", display: "flex", justifyContent: "flex-end", gap: "10px" }}>
               <button
                 onClick={() => setApprovalItem(null)}
-                className="btn btn-secondary text-xs py-2 px-4"
+                style={{ background: "#FFFFFF", border: "1px solid rgba(0,0,0,0.1)", borderRadius: "9999px", padding: "8px 18px", fontSize: "13px", fontWeight: 550, color: "rgb(18,19,23)", cursor: "pointer" }}
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleApproveAndDispatch(approvalItem, approvalNote)}
-                className="btn text-xs py-2 px-5 bg-ok-600 hover:bg-ok-700 text-white font-semibold flex items-center gap-1.5 shadow-sm"
+                style={{ background: "rgb(18,19,23)", border: "none", borderRadius: "9999px", padding: "8px 20px", fontSize: "13px", fontWeight: 600, color: "#FFFFFF", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}
               >
-                <Check className="h-3.5 w-3.5" />
-                Sign &amp; Dispatch to Provider
+                <Check style={{ width: 13, height: 13 }} /> Sign &amp; Dispatch
               </button>
             </div>
           </div>

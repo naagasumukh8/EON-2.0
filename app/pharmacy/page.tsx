@@ -162,22 +162,18 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
         >
           <div
             style={{
-              fontSize: "10px",
-              fontFamily: "ui-monospace, monospace",
+              fontSize: "11px",
               fontWeight: 700,
               color: "#92400E",
               textTransform: "uppercase",
               letterSpacing: "0.06em",
-              marginBottom: "6px",
+              marginBottom: "8px",
               display: "flex",
               alignItems: "center",
               gap: "6px",
             }}
           >
-            <Zap style={{ width: 12, height: 12 }} /> 1-Click Triage Automation Ready
-          </div>
-          <div style={{ fontSize: "13px", color: "rgb(40,40,45)", marginBottom: "12px", lineHeight: 1.5, fontWeight: 500 }}>
-            Patient requested a refill for <strong>{thread.med}</strong>. Run deterministic AI triage to auto-resolve or escalate with full clinical justification.
+            <Zap style={{ width: 12, height: 12 }} /> Triage Automation
           </div>
           <button
             onClick={handleProcess}
@@ -198,7 +194,7 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
             }}
           >
             <Zap style={{ width: 13, height: 13 }} />
-            {processing ? "Evaluating Decision Tree…" : "Process & Route Refill (1-Click) →"}
+            {processing ? "Processing…" : "⚡ Process & Route Refill"}
           </button>
           {processResult && (
             <div

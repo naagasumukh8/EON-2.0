@@ -62,9 +62,6 @@ function Nav() {
             { href: "/portal",    label: "Portals" },
             { href: "/dashboard", label: "Worklist" },
             { href: "/classify",  label: "Classifier" },
-            { href: "/security",  label: "Security" },
-            { href: "/workflow",  label: "Workflow" },
-            { href: "/gtm",       label: "GTM / Funnel" },
           ].map(l => (
             <Link key={l.href} href={l.href} style={{ fontSize: "13.5px", fontWeight: 450, color: "rgb(60,60,65)", padding: "6px 14px", borderRadius: "9999px", textDecoration: "none", transition: "background 0.15s" }}>
               {l.label}

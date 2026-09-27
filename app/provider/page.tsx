@@ -203,7 +203,7 @@ function RefillPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
                     gap: "5px",
                   }}
                 >
-                  <Zap style={{ width: 12, height: 12, color: "#9333EA" }} /> 1-Click Physician Sign-off Actions
+                  <Zap style={{ width: 12, height: 12, color: "#9333EA" }} /> Clinical Sign-Off Actions
                 </div>
 
                 <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
@@ -226,7 +226,7 @@ function RefillPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
                     }}
                   >
                     <CheckCircle2 style={{ width: 14, height: 14 }} />
-                    {acting === "approve" ? "Signing eRx…" : "1-Click: Approve & Send eRx"}
+                    {acting === "approve" ? "Signing eRx…" : "✍️ Approve & Send eRx"}
                   </button>
 
                   <button
@@ -248,7 +248,7 @@ function RefillPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
                     }}
                   >
                     <Shuffle style={{ width: 13, height: 13 }} />
-                    {acting === "alternative" ? "Routing…" : "1-Click: Authorize Alternative"}
+                    {acting === "alternative" ? "Routing…" : "🔄 Authorize Alternative"}
                   </button>
 
                   <button
@@ -270,7 +270,7 @@ function RefillPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
                     }}
                   >
                     <XCircle style={{ width: 13, height: 13 }} />
-                    {acting === "visit" ? "Updating…" : "1-Click: Require Visit"}
+                    {acting === "visit" ? "Updating…" : "📅 Require Clinic Visit"}
                   </button>
                 </div>
               </div>

@@ -146,9 +146,10 @@ export default function PortalPage() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
             gap: "20px",
             width: "100%",
+            maxWidth: "1140px",
           }}
         >
           {ROLES.map(({ role, title, subtitle, emoji, color, bg, href, Icon, tags }) => {
