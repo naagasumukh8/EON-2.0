@@ -323,70 +323,58 @@ function ThreadView({ thread, onBack, onRefresh }: { thread: RefillThread; onBac
       {/* Stepper & Live status */}
       <JourneyTracker thread={thread} />
 
-      {/* 1-Click Spoon-fed Prompt Pills (ALWAYS VISIBLE) */}
+      {/* Quick Action Pills */}
       <div
         style={{
-          padding: "12px 20px",
+          padding: "12px 24px",
           borderBottom: "1px solid rgba(0,0,0,0.05)",
           background: "#FAFAFA",
+          display: "flex",
+          gap: "8px",
+          flexWrap: "wrap",
+          alignItems: "center",
           flexShrink: 0,
         }}
       >
-        <div
-          style={{
-            fontSize: "10px",
-            fontFamily: "ui-monospace, monospace",
-            color: "#6B7280",
-            fontWeight: 700,
-            textTransform: "uppercase",
-            letterSpacing: "0.06em",
-            marginBottom: "8px",
-            display: "flex",
-            alignItems: "center",
-            gap: "5px",
-          }}
-        >
-          <Zap style={{ width: 11, height: 11, color: "#D97706" }} /> 1-Click Spoon-fed Demo Actions (No Typing Needed)
-        </div>
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-          {SPOONFED_PATIENT_PROMPTS.map(p => (
-            <button
-              key={p.label}
-              onClick={() => handleSend(p.text)}
-              style={{
-                padding: "6px 14px",
-                borderRadius: "9999px",
-                border: "1px solid rgba(0,0,0,0.1)",
-                background: "rgb(18,19,23)",
-                color: "#FFFFFF",
-                fontSize: "12px",
-                fontWeight: 550,
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                transition: "opacity 0.15s ease",
-              }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
-              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-            >
-              <span>{p.label}</span>
-              <ArrowRight style={{ width: 12, height: 12 }} />
-            </button>
-          ))}
-        </div>
+        <span style={{ fontSize: "11px", fontWeight: 700, color: "rgba(18,19,23,0.4)", textTransform: "uppercase", letterSpacing: "0.06em", marginRight: "4px" }}>
+          Quick Actions:
+        </span>
+        {[
+          { label: "💊 Refill Metformin", text: "I need to request a refill for Metformin 500mg. I have about 2 days left." },
+          { label: "⏱️ Check Pickup ETA", text: "Hi, can you confirm when my prescription will be ready for pickup?" },
+          { label: "✅ Confirm Pickup Today", text: "Thank you! I will pick up my medication today around 4 PM." },
+        ].map(p => (
+          <button
+            key={p.label}
+            onClick={() => handleSend(p.text)}
+            style={{
+              padding: "7px 16px",
+              borderRadius: "9999px",
+              border: "1px solid rgba(0,0,0,0.08)",
+              background: "rgb(18,19,23)",
+              color: "#FFFFFF",
+              fontSize: "12px",
+              fontWeight: 550,
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              transition: "opacity 0.15s ease",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+            onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+          >
+            <span>{p.label}</span>
+            <ArrowRight style={{ width: 11, height: 11 }} />
+          </button>
+        ))}
       </div>
 
       {/* Message Stream */}
       <div style={{ flex: 1, overflowY: "auto", padding: "18px 24px", display: "flex", flexDirection: "column", gap: "12px", background: "#FCFCFC" }}>
-        <div style={{ textAlign: "center", margin: "4px 0" }}>
-          <span style={{ fontSize: "10.5px", fontFamily: "ui-monospace, monospace", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-            Direct Secure Channel · Care Team & Pharmacy
-          </span>
-        </div>
         {messages.length === 0 && (
           <div style={{ textAlign: "center", color: "#9CA3AF", fontSize: "13px", padding: "28px 0" }}>
-            No messages logged yet. Tap any 1-click button above or click Send below.
+            No messages logged yet. Tap any quick action above or send a message.
           </div>
         )}
         {messages.map((m) => {
@@ -484,9 +472,6 @@ function ThreadView({ thread, onBack, onRefresh }: { thread: RefillThread; onBac
               );
             })}
           </div>
-          <span style={{ fontSize: "10.5px", color: "#9CA3AF", fontFamily: "ui-monospace, monospace" }}>
-            Pre-filled with demo message
-          </span>
         </div>
 
         <div style={{ display: "flex", gap: "10px" }}>
@@ -531,7 +516,7 @@ function ThreadView({ thread, onBack, onRefresh }: { thread: RefillThread; onBac
               transition: "all 0.15s ease",
             }}
           >
-            <Send style={{ width: 13, height: 13 }} /> 1-Click Send
+            <Send style={{ width: 13, height: 13 }} /> Send
           </button>
         </div>
       </div>
@@ -793,31 +778,19 @@ export default function PatientPage() {
               </div>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {[
-                { label: "Diagnoses", value: PATIENT_DEMO.condition },
-                { label: "Documented Allergies", value: PATIENT_DEMO.allergies },
-                { label: "Insurance Coverage", value: PATIENT_DEMO.insuranceId },
-              ].map(({ label, value }) => (
-                <div key={label}>
-                  <div
-                    style={{
-                      fontSize: "9.5px",
-                      fontFamily: "ui-monospace, monospace",
-                      fontWeight: 600,
-                      color: "#9CA3AF",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
-                      marginBottom: "2px",
-                    }}
-                  >
-                    {label}
-                  </div>
-                  <div style={{ fontSize: "12px", color: "rgb(40,40,45)", fontWeight: 500, lineHeight: 1.4 }}>
-                    {value}
-                  </div>
-                </div>
-              ))}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", paddingTop: "8px", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "rgb(50,50,55)", fontWeight: 500 }}>
+                <span>🩺</span>
+                <span>{PATIENT_DEMO.condition}</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#DC2626", fontWeight: 500 }}>
+                <span>⚠️</span>
+                <span>{PATIENT_DEMO.allergies}</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#166534", fontWeight: 500 }}>
+                <span>🛡️</span>
+                <span>{PATIENT_DEMO.insuranceId}</span>
+              </div>
             </div>
           </div>
 

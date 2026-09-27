@@ -9,52 +9,47 @@ type RoleConfig = {
   role: Role;
   title: string;
   subtitle: string;
+  emoji: string;
   color: string;
   bg: string;
   href: string;
   Icon: React.ElementType;
-  highlights: string[];
+  tags: string[];
 };
 
 const ROLES: RoleConfig[] = [
   {
     role: "patient",
     title: "Patient Portal",
-    subtitle: "Alex Rivera · Chronic Care Patient",
+    subtitle: "Alex Rivera · Chronic Care",
+    emoji: "👤",
     color: "#2563EB",
     bg: "#EFF6FF",
     href: "/patient",
     Icon: User,
-    highlights: [
-      "Real-time prescription tracking & pickup ETA",
-      "1-click refill requests & care team messaging",
-    ],
+    tags: ["💊 Real-Time Rx Tracker", "💬 Direct Care Team Chat"],
   },
   {
     role: "pharmacy",
     title: "Pharmacy Queue",
-    subtitle: "Summit Rx · Central Fill Intake",
+    subtitle: "Summit Rx · Intake Triage",
+    emoji: "🏥",
     color: "#16A34A",
     bg: "#F0FDF4",
     href: "/pharmacy",
     Icon: Building2,
-    highlights: [
-      "Automated deterministic AI refill triage",
-      "Instant routing: auto-resolve or provider escalation",
-    ],
+    tags: ["⚡ Deterministic AI Triage", "🔄 Instant Provider Routing"],
   },
   {
     role: "provider",
     title: "Physician Review",
-    subtitle: "Dr. Marcus Chen, MD · Prescribing Clinic",
+    subtitle: "Dr. Marcus Chen, MD · Prescriber",
+    emoji: "🩺",
     color: "#9333EA",
     bg: "#FAF5FF",
     href: "/provider",
     Icon: Stethoscope,
-    highlights: [
-      "1-click eRx renewal authorization",
-      "Safety checklist & clinical alternative options",
-    ],
+    tags: ["✍️ 1-Click eRx Renewal", "🛡️ Clinical Safety Protocol"],
   },
 ];
 
@@ -81,7 +76,7 @@ export default function PortalPage() {
     <div
       style={{
         minHeight: "100vh",
-        background: "#F4F4F6",
+        background: "#F0F0F0",
         fontFamily: '"Google Sans", "Sora", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
         display: "flex",
         flexDirection: "column",
@@ -110,12 +105,12 @@ export default function PortalPage() {
             }}
           >
             <RefreshCw style={{ width: 12, height: 12, animation: resetting ? "spin 1s linear infinite" : "none" }} />
-            {resetting ? "Resetting State…" : "Reset Demo Data"}
+            {resetting ? "Resetting…" : "Reset State"}
           </button>
         }
       />
 
-      {/* Hero Section */}
+      {/* Main Role Selector */}
       <main
         style={{
           flex: 1,
@@ -123,57 +118,40 @@ export default function PortalPage() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          padding: "48px 24px",
-          maxWidth: "1080px",
+          padding: "56px 24px 80px",
+          maxWidth: "1160px",
           margin: "0 auto",
           width: "100%",
         }}
       >
         <div style={{ textAlign: "center", marginBottom: "40px" }}>
-          <div
-            style={{
-              display: "inline-block",
-              background: "rgba(0,0,0,0.05)",
-              color: "rgb(70,70,75)",
-              fontFamily: "ui-monospace, monospace",
-              fontSize: "10.5px",
-              fontWeight: 650,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              padding: "4px 12px",
-              borderRadius: "9999px",
-              marginBottom: "14px",
-            }}
-          >
-            Live Multi-Party Demo
-          </div>
           <h1
             style={{
-              fontSize: "clamp(2rem, 3vw, 2.5rem)",
+              fontSize: "clamp(2rem, 3.4vw, 2.75rem)",
               fontWeight: 700,
               color: "rgb(18,19,23)",
-              letterSpacing: "-0.03em",
+              letterSpacing: "-0.035em",
               margin: "0 0 10px",
               lineHeight: 1.15,
             }}
           >
             Select Stakeholder Portal
           </h1>
-          <p style={{ fontSize: "14.5px", color: "rgb(100,100,105)", margin: 0, lineHeight: 1.5, maxWidth: "520px" }}>
-            Experience how a stalled refill is resolved without phone tag or friction. Choose a role to begin.
+          <p style={{ fontSize: "15px", color: "rgba(18,19,23,0.55)", margin: 0, lineHeight: 1.5 }}>
+            Live three-way clinical refill coordination. Select a role to begin.
           </p>
         </div>
 
-        {/* Clean, Uncluttered 3 Cards */}
+        {/* 3 Premium Cards */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "24px",
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gap: "20px",
             width: "100%",
           }}
         >
-          {ROLES.map(({ role, title, subtitle, color, bg, href, Icon, highlights }) => {
+          {ROLES.map(({ role, title, subtitle, emoji, color, bg, href, Icon, tags }) => {
             const isSelected = selected === role;
             const isFaded = selected && selected !== role;
             return (
@@ -182,91 +160,82 @@ export default function PortalPage() {
                 style={{
                   background: "#FFFFFF",
                   border: `1px solid ${isSelected ? "rgb(18,19,23)" : "rgba(0,0,0,0.08)"}`,
-                  borderRadius: "22px",
-                  padding: "32px 28px",
+                  borderRadius: "24px",
+                  padding: "36px 30px",
                   display: "flex",
                   flexDirection: "column",
+                  justifyContent: "space-between",
                   transition: "all 0.2s ease",
-                  opacity: isFaded ? 0.4 : 1,
+                  opacity: isFaded ? 0.35 : 1,
                   boxShadow: isSelected
-                    ? "0 0 0 3px rgba(18,19,23,0.1), 0 16px 36px rgba(0,0,0,0.08)"
-                    : "0 2px 10px rgba(0,0,0,0.02), 0 16px 32px -8px rgba(0,0,0,0.03)",
+                    ? "0 0 0 3px rgba(18,19,23,0.1), 0 20px 40px rgba(0,0,0,0.09)"
+                    : "0 1px 3px rgba(0,0,0,0.02), 0 14px 32px -8px rgba(0,0,0,0.04)",
                 }}
               >
-                {/* Icon & Title */}
-                <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "18px" }}>
-                  <div
-                    style={{
-                      width: "46px",
-                      height: "46px",
-                      borderRadius: "14px",
-                      background: bg,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Icon style={{ width: 22, height: 22, color }} />
-                  </div>
-                  <div>
-                    <h2
-                      style={{
-                        margin: 0,
-                        fontWeight: 650,
-                        fontSize: "17px",
-                        color: "rgb(18,19,23)",
-                        letterSpacing: "-0.015em",
-                      }}
-                    >
-                      {title}
-                    </h2>
-                    <div style={{ fontSize: "12px", color: "rgb(110,110,115)", marginTop: "2px" }}>
-                      {subtitle}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Highlights */}
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "10px",
-                    marginBottom: "28px",
-                    flex: 1,
-                  }}
-                >
-                  {highlights.map((text) => (
+                <div>
+                  {/* Icon & Title */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "20px" }}>
                     <div
-                      key={text}
                       style={{
+                        width: "48px",
+                        height: "48px",
+                        borderRadius: "16px",
+                        background: bg,
                         display: "flex",
-                        alignItems: "flex-start",
-                        gap: "10px",
-                        fontSize: "13px",
-                        color: "rgb(60,60,65)",
-                        lineHeight: 1.45,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        fontSize: "22px",
                       }}
                     >
-                      <div
+                      {emoji}
+                    </div>
+                    <div>
+                      <h2
                         style={{
-                          width: "16px",
-                          height: "16px",
-                          borderRadius: "50%",
-                          background: "rgba(0,0,0,0.04)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                          marginTop: "2px",
+                          margin: 0,
+                          fontWeight: 700,
+                          fontSize: "18px",
+                          color: "rgb(18,19,23)",
+                          letterSpacing: "-0.02em",
                         }}
                       >
-                        <Check style={{ width: 10, height: 10, color: "rgb(40,40,45)" }} />
+                        {title}
+                      </h2>
+                      <div style={{ fontSize: "12.5px", color: "rgba(18,19,23,0.5)", marginTop: "2px" }}>
+                        {subtitle}
                       </div>
-                      <span>{text}</span>
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Clean Feature Tags */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "9px",
+                      marginBottom: "32px",
+                    }}
+                  >
+                    {tags.map((tag) => (
+                      <div
+                        key={tag}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          color: "rgba(18,19,23,0.75)",
+                          background: "rgba(0,0,0,0.025)",
+                          border: "1px solid rgba(0,0,0,0.05)",
+                          padding: "8px 14px",
+                          borderRadius: "12px",
+                        }}
+                      >
+                        {tag}
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Action CTA */}
@@ -278,13 +247,13 @@ export default function PortalPage() {
                     alignItems: "center",
                     justifyContent: "center",
                     gap: "8px",
-                    padding: "12px 20px",
+                    padding: "13px 22px",
                     borderRadius: "9999px",
                     background: isSelected ? "rgba(0,0,0,0.2)" : "rgb(18,19,23)",
                     color: "#FFFFFF",
                     border: "none",
                     cursor: isSelected ? "default" : "pointer",
-                    fontSize: "13.5px",
+                    fontSize: "14px",
                     fontWeight: 600,
                     letterSpacing: "-0.01em",
                     transition: "opacity 0.15s ease",
@@ -297,19 +266,12 @@ export default function PortalPage() {
                     if (!isSelected) e.currentTarget.style.opacity = "1";
                   }}
                 >
-                  {isSelected ? "Opening Portal…" : `Enter as ${title}`}
+                  {isSelected ? "Opening…" : `Enter ${title}`}
                   {!isSelected && <ArrowRight style={{ width: 14, height: 14 }} />}
                 </button>
               </div>
             );
           })}
-        </div>
-
-        {/* Minimal Footer Note */}
-        <div style={{ marginTop: "36px", textAlign: "center" }}>
-          <p style={{ margin: 0, fontSize: "12px", color: "rgb(120,120,125)" }}>
-            Instant role switching is available anytime in the top navigation bar.
-          </p>
         </div>
       </main>
     </div>

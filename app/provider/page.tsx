@@ -421,34 +421,35 @@ function RefillPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
 
         {tab === "messages" && (
           <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: "10px" }}>
-            {/* 1-Click Spoon-fed Notes */}
-            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", padding: "4px 0 10px" }}>
-              {SPOONFED_PROVIDER_NOTES.map(p => (
+            {/* Quick Action Pills */}
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", padding: "4px 0 10px", alignItems: "center" }}>
+              <span style={{ fontSize: "11px", fontWeight: 700, color: "rgba(18,19,23,0.4)", textTransform: "uppercase", letterSpacing: "0.06em", marginRight: "4px" }}>
+                Quick Actions:
+              </span>
+              {[
+                { label: "✅ Approve 90-Day Refill", text: "Refill authorized for 90-day maintenance supply. Electronic prescription renewal transmitted to pharmacy." },
+                { label: "📅 Require Clinic Visit", text: "Annual lab work and blood pressure re-evaluation required before renewing this maintenance medication. Please schedule an office visit." },
+                { label: "🩺 Dose Titration Note", text: "Reviewed clinical profile. Recommended dosage adjusted based on last comprehensive metabolic panel." },
+              ].map(p => (
                 <button
                   key={p.label}
                   onClick={() => handleSend(p.text)}
                   style={{
-                    padding: "5px 12px",
+                    padding: "6px 14px",
                     borderRadius: "9999px",
-                    border: "1px solid rgba(0,0,0,0.1)",
-                    background: "#FFFFFF",
-                    color: "rgb(20,20,25)",
-                    fontSize: "11.5px",
+                    border: "1px solid rgba(0,0,0,0.08)",
+                    background: "rgb(18,19,23)",
+                    color: "#FFFFFF",
+                    fontSize: "12px",
                     fontWeight: 550,
                     cursor: "pointer",
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: "5px",
-                    transition: "all 0.15s ease",
+                    gap: "6px",
+                    transition: "opacity 0.15s ease",
                   }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.background = "rgb(18,19,23)";
-                    e.currentTarget.style.color = "#FFFFFF";
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.background = "#FFFFFF";
-                    e.currentTarget.style.color = "rgb(20,20,25)";
-                  }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
                 >
                   <span>{p.label}</span>
                   <ArrowRight style={{ width: 11, height: 11 }} />
@@ -543,7 +544,7 @@ function RefillPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
                   fontWeight: 600,
                 }}
               >
-                <Send style={{ width: 13, height: 13 }} /> 1-Click Send
+                <Send style={{ width: 13, height: 13 }} /> Send
               </button>
             </div>
           </div>

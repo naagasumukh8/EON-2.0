@@ -114,11 +114,11 @@ const AMBIGUOUS_RESULT = {
 };
 
 const SAMPLES = [
-  { label: "No Refills",          text: "Pharmacy sent an electronic denial: zero refills remaining on Metformin 500mg. Patient has been on this maintenance dose for 2 years for Type 2 diabetes. Need a new renewal prescription from Dr. Chen before dispensing." },
-  { label: "Pharmacy Stock",      text: "CVS notes medication is currently out of stock with wholesaler backorder lasting 5+ days. Patient needs this antibiotic course started today. Check partner pharmacies in the immediate network." },
-  { label: "Insurance Hold",      text: "BlueCross PBM rejected claim code 75: Prior Authorization Required. Formulary prefers enalapril as step-1 therapy unless physician provides clinical contraindication notes." },
-  { label: "Missing Info",        text: "Prescription transmission rejected due to patient demographic mismatch. Date of birth on e-prescribing profile does not match health plan master registry." },
-  { label: "Ambiguous Edge Case", text: "Patient called stating the pharmacy said no refills remained, but also mentioned their insurance dropped coverage and Dr. Patel said they need an office visit before anything is renewed." },
+  { label: "💊 Zero Refills",          text: "Pharmacy sent an electronic denial: zero refills remaining on Metformin 500mg. Patient has been on this maintenance dose for 2 years for Type 2 diabetes. Need a new renewal prescription from Dr. Chen before dispensing." },
+  { label: "🏪 Stock Shortage",       text: "CVS notes medication is currently out of stock with wholesaler backorder lasting 5+ days. Patient needs this antibiotic course started today. Check partner pharmacies in the immediate network." },
+  { label: "📋 Prior Auth Hold",       text: "BlueCross PBM rejected claim code 75: Prior Authorization Required. Formulary prefers enalapril as step-1 therapy unless physician provides clinical contraindication notes." },
+  { label: "🪪 Demographic Mismatch", text: "Prescription transmission rejected due to patient demographic mismatch. Date of birth on e-prescribing profile does not match health plan master registry." },
+  { label: "⚠️ Conflicting Signals",  text: "Patient called stating the pharmacy said no refills remained, but also mentioned their insurance dropped coverage and Dr. Patel said they need an office visit before anything is renewed." },
 ];
 
 function classify(text: string) {
@@ -156,18 +156,14 @@ export default function ClassifyPage() {
     <div style={{ background: "#F0F0F0", color: "rgb(18,19,23)", fontFamily: '"Google Sans","Sora",-apple-system,BlinkMacSystemFont,sans-serif', minHeight: "100vh" }}>
       <AppHeader activePath="/classify" />
 
-      <main style={{ maxWidth: "860px", margin: "0 auto", padding: "48px 24px 80px", display: "flex", flexDirection: "column", gap: "24px" }}>
+      <main style={{ maxWidth: "860px", margin: "0 auto", padding: "48px 24px 80px", display: "flex", flexDirection: "column", gap: "20px" }}>
         {/* Header */}
         <div>
-          <p style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(18,19,23,0.38)", margin: "0 0 10px" }}>
-            AI Prescription Triage
-          </p>
-          <h1 style={{ fontSize: "clamp(2rem, 3.5vw, 2.75rem)", fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.035em", color: "rgb(18,19,23)", margin: "0 0 12px" }}>
-            Why is this refill stuck?
+          <h1 style={{ fontSize: "clamp(2rem, 3.5vw, 2.75rem)", fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.035em", color: "rgb(18,19,23)", margin: "0 0 8px" }}>
+            AI Prescription Classifier
           </h1>
           <p style={{ fontSize: "15px", color: "rgba(18,19,23,0.55)", lineHeight: 1.6, margin: 0, maxWidth: "600px" }}>
-            Paste messy clinic faxes, phone notes, or pharmacy notices. AI classifies the root cause,
-            scores clinical risk, and routes the right action in seconds.
+            Root cause classification, clinical risk scoring, and routing in seconds.
           </p>
         </div>
 
@@ -178,12 +174,9 @@ export default function ClassifyPage() {
             borderRadius: "20px",
             border: "1px solid rgba(0,0,0,0.08)",
             boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 12px 28px -6px rgba(0,0,0,0.03)",
-            padding: "24px 28px",
+            padding: "20px 24px",
           }}
         >
-          <p style={{ fontFamily: "monospace", fontSize: "10.5px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(18,19,23,0.4)", margin: "0 0 14px" }}>
-            Choose a realistic sample scenario
-          </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
             {SAMPLES.map((s, i) => {
               const isSelected = input === s.text;
@@ -192,9 +185,9 @@ export default function ClassifyPage() {
                   key={i}
                   onClick={() => { setInput(s.text); setResult(null); setRisk(null); }}
                   style={{
-                    padding: "8px 18px",
+                    padding: "8px 16px",
                     borderRadius: "9999px",
-                    fontSize: "13px",
+                    fontSize: "12.5px",
                     fontWeight: isSelected ? 600 : 500,
                     cursor: "pointer",
                     transition: "all 0.18s ease",
@@ -217,15 +210,12 @@ export default function ClassifyPage() {
             borderRadius: "20px",
             border: "1px solid rgba(0,0,0,0.08)",
             boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 12px 28px -6px rgba(0,0,0,0.03)",
-            padding: "24px 28px",
+            padding: "20px 24px",
             display: "flex",
             flexDirection: "column",
             gap: "14px",
           }}
         >
-          <label style={{ fontFamily: "monospace", fontSize: "10.5px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(18,19,23,0.4)" }}>
-            Or paste a fax / EHR note directly
-          </label>
           <textarea
             style={{
               width: "100%",

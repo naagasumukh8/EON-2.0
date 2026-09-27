@@ -248,64 +248,51 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
         </div>
       )}
 
-      {/* 1-Click Spoon-fed Reply Chips */}
+      {/* Quick Action Pills */}
       <div
         style={{
           padding: "10px 20px",
           borderBottom: "1px solid rgba(0,0,0,0.05)",
           background: "#FAFAFA",
+          display: "flex",
+          gap: "8px",
+          flexWrap: "wrap",
+          alignItems: "center",
           flexShrink: 0,
         }}
       >
-        <div
-          style={{
-            fontSize: "10px",
-            fontFamily: "ui-monospace, monospace",
-            color: "#6B7280",
-            fontWeight: 700,
-            textTransform: "uppercase",
-            letterSpacing: "0.06em",
-            marginBottom: "6px",
-            display: "flex",
-            alignItems: "center",
-            gap: "5px",
-          }}
-        >
-          <Zap style={{ width: 11, height: 11, color: "#16A34A" }} /> 1-Click Pharmacy Quick Replies
-        </div>
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-          {SPOONFED_PHARMACY_REPLIES.map(p => (
-            <button
-              key={p.label}
-              onClick={() => handleSend(p.text)}
-              style={{
-                padding: "5px 12px",
-                borderRadius: "9999px",
-                border: "1px solid rgba(0,0,0,0.1)",
-                background: "#FFFFFF",
-                color: "rgb(20,20,25)",
-                fontSize: "11.5px",
-                fontWeight: 550,
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "5px",
-                transition: "all 0.15s ease",
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = "rgb(18,19,23)";
-                e.currentTarget.style.color = "#FFFFFF";
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = "#FFFFFF";
-                e.currentTarget.style.color = "rgb(20,20,25)";
-              }}
-            >
-              <span>{p.label}</span>
-              <ArrowRight style={{ width: 11, height: 11 }} />
-            </button>
-          ))}
-        </div>
+        <span style={{ fontSize: "11px", fontWeight: 700, color: "rgba(18,19,23,0.4)", textTransform: "uppercase", letterSpacing: "0.06em", marginRight: "4px" }}>
+          Quick Replies:
+        </span>
+        {[
+          { label: "✅ Process & Ready for Pickup", text: "Your prescription has been filled and is ready for pickup at our counter." },
+          { label: "🩺 Escalate to Dr. Chen", text: "Zero refills remain on profile. Escalating refill renewal request to Dr. Marcus Chen." },
+          { label: "🏪 Query Stock Reserve", text: "Inventory checked with partner network: 140 units on hand at CarePoint Pharmacy." },
+        ].map(p => (
+          <button
+            key={p.label}
+            onClick={() => handleSend(p.text)}
+            style={{
+              padding: "6px 14px",
+              borderRadius: "9999px",
+              border: "1px solid rgba(0,0,0,0.08)",
+              background: "rgb(18,19,23)",
+              color: "#FFFFFF",
+              fontSize: "12px",
+              fontWeight: 550,
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              transition: "opacity 0.15s ease",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+            onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+          >
+            <span>{p.label}</span>
+            <ArrowRight style={{ width: 11, height: 11 }} />
+          </button>
+        ))}
       </div>
 
       {/* Messages */}
@@ -409,9 +396,6 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
               );
             })}
           </div>
-          <span style={{ fontSize: "10.5px", color: "#9CA3AF", fontFamily: "ui-monospace, monospace" }}>
-            Pre-filled with demo message
-          </span>
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
           <textarea
@@ -454,7 +438,7 @@ function ThreadPanel({ thread, onClose, onRefresh }: { thread: RefillThread; onC
               fontWeight: 600,
             }}
           >
-            <Send style={{ width: 13, height: 13 }} /> 1-Click Send
+            <Send style={{ width: 13, height: 13 }} /> Send
           </button>
         </div>
       </div>
