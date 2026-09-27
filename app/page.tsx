@@ -10,6 +10,7 @@ import {
   Bot,
 } from "lucide-react";
 import { CrowdCanvas } from "@/components/ui/skiper39";
+import { TextReveal } from "@/components/ui/text-reveal";
 
 /* -- Typewriter that cycles through words -- */
 function TypewriterWords({ words }: { words: string[] }) {
@@ -144,10 +145,15 @@ export default function HomePage() {
         <section style={{ background: "#F0F0F0", borderTop: "1px solid rgba(0,0,0,0.07)", padding: "96px 32px" }}>
           <div style={{ maxWidth: "900px", margin: "0 auto" }}>
             <FadeIn>
-              <p style={{ fontSize: "clamp(1.6rem,3vw,2.4rem)", fontWeight: 450, lineHeight: 1.35, letterSpacing: "-0.025em", color: "rgb(18,19,23)", margin: 0 }}>
-                UnStuck Med is our clinical triage platform, allowing clinics and pharmacies to collaborate in{" "}
-                <span style={{ color: "rgba(18,19,23,0.35)" }}>the AI era.</span>
-              </p>
+              <TextReveal
+                as="p"
+                preset="fade-in-blur"
+                per="word"
+                speedReveal={1.2}
+                style={{ fontSize: "clamp(1.6rem,3vw,2.4rem)", fontWeight: 450, lineHeight: 1.35, letterSpacing: "-0.025em", color: "rgb(18,19,23)", margin: 0 }}
+              >
+                UnStuck Med is our clinical triage platform, allowing clinics and pharmacies to collaborate in the AI era.
+              </TextReveal>
             </FadeIn>
           </div>
         </section>
