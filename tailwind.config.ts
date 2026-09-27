@@ -10,36 +10,59 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#000000",
-        surface: "#080808",
-        "surface-card": "#0d0d0d",
-        "surface-hover": "#141414",
-        border: "#222222",
-        "border-subtle": "#191919",
-        "border-glow": "#333333",
-        vercel: {
-          blue: "#0070F3",
-          cyan: "#50E3C2",
-          purple: "#7928CA",
-          magenta: "#FF0080",
-          amber: "#F5A623",
-          green: "#00E599",
+        green: {
+          primary: "#22c55e",
+          dark:    "#16a34a",
+          light:   "#dcfce7",
+          pale:    "#f0fdf4",
+        },
+        brand: {
+          bg:      "#f8fafc",
+          card:    "#ffffff",
+          border:  "#e2e8f0",
+          text:    "#0f172a",
+          body:    "#334155",
+          muted:   "#64748b",
+          light:   "#94a3b8",
         },
       },
       fontFamily: {
-        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
-        mono: ["Geist Mono", "JetBrains Mono", "Fira Code", "monospace"],
+        sans:    ["Inter", "Poppins", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        poppins: ["Poppins", "Inter", "sans-serif"],
+        mono:    ["JetBrains Mono", "Fira Code", "monospace"],
       },
       boxShadow: {
-        glow: "0 0 40px -10px rgba(255, 255, 255, 0.15)",
-        "glow-cyan": "0 0 35px -5px rgba(80, 227, 194, 0.25)",
-        "glow-purple": "0 0 35px -5px rgba(121, 40, 202, 0.25)",
-        "glow-blue": "0 0 35px -5px rgba(0, 112, 243, 0.25)",
+        card:  "0 4px 16px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04)",
+        green: "0 8px 32px rgba(34,197,94,0.25)",
+        xl:    "0 20px 60px rgba(0,0,0,0.12)",
+      },
+      borderRadius: {
+        "2xl": "16px",
+        "3xl": "24px",
       },
       backgroundImage: {
-        "grid-pattern": "linear-gradient(to right, #181818 1px, transparent 1px), linear-gradient(to bottom, #181818 1px, transparent 1px)",
-        "spotlight": "radial-gradient(circle 600px at 50% -100px, rgba(120, 119, 198, 0.12), transparent 70%)",
-        "spotlight-vercel": "radial-gradient(circle 500px at 50% 0%, rgba(255, 255, 255, 0.08), transparent 80%)",
+        "hero-gradient":    "linear-gradient(145deg, #e8f8f5 0%, #d1f4ea 20%, #c8edfd 50%, #e0f7fa 70%, #f0fdf4 100%)",
+        "app-gradient":     "linear-gradient(135deg, #e8f8f5 0%, #d1f4ea 40%, #c8edfd 80%, #e0f7fa 100%)",
+        "green-gradient":   "linear-gradient(135deg, #22c55e, #16a34a)",
+      },
+      animation: {
+        float:       "float 6s ease-in-out infinite",
+        "pulse-ring": "pulse-ring 1.8s ease-out infinite",
+        "fade-up":    "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) both",
+      },
+      keyframes: {
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%":      { transform: "translateY(-8px)" },
+        },
+        "pulse-ring": {
+          "0%":   { transform: "scale(1)", opacity: "0.3" },
+          "100%": { transform: "scale(2.2)", opacity: "0" },
+        },
+        "fade-up": {
+          from: { opacity: "0", transform: "translateY(20px)" },
+          to:   { opacity: "1", transform: "translateY(0)" },
+        },
       },
     },
   },
