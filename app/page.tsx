@@ -10,68 +10,6 @@ import {
   Bot,
 } from "lucide-react";
 
-/* -- Floating Particle Dashes (bottom-left, Antigravity style) -- */
-function ParticleDashes() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    let raf: number;
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    resize();
-    window.addEventListener("resize", resize);
-    const DASH_COUNT = 90;
-    const dashes = Array.from({ length: DASH_COUNT }, () => {
-      const spread = Math.random();
-      return {
-        x: Math.random() * window.innerWidth * 0.55,
-        y: window.innerHeight * 0.35 + Math.random() * window.innerHeight * 0.65,
-        vx: (Math.random() - 0.15) * 0.18,
-        vy: -(Math.random() * 0.25 + 0.08),
-        len: Math.random() * 8 + 3,
-        w: Math.random() * 1.8 + 0.6,
-        angle: -Math.PI / 2 + (Math.random() - 0.5) * 0.6,
-        opacity: Math.random() * 0.55 + 0.15,
-        color: spread < 0.6 ? "#4B7FE8" : spread < 0.85 ? "#8AB4F8" : "#2563EB",
-        reset() {
-          this.x = Math.random() * window.innerWidth * 0.55;
-          this.y = window.innerHeight + 10;
-          this.opacity = Math.random() * 0.55 + 0.15;
-        },
-      };
-    });
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      dashes.forEach((d) => {
-        d.x += d.vx;
-        d.y += d.vy;
-        if (d.y < -20) d.reset();
-        ctx.save();
-        ctx.translate(d.x, d.y);
-        ctx.rotate(d.angle);
-        ctx.fillStyle = d.color;
-        ctx.globalAlpha = d.opacity;
-        ctx.beginPath();
-        ctx.rect(-d.w / 2, -d.len / 2, d.w, d.len);
-        ctx.fill();
-        ctx.restore();
-      });
-      raf = requestAnimationFrame(draw);
-    };
-    draw();
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
-    };
-  }, []);
-  return <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" style={{ zIndex: 0 }} />;
-}
-
 /* -- Typewriter that cycles through words -- */
 function TypewriterWords({ words }: { words: string[] }) {
   const [wordIdx, setWordIdx] = useState(0);
@@ -148,16 +86,19 @@ export default function HomePage() {
       <style>{`
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
         @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes crowdScroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
         *{box-sizing:border-box}
       `}</style>
       <div style={{ background: "#F0F0F0", color: "rgb(18,19,23)", fontFamily: '"Google Sans","Sora","Inter",sans-serif', minHeight: "100vh", overflowX: "hidden" }}>
         <Nav />
 
         {/* HERO */}
-        <section style={{ position: "relative", minHeight: "92vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "80px 32px 64px", overflow: "hidden" }}>
-          <ParticleDashes />
+        <section style={{ position: "relative", minHeight: "92vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "70px 32px 180px", overflow: "hidden" }}>
           <div style={{ position: "relative", zIndex: 1, maxWidth: "860px", margin: "0 auto", animation: "fadeUp 0.7s ease both" }}>
+            {/* Black UnStuck Med Badge */}
+            <div style={{ display: "inline-flex", alignItems: "center", padding: "6px 18px", borderRadius: "9999px", background: "rgb(18,19,23)", color: "#fff", fontSize: "13px", fontWeight: 500, letterSpacing: "-0.01em", marginBottom: "26px" }}>
+              UnStuck Med
+            </div>
+
             <h1 style={{ fontSize: "clamp(2.8rem,6vw,5.2rem)", fontWeight: 700, lineHeight: 1.06, letterSpacing: "-0.04em", color: "rgb(18,19,23)", margin: "0 0 28px" }}>
               Prescription refills.<br />Unstuck in minutes.
             </h1>
@@ -177,44 +118,25 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Crowd strip at bottom of hero */}
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2, overflow: "hidden", lineHeight: 0 }}>
-            {/* Fade mask */}
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, #F0F0F0 0%, transparent 8%, transparent 92%, #F0F0F0 100%)", zIndex: 3, pointerEvents: "none" }} />
-            <div style={{ display: "flex", animation: "crowdScroll 28s linear infinite", width: "max-content" }}>
-              {[0, 1].map((rep) => (
-                <svg key={rep} viewBox="0 0 1400 160" xmlns="http://www.w3.org/2000/svg" style={{ width: "1400px", height: "160px", flexShrink: 0 }}>
-                  {/* Row of stylized person silhouettes */}
-                  {[
-                    { x: 30, h: 110, w: 38, head: 16 }, { x: 85, h: 95, w: 32, head: 14 },
-                    { x: 130, h: 120, w: 42, head: 18 }, { x: 185, h: 100, w: 35, head: 15 },
-                    { x: 235, h: 88, w: 30, head: 13 }, { x: 278, h: 115, w: 40, head: 17 },
-                    { x: 332, h: 105, w: 36, head: 15 }, { x: 382, h: 92, w: 33, head: 14 },
-                    { x: 428, h: 118, w: 41, head: 18 }, { x: 483, h: 98, w: 34, head: 15 },
-                    { x: 532, h: 108, w: 38, head: 16 }, { x: 585, h: 85, w: 30, head: 13 },
-                    { x: 628, h: 122, w: 43, head: 18 }, { x: 686, h: 96, w: 34, head: 15 },
-                    { x: 735, h: 112, w: 40, head: 17 }, { x: 790, h: 90, w: 32, head: 14 },
-                    { x: 836, h: 105, w: 37, head: 16 }, { x: 888, h: 118, w: 41, head: 18 },
-                    { x: 943, h: 93, w: 33, head: 14 }, { x: 990, h: 110, w: 39, head: 17 },
-                    { x: 1044, h: 100, w: 35, head: 15 }, { x: 1093, h: 88, w: 31, head: 13 },
-                    { x: 1138, h: 115, w: 40, head: 17 }, { x: 1192, h: 102, w: 36, head: 15 },
-                    { x: 1242, h: 120, w: 42, head: 18 }, { x: 1298, h: 95, w: 34, head: 14 },
-                    { x: 1346, h: 108, w: 38, head: 16 },
-                  ].map((p, i) => {
-                    const bodyTop = 160 - p.h;
-                    const headCy = bodyTop - p.head;
-                    return (
-                      <g key={i} fill="rgb(18,19,23)" opacity={0.85 - (i % 3) * 0.08}>
-                        {/* Head */}
-                        <ellipse cx={p.x + p.w / 2} cy={headCy} rx={p.head * 0.6} ry={p.head * 0.65} />
-                        {/* Body */}
-                        <rect x={p.x} y={bodyTop} width={p.w} height={p.h} rx={p.w * 0.28} />
-                      </g>
-                    );
-                  })}
-                </svg>
-              ))}
-            </div>
+          {/* Crowd video at bottom of hero */}
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2, overflow: "hidden", lineHeight: 0, maxHeight: "200px" }}>
+            {/* Edge fade masks */}
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, #F0F0F0 0%, transparent 12%, transparent 88%, #F0F0F0 100%)", zIndex: 3, pointerEvents: "none" }} />
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "30px", background: "linear-gradient(to top, #F0F0F0, transparent)", zIndex: 3, pointerEvents: "none" }} />
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              style={{
+                width: "100%",
+                display: "block",
+                objectFit: "cover",
+                maxHeight: "200px",
+              }}
+            >
+              <source src="/crowd.mp4" type="video/mp4" />
+            </video>
           </div>
         </section>
 
