@@ -1,333 +1,413 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowLeft, Clock, CheckCircle, AlertTriangle, RefreshCw, Bell, BarChart3, Filter, Search, ChevronRight, Eye, Zap } from "lucide-react";
+import {
+  ArrowRight, Clock, CheckCircle, AlertTriangle, Zap,
+  ChevronRight, Filter, Search, Eye, ToggleLeft, ToggleRight,
+  Info, Bell, RefreshCw, X, TrendingUp, Shield
+} from "lucide-react";
 
-/* ─── Mock refill queue data ─────────────────────────── */
-const QUEUE = [
-  {
-    id: "RF-001", name: "Maria Rivera",    initials: "MR", med: "Metformin 500mg",    dose: "2× daily",    provider: "Dr. Ahmed",   practice: "CareFirst",     blockReason: "No refills remaining",  blockType: "NO_REFILLS",     priority: "HIGH", status: "BLOCKED",    daysStuck: 3, nextAction: "Draft new eRx request to Dr. Ahmed", actor: "Provider",   insurance: "BlueCross"  },
-  {
-    id: "RF-002", name: "James Thompson",  initials: "JT", med: "Lisinopril 10mg",   dose: "1× daily",    provider: "Dr. Patel",   practice: "Summit Clinic", blockReason: "PBM prior auth required", blockType: "INSURANCE",     priority: "HIGH", status: "BLOCKED",    daysStuck: 2, nextAction: "Submit PA form to BlueCross PBM",  actor: "Practice",   insurance: "Aetna"      },
-  {
-    id: "RF-003", name: "Aisha Patel",     initials: "AP", med: "Sertraline 50mg",   dose: "1× daily",    provider: "Dr. Chen",    practice: "Valley Medical", blockReason: "Provider visit required", blockType: "VISIT",         priority: "MED",  status: "BLOCKED",    daysStuck: 1, nextAction: "Schedule patient appointment",    actor: "Patient",    insurance: "Cigna"      },
-  {
-    id: "RF-004", name: "Robert Johnson",  initials: "RJ", med: "Atorvastatin 20mg", dose: "1× nightly",  provider: "Dr. Williams",practice: "MedReach",      blockReason: "Refills available",      blockType: "CLEAR",         priority: "LOW",  status: "FILLING",    daysStuck: 0, nextAction: "Pharmacist verification pending",  actor: "Pharmacy",   insurance: "UHC"        },
-  {
-    id: "RF-005", name: "Susan Kim",       initials: "SK", med: "Levothyroxine 50mcg","dose": "1× morning", provider: "Dr. Nguyen",  practice: "ClearPath",     blockReason: "Missing patient DOB",   blockType: "MISSING_INFO",   priority: "MED",  status: "BLOCKED",    daysStuck: 1, nextAction: "Contact patient to confirm DOB",   actor: "Practice",   insurance: "Humana"     },
-  {
-    id: "RF-006", name: "David Park",      initials: "DP", med: "Albuterol Inhaler",  dose: "PRN",         provider: "Dr. Torres",  practice: "Valley Medical", blockReason: "Resolved",              blockType: "RESOLVED",       priority: "LOW",  status: "RESOLVED",   daysStuck: 0, nextAction: "Patient notified for pickup",      actor: "Done",       insurance: "Cigna"      },
-  {
-    id: "RF-007", name: "Linda Garcia",    initials: "LG", med: "Metoprolol 25mg",   dose: "2× daily",    provider: "Dr. Patel",   practice: "Summit Clinic", blockReason: "Condition review needed",blockType: "CONDITION",     priority: "HIGH", status: "BLOCKED",    daysStuck: 4, nextAction: "Send condition review request to provider", actor: "Provider", insurance: "Aetna"    },
-  {
-    id: "RF-008", name: "Tom Wilson",      initials: "TW", med: "Omeprazole 20mg",   dose: "1× daily",    provider: "Dr. Ahmed",   practice: "CareFirst",     blockReason: "Insurance step therapy", blockType: "INSURANCE",      priority: "MED",  status: "BLOCKED",    daysStuck: 2, nextAction: "Appeal step therapy requirement",  actor: "Practice",   insurance: "BlueCross"  },
-];
+/* ── Nav (shared) ─────────────────────────────────────── */
+function Nav() {
+  return (
+    <nav className="top-nav">
+      <div className="top-nav__inner">
+        <Link href="/" className="top-nav__logo">
+          <div className="w-7 h-7 bg-ink-900 rounded flex items-center justify-center flex-shrink-0">
+            <span className="font-mono text-white text-xs font-bold">Rx</span>
+          </div>
+          <span className="top-nav__wordmark">UnStuck Med</span>
+        </Link>
+        <div className="top-nav__links">
+          {["/", "/workflow", "/dashboard", "/classify", "/security"].map(href => (
+            <Link key={href} href={href}
+              className={`top-nav__link ${href === "/dashboard" ? "top-nav__link--active" : ""}`}>
+              {href === "/" ? "Home" : href.replace("/", "").charAt(0).toUpperCase() + href.slice(2)}
+            </Link>
+          ))}
+        </div>
+        <div className="top-nav__right">
+          <Link href="/classify" className="btn btn-primary btn-sm">
+            <Zap className="h-3.5 w-3.5" /> AI Classifier
+          </Link>
+        </div>
+      </div>
+    </nav>
+  );
+}
 
-const STATUS_COLORS: Record<string, string> = {
-  BLOCKED: "bg-red-100 text-red-700",
-  FILLING: "bg-amber-100 text-amber-700",
-  RESOLVED: "bg-green-100 text-green-700",
+/* ── Constants ────────────────────────────────────────── */
+const AVG_MANUAL_MINUTES = 192; // industry estimate; labeled as such
+
+/* ── Risk scoring ─────────────────────────────────────── */
+const MED_CLASS_RISK: Record<string, { score: number; reason: string }> = {
+  chronic_high_risk: { score: 40, reason: "Chronic high-risk medication (cardiac/diabetes/hypertension)" },
+  chronic_standard:  { score: 20, reason: "Chronic standard medication" },
+  acute:             { score: 5,  reason: "Acute / as-needed medication" },
 };
 
-const PRIORITY_COLORS: Record<string, string> = {
-  HIGH: "bg-red-500",
-  MED:  "bg-amber-400",
-  LOW:  "bg-green-400",
-};
+function computePriorityScore(daysStuck: number, medClass: string, blockType: string): number {
+  const medScore = MED_CLASS_RISK[medClass]?.score ?? 10;
+  const ageScore = Math.min(daysStuck * 12, 48);
+  const blockBonus = blockType === "NO_REFILLS" ? 12 : blockType === "INSURANCE" ? 8 : 0;
+  return Math.min(medScore + ageScore + blockBonus, 100);
+}
 
-const BLOCK_ICONS: Record<string, string> = {
-  NO_REFILLS:   "🔄",
-  INSURANCE:    "🛡️",
-  VISIT:        "🏥",
-  MISSING_INFO: "❓",
-  CONDITION:    "👁️",
-  CLEAR:        "✅",
-  RESOLVED:     "✅",
-};
+/* ── Mock queue data ──────────────────────────────────── */
+const INITIAL_QUEUE = [
+  { id: "RF-001", token: "pt-7a3f", med: "Metformin 500mg",      medClass: "chronic_high_risk", blockType: "NO_REFILLS",   status: "BLOCKED",    daysStuck: 3, actor: "Provider",  practice: "CareFirst",     insurance: "BlueCross", nextAction: "Draft new eRx renewal request to attending provider" },
+  { id: "RF-002", token: "pt-2c1d", med: "Lisinopril 10mg",      medClass: "chronic_high_risk", blockType: "INSURANCE",    status: "BLOCKED",    daysStuck: 2, actor: "Staff",     practice: "Summit Clinic", insurance: "Aetna",     nextAction: "Submit PA form to Aetna PBM with clinical justification" },
+  { id: "RF-003", token: "pt-9b4e", med: "Sertraline 50mg",      medClass: "chronic_standard",  blockType: "VISIT",        status: "BLOCKED",    daysStuck: 1, actor: "Patient",   practice: "Valley Medical",insurance: "Cigna",     nextAction: "Send appointment scheduling link to patient" },
+  { id: "RF-004", token: "pt-5f8a", med: "Atorvastatin 20mg",    medClass: "chronic_high_risk", blockType: "CLEAR",        status: "FILLING",    daysStuck: 0, actor: "Pharmacy",  practice: "MedReach",      insurance: "UHC",       nextAction: "Pharmacist verification in progress" },
+  { id: "RF-005", token: "pt-1e6c", med: "Levothyroxine 50mcg",  medClass: "chronic_standard",  blockType: "MISSING_INFO", status: "BLOCKED",    daysStuck: 1, actor: "Staff",     practice: "ClearPath",     insurance: "Humana",    nextAction: "Confirm patient DOB — mismatch detected between EHR and Rx" },
+  { id: "RF-006", token: "pt-3d9b", med: "Albuterol Inhaler",    medClass: "acute",             blockType: "CLEAR",        status: "RESOLVED",   daysStuck: 0, actor: "Done",      practice: "Valley Medical",insurance: "Cigna",     nextAction: "Patient notified for pickup" },
+  { id: "RF-007", token: "pt-8a2f", med: "Metoprolol 25mg",      medClass: "chronic_high_risk", blockType: "NO_REFILLS",   status: "BLOCKED",    daysStuck: 4, actor: "Provider",  practice: "Summit Clinic", insurance: "Aetna",     nextAction: "Urgent: 4 days stuck — escalate to senior provider" },
+  { id: "RF-008", token: "pt-6c7e", med: "Omeprazole 20mg",      medClass: "chronic_standard",  blockType: "INSURANCE",    status: "BLOCKED",    daysStuck: 2, actor: "Staff",     practice: "CareFirst",     insurance: "BlueCross", nextAction: "Appeal step therapy requirement — Omeprazole is tier-2 alternative" },
+].map(r => ({
+  ...r,
+  priorityScore: computePriorityScore(r.daysStuck, r.medClass, r.blockType),
+  priorityReason: `${MED_CLASS_RISK[r.medClass]?.reason ?? ""}; stuck ${r.daysStuck}d`,
+})).sort((a, b) => b.priorityScore - a.priorityScore);
+
+/* ── Status / priority display helpers ──────────────────── */
+function StatusBadge({ status }: { status: string }) {
+  if (status === "BLOCKED")  return <span className="badge badge-blocked"><AlertTriangle className="h-2.5 w-2.5" />Blocked</span>;
+  if (status === "FILLING")  return <span className="badge badge-progress"><RefreshCw className="h-2.5 w-2.5" />Filling</span>;
+  if (status === "RESOLVED") return <span className="badge badge-resolved"><CheckCircle className="h-2.5 w-2.5" />Resolved</span>;
+  return <span className="badge badge-neutral">{status}</span>;
+}
+
+function PriorityBar({ score }: { score: number }) {
+  const color = score >= 75 ? "#DC2626" : score >= 45 ? "#B45309" : "#6E7681";
+  return (
+    <div className="flex items-center gap-2">
+      <div className="w-16 h-1.5 bg-ink-100 rounded-full overflow-hidden">
+        <div className="h-full rounded-full transition-all" style={{ width: `${score}%`, background: color }} />
+      </div>
+      <span className="text-xs font-mono text-ink-400">{score}</span>
+    </div>
+  );
+}
 
 const ACTOR_COLORS: Record<string, string> = {
-  Provider: "bg-blue-100 text-blue-700",
-  Practice: "bg-purple-100 text-purple-700",
-  Pharmacy: "bg-amber-100 text-amber-700",
-  Patient:  "bg-teal-100 text-teal-700",
-  Done:     "bg-green-100 text-green-700",
+  Provider: "bg-accent-50 text-accent-700 border-accent-100",
+  Staff:    "bg-ink-100 text-ink-700 border-ink-200",
+  Pharmacy: "bg-warn-50 text-warn-700 border-warn-200",
+  Patient:  "bg-ok-50 text-ok-700 border-ok-200",
+  Done:     "bg-ok-50 text-ok-700 border-ok-200",
 };
 
+/* ── Savings counter (animates each resolve) ────────────── */
+function SavingsCounter({ minutesSaved }: { minutesSaved: number }) {
+  const [displayed, setDisplayed] = useState(minutesSaved);
+  const prev = useRef(minutesSaved);
+  useEffect(() => {
+    if (minutesSaved === prev.current) return;
+    const diff = minutesSaved - prev.current;
+    const start = prev.current;
+    prev.current = minutesSaved;
+    const t0 = Date.now();
+    const dur = 800;
+    const tick = () => {
+      const p = Math.min((Date.now() - t0) / dur, 1);
+      setDisplayed(Math.round(start + diff * p));
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, [minutesSaved]);
+
+  const hrs = (displayed / 60).toFixed(1);
+  return (
+    <div className="stat-card border-ok-200 bg-ok-50">
+      <div className="stat-card__label flex items-center gap-1.5 text-ok-700">
+        <TrendingUp className="h-3 w-3" /> Hours Saved This Session
+      </div>
+      <div className="stat-card__value text-ok-700">{hrs}h</div>
+      <div className="stat-card__sub text-ok-700/60">{displayed} min · Est. {AVG_MANUAL_MINUTES} min avg manual resolution</div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════ */
 export default function DashboardPage() {
-  const [selectedRow, setSelectedRow] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState<string>("ALL");
-  const [filterPriority, setFilterPriority] = useState<string>("ALL");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [queue, setQueue] = useState(INITIAL_QUEUE);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [autonomyMode, setAutonomyMode] = useState<"DRAFT_ONLY" | "AUTONOMOUS">("DRAFT_ONLY");
+  const [filterStatus, setFilterStatus] = useState("ALL");
+  const [filterPriority, setFilterPriority] = useState("ALL");
+  const [search, setSearch] = useState("");
+  const [minutesSaved, setMinutesSaved] = useState(0);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
 
-  const filtered = QUEUE.filter(r => {
-    if (filterStatus !== "ALL" && r.status !== filterStatus) return false;
-    if (filterPriority !== "ALL" && r.priority !== filterPriority) return false;
-    if (searchQuery && !r.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !r.med.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    return true;
-  });
+  // Autonomous whitelisted actions
+  const AUTO_WHITELIST = ["SEND_MISSING_INFO_SMS", "SEND_PROVIDER_ALERT"];
 
-  const selected = QUEUE.find(r => r.id === selectedRow);
+  const filtered = queue
+    .filter(r => filterStatus === "ALL" || r.status === filterStatus)
+    .filter(r => filterPriority === "ALL" ||
+      (filterPriority === "HIGH" && r.priorityScore >= 75) ||
+      (filterPriority === "MED" && r.priorityScore >= 45 && r.priorityScore < 75) ||
+      (filterPriority === "LOW" && r.priorityScore < 45))
+    .filter(r => !search || r.med.toLowerCase().includes(search.toLowerCase()) || r.token.includes(search));
+
+  const selectedItem = queue.find(r => r.id === selected);
+
+  const handleResolve = (id: string) => {
+    setQueue(prev => prev.map(r => r.id === id ? { ...r, status: "RESOLVED", actor: "Done", daysStuck: 0 } : r));
+    setMinutesSaved(m => m + AVG_MANUAL_MINUTES);
+    setSelected(null);
+  };
+
+  // Autonomy engine
+  const handleAction = (id: string, actionType: string) => {
+    const isWhitelisted = AUTO_WHITELIST.some(a => actionType.includes(a.split("_").slice(-2).join(" ").toLowerCase()));
+    if (autonomyMode === "AUTONOMOUS" && isWhitelisted) {
+      // Auto-execute — skip confirmation
+      setQueue(prev => prev.map(r => r.id === id ? { ...r, status: "FILLING" } : r));
+      setPendingAction(`[AUTO] ${actionType} executed without confirmation`);
+      setTimeout(() => setPendingAction(null), 3000);
+    } else {
+      // Draft-only — surface for human confirmation
+      setPendingAction(`[DRAFT] Action ready for your confirmation: ${actionType}`);
+    }
+  };
 
   const stats = {
-    total:    QUEUE.length,
-    blocked:  QUEUE.filter(r => r.status === "BLOCKED").length,
-    filling:  QUEUE.filter(r => r.status === "FILLING").length,
-    resolved: QUEUE.filter(r => r.status === "RESOLVED").length,
-    highPri:  QUEUE.filter(r => r.priority === "HIGH").length,
+    total:    queue.length,
+    blocked:  queue.filter(r => r.status === "BLOCKED").length,
+    filling:  queue.filter(r => r.status === "FILLING").length,
+    resolved: queue.filter(r => r.status === "RESOLVED").length,
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
-      {/* Nav */}
-      <nav className="bg-white border-b border-[#e2e8f0] sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-5 flex items-center justify-between h-14">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-1.5 text-[#64748b] hover:text-[#22c55e] text-sm font-medium">
-              <ArrowLeft className="h-4 w-4" /> Back
-            </Link>
-            <span className="text-[#e2e8f0]">|</span>
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-black text-xs" style={{ background: "linear-gradient(135deg,#22c55e,#16a34a)" }}>Rx</div>
-              <span className="font-black text-sm">RefillOS</span>
-              <span className="text-[10px] bg-[#dcfce7] text-[#15803d] px-2 py-0.5 rounded-full font-bold">LIVE DASHBOARD</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {[
-              { href: "/", label: "Home" },
-              { href: "/workflow", label: "Workflow" },
-              { href: "/dashboard", label: "Dashboard", active: true },
-              { href: "/classify", label: "AI Classifier" },
-            ].map(l => (
-              <Link key={l.href} href={l.href} className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${(l as any).active ? "bg-[#f0fdf4] text-[#22c55e]" : "text-[#64748b] hover:text-[#22c55e]"}`}>
-                {l.label}
-              </Link>
-            ))}
-          </div>
-          <Link href="/classify" className="flex items-center gap-1.5 bg-[#22c55e] hover:bg-[#16a34a] text-white text-xs font-bold px-4 py-2 rounded-full transition-all">
-            AI Classifier <Zap className="h-3.5 w-3.5" />
-          </Link>
+    <div className="page-frame">
+      <Nav />
+
+      {/* ── Autonomy banner ─────────────────────────────── */}
+      <div className={`autonomy-bar mx-auto max-w-screen-xl px-6 mt-4 ${autonomyMode === "AUTONOMOUS" ? "autonomy-bar--auto" : "autonomy-bar--draft"}`}>
+        <div className="flex items-center gap-2 flex-1">
+          {autonomyMode === "AUTONOMOUS"
+            ? <><Zap className="h-4 w-4" /><span className="font-semibold text-sm">Autonomous Mode</span><span className="text-sm"> — Low-risk actions execute automatically. Therapy-affecting decisions always require human confirmation.</span></>
+            : <><Shield className="h-4 w-4" /><span className="font-semibold text-sm">Draft-Only Mode</span><span className="text-sm"> — Every action drafted for your review before execution.</span></>
+          }
         </div>
-      </nav>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="text-xs font-medium">{autonomyMode === "AUTONOMOUS" ? "Autonomous" : "Draft-only"}</span>
+          <div className="toggle-track toggle-track--off cursor-pointer"
+            style={autonomyMode === "AUTONOMOUS" ? { background: "var(--accent-600)" } : {}}
+            onClick={() => setAutonomyMode(m => m === "DRAFT_ONLY" ? "AUTONOMOUS" : "DRAFT_ONLY")}>
+            <div className={`toggle-thumb ${autonomyMode === "AUTONOMOUS" ? "toggle-thumb--on" : "toggle-thumb--off"}`} />
+          </div>
+        </div>
+      </div>
 
-      <div className="max-w-7xl mx-auto px-5 py-6">
+      {/* Pending action toast */}
+      {pendingAction && (
+        <div className="max-w-screen-xl mx-auto px-6 mt-3">
+          <div className={`flex items-center gap-3 px-4 py-2.5 rounded border text-sm ${pendingAction.startsWith("[AUTO]") ? "bg-accent-50 border-accent-100 text-accent-700" : "bg-warn-50 border-warn-200 text-warn-700"}`}>
+            {pendingAction.startsWith("[AUTO]") ? <Zap className="h-3.5 w-3.5 flex-shrink-0" /> : <Bell className="h-3.5 w-3.5 flex-shrink-0" />}
+            <span className="flex-1">{pendingAction}</span>
+            <button onClick={() => setPendingAction(null)}><X className="h-3.5 w-3.5" /></button>
+          </div>
+        </div>
+      )}
 
-        {/* ── Header ──────────────────────────────────────────── */}
-        <div className="mb-5 flex items-start justify-between">
+      <div className="container py-6">
+        {/* ── Page header ──────────────────────────────── */}
+        <div className="flex items-start justify-between mb-5">
           <div>
-            <h1 className="font-black text-2xl text-[#0f172a]" style={{ fontFamily: "Poppins,sans-serif" }}>Refill Queue</h1>
-            <p className="text-sm text-[#64748b] mt-0.5">Live view of all active refill requests — sorted by priority</p>
+            <h1 className="text-4xl font-display font-bold text-ink-900 mb-1">Refill Queue</h1>
+            <p className="text-sm text-ink-400">Shared worklist — sorted by clinical priority score</p>
           </div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-[#22c55e] bg-[#f0fdf4] border border-[#bbf7d0] px-3 py-1.5 rounded-full">
-            <span className="w-2 h-2 rounded-full bg-[#22c55e] animate-pulse" /> Live · Updated just now
+          <div className="flex items-center gap-2 text-xs font-mono text-ok-700 bg-ok-50 border border-ok-200 px-3 py-1.5 rounded">
+            <span className="w-1.5 h-1.5 rounded-full bg-ok-600 animate-pulse" />
+            Live
           </div>
         </div>
 
-        {/* ── Stat cards ──────────────────────────────────────── */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5">
+        {/* ── Stats ────────────────────────────────────── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+          <SavingsCounter minutesSaved={minutesSaved} />
           {[
-            { label: "Total",    val: stats.total,    color: "bg-white",          text: "#0f172a", border: "#e2e8f0" },
-            { label: "Blocked",  val: stats.blocked,  color: "bg-red-50",         text: "#dc2626", border: "#fecaca" },
-            { label: "Filling",  val: stats.filling,  color: "bg-amber-50",       text: "#b45309", border: "#fde68a" },
-            { label: "Resolved", val: stats.resolved, color: "bg-green-50",       text: "#15803d", border: "#bbf7d0" },
-            { label: "HIGH Priority", val: stats.highPri, color: "bg-red-50",     text: "#dc2626", border: "#fecaca" },
+            { label: "Blocked",  val: stats.blocked,  sub: "Need action now",    cls: "border-warn-200 bg-warn-50", vcls: "text-warn-700" },
+            { label: "Filling",  val: stats.filling,  sub: "In progress",        cls: "border-accent-100",          vcls: "text-accent-600" },
+            { label: "Resolved", val: stats.resolved, sub: "This session",       cls: "border-ok-200 bg-ok-50",     vcls: "text-ok-600" },
           ].map((s, i) => (
-            <div key={i} className="rounded-xl p-4 border" style={{ background: s.color, borderColor: s.border }}>
-              <div className="font-black text-2xl" style={{ fontFamily: "Poppins", color: s.text }}>{s.val}</div>
-              <div className="text-xs text-[#64748b] mt-0.5">{s.label}</div>
+            <div key={i} className={`stat-card ${s.cls}`}>
+              <div className="stat-card__label">{s.label}</div>
+              <div className={`stat-card__value ${s.vcls}`}>{s.val}</div>
+              <div className="stat-card__sub">{s.sub}</div>
             </div>
           ))}
         </div>
 
-        {/* ── Filters ─────────────────────────────────────────── */}
-        <div className="flex flex-wrap items-center gap-3 mb-4">
-          <div className="flex items-center gap-2 bg-white border border-[#e2e8f0] rounded-xl px-3 py-2 flex-1 max-w-xs">
-            <Search className="h-4 w-4 text-[#94a3b8]" />
-            <input
-              className="text-sm outline-none bg-transparent text-[#0f172a] placeholder:text-[#94a3b8] w-full"
-              placeholder="Search patient or medication..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-            />
+        {/* ── Filters ──────────────────────────────────── */}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 input py-1.5 w-56">
+            <Search className="h-3.5 w-3.5 text-ink-400 flex-shrink-0" />
+            <input className="text-sm bg-transparent outline-none text-ink-900 placeholder:text-ink-400 w-full"
+              placeholder="Search medication or token..."
+              value={search} onChange={e => setSearch(e.target.value)} />
           </div>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <Filter className="h-3.5 w-3.5 text-[#94a3b8]" />
+          <div className="flex items-center gap-1">
+            <Filter className="h-3.5 w-3.5 text-ink-400" />
             {["ALL", "BLOCKED", "FILLING", "RESOLVED"].map(s => (
               <button key={s} onClick={() => setFilterStatus(s)}
-                className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all ${filterStatus === s ? "bg-[#22c55e] text-white border-[#22c55e]" : "bg-white text-[#64748b] border-[#e2e8f0] hover:border-[#22c55e]"}`}>
-                {s}
-              </button>
+                className={`btn btn-sm ${filterStatus === s ? "btn-primary" : "btn-ghost"}`}>{s}</button>
             ))}
-            <span className="text-[#e2e8f0] mx-1">|</span>
+          </div>
+          <div className="flex items-center gap-1">
             {["ALL", "HIGH", "MED", "LOW"].map(p => (
               <button key={p} onClick={() => setFilterPriority(p)}
-                className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all ${filterPriority === p ? "bg-[#22c55e] text-white border-[#22c55e]" : "bg-white text-[#64748b] border-[#e2e8f0] hover:border-[#22c55e]"}`}>
-                {p}
-              </button>
+                className={`btn btn-sm ${filterPriority === p ? "btn-primary" : "btn-ghost"}`}>{p}</button>
             ))}
           </div>
         </div>
 
-        {/* ── Main layout: table + detail panel ───────────────── */}
-        <div className={`grid gap-5 ${selectedRow ? "grid-cols-1 lg:grid-cols-3" : "grid-cols-1"}`}>
+        {/* ── Main layout ──────────────────────────────── */}
+        <div className={`grid gap-4 ${selected ? "grid-cols-1 xl:grid-cols-5" : "grid-cols-1"}`}>
 
           {/* Queue table */}
-          <div className={`${selectedRow ? "lg:col-span-2" : "col-span-1"}`}>
-            <div className="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-[#f1f5f9] bg-[#f8fafc]">
-                    <th className="text-left px-4 py-3 text-xs font-bold text-[#64748b] uppercase tracking-wide">Priority</th>
-                    <th className="text-left px-4 py-3 text-xs font-bold text-[#64748b] uppercase tracking-wide">Patient</th>
-                    <th className="text-left px-4 py-3 text-xs font-bold text-[#64748b] uppercase tracking-wide hidden md:table-cell">Medication</th>
-                    <th className="text-left px-4 py-3 text-xs font-bold text-[#64748b] uppercase tracking-wide hidden lg:table-cell">Block Reason</th>
-                    <th className="text-left px-4 py-3 text-xs font-bold text-[#64748b] uppercase tracking-wide">Status</th>
-                    <th className="text-left px-4 py-3 text-xs font-bold text-[#64748b] uppercase tracking-wide hidden lg:table-cell">Next Action Owner</th>
-                    <th className="px-4 py-3"></th>
+          <div className={`${selected ? "xl:col-span-3" : ""} card overflow-hidden`}>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Priority</th>
+                  <th>Token</th>
+                  <th>Medication</th>
+                  <th>Block</th>
+                  <th>Status</th>
+                  <th>Actor</th>
+                  <th>Stuck</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(row => (
+                  <tr key={row.id} className={`clickable ${selected === row.id ? "selected" : ""}`}
+                    onClick={() => setSelected(selected === row.id ? null : row.id)}>
+                    <td>
+                      <div className="tooltip-wrap">
+                        <PriorityBar score={row.priorityScore} />
+                        <div className="tooltip-box max-w-[200px]">{row.priorityReason}</div>
+                      </div>
+                    </td>
+                    <td><span className="font-mono text-xs text-ink-400">{row.token}</span></td>
+                    <td className="font-medium text-ink-900">{row.med}</td>
+                    <td><span className="text-xs text-ink-400">{row.blockType.replace("_", " ")}</span></td>
+                    <td><StatusBadge status={row.status} /></td>
+                    <td>
+                      <span className={`badge border text-xs ${ACTOR_COLORS[row.actor] ?? "badge-neutral"}`}>
+                        {row.actor}
+                      </span>
+                    </td>
+                    <td>
+                      {row.daysStuck > 0
+                        ? <span className={`font-mono text-xs ${row.daysStuck >= 3 ? "text-warn-600" : "text-ink-400"}`}>{row.daysStuck}d</span>
+                        : <span className="text-xs text-ink-400">—</span>}
+                    </td>
+                    <td><Eye className="h-3.5 w-3.5 text-ink-400" /></td>
                   </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((row, i) => (
-                    <tr key={row.id}
-                      className={`border-b border-[#f8fafc] transition-all cursor-pointer ${selectedRow === row.id ? "bg-[#f0fdf4]" : "hover:bg-[#f8fafc]"} ${i === filtered.length - 1 ? "border-0" : ""}`}
-                      onClick={() => setSelectedRow(selectedRow === row.id ? null : row.id)}>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1.5">
-                          <div className={`w-2.5 h-2.5 rounded-full ${PRIORITY_COLORS[row.priority]}`} />
-                          <span className="text-xs font-bold text-[#64748b]">{row.priority}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2.5">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${row.status === "BLOCKED" ? "bg-red-100 text-red-600" : row.status === "RESOLVED" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
-                            {row.initials}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-[#0f172a] text-sm">{row.name}</div>
-                            <div className="text-[11px] text-[#94a3b8]">{row.id}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 hidden md:table-cell">
-                        <div className="text-sm font-medium text-[#334155]">{row.med}</div>
-                        <div className="text-[11px] text-[#94a3b8]">{row.dose}</div>
-                      </td>
-                      <td className="px-4 py-3 hidden lg:table-cell">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-base">{BLOCK_ICONS[row.blockType]}</span>
-                          <span className="text-xs text-[#334155]">{row.blockReason}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${STATUS_COLORS[row.status]}`}>
-                          {row.status}
-                        </span>
-                        {row.daysStuck > 0 && (
-                          <div className="text-[10px] text-red-500 mt-0.5">{row.daysStuck}d stuck</div>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 hidden lg:table-cell">
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${ACTOR_COLORS[row.actor] || "bg-gray-100 text-gray-600"}`}>
-                          → {row.actor}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <button className="p-1.5 hover:bg-[#f0fdf4] rounded-lg transition-all text-[#94a3b8] hover:text-[#22c55e]">
-                          <Eye className="h-4 w-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {filtered.length === 0 && (
-                <div className="text-center py-10 text-[#94a3b8] text-sm">No refills match your filters.</div>
-              )}
-            </div>
+                ))}
+                {filtered.length === 0 && (
+                  <tr><td colSpan={8} className="text-center py-10 text-sm text-ink-400">No refills match your filters.</td></tr>
+                )}
+              </tbody>
+            </table>
           </div>
 
           {/* Detail panel */}
-          {selected && (
-            <div className="lg:col-span-1 space-y-3">
+          {selectedItem && (
+            <div className="xl:col-span-2 space-y-3">
               {/* Header */}
-              <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5">
+              <div className="card p-5">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <div className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-wider">{selected.id}</div>
-                    <h3 className="font-black text-lg text-[#0f172a]">{selected.name}</h3>
-                    <div className="text-sm text-[#64748b]">{selected.med} · {selected.dose}</div>
+                    <div className="font-mono text-xs text-ink-400 mb-1">{selectedItem.id} · {selectedItem.token}</div>
+                    <h3 className="text-xl font-display font-bold text-ink-900">{selectedItem.med}</h3>
+                    <div className="text-sm text-ink-400 mt-0.5">{selectedItem.practice} · {selectedItem.insurance}</div>
                   </div>
-                  <div className={`w-2.5 h-2.5 rounded-full mt-2 ${PRIORITY_COLORS[selected.priority]}`} />
+                  <button onClick={() => setSelected(null)} className="btn btn-ghost btn-sm p-1">
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
 
-                <div className="space-y-2.5 text-xs">
+                {/* Priority */}
+                <div className="bg-ink-50 rounded p-3 mb-4">
+                  <div className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <Info className="h-3 w-3" /> Priority Score — {selectedItem.priorityScore}/100
+                  </div>
+                  <PriorityBar score={selectedItem.priorityScore} />
+                  <p className="text-xs text-ink-400 mt-2 leading-relaxed">{selectedItem.priorityReason}</p>
+                </div>
+
+                <div className="space-y-2 text-sm">
                   {[
-                    { label: "Provider",  value: selected.provider  },
-                    { label: "Practice",  value: selected.practice  },
-                    { label: "Insurance", value: selected.insurance  },
-                    { label: "Status",    value: selected.status    },
-                  ].map(({ label, value }) => (
-                    <div key={label} className="flex items-center justify-between py-1.5 border-b border-[#f1f5f9] last:border-0">
-                      <span className="text-[#94a3b8] font-medium">{label}</span>
-                      <span className="font-semibold text-[#0f172a]">{value}</span>
+                    { l: "Block type",  v: selectedItem.blockType.replace(/_/g, " ") },
+                    { l: "Med class",   v: selectedItem.medClass.replace(/_/g, " ")  },
+                    { l: "Days stuck",  v: selectedItem.daysStuck > 0 ? `${selectedItem.daysStuck} days` : "Active today" },
+                    { l: "Status",      v: selectedItem.status     },
+                  ].map(({ l, v }) => (
+                    <div key={l} className="flex justify-between py-1.5 border-b border-ink-100 last:border-0">
+                      <span className="text-ink-400">{l}</span>
+                      <span className="font-medium text-ink-900">{v}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Block Reason */}
-              {selected.status === "BLOCKED" && (
-                <div className="bg-red-50 rounded-2xl border border-red-100 p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-lg">{BLOCK_ICONS[selected.blockType]}</span>
-                    <span className="font-bold text-red-700 text-sm">Block Detected</span>
+              {/* AI Recommended Action */}
+              {selectedItem.status !== "RESOLVED" && (
+                <div className="card p-4 border-accent-100 bg-accent-50">
+                  <div className="text-xs font-semibold text-accent-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <Zap className="h-3 w-3" /> AI Recommended Action
                   </div>
-                  <p className="text-sm text-red-600">{selected.blockReason}</p>
-                  {selected.daysStuck > 0 && (
-                    <div className="mt-2 text-xs text-red-500 font-semibold flex items-center gap-1">
-                      <Clock className="h-3 w-3" /> Stuck for {selected.daysStuck} day{selected.daysStuck > 1 ? "s" : ""}
-                    </div>
-                  )}
+                  <p className="text-sm text-accent-700 leading-relaxed mb-3">{selectedItem.nextAction}</p>
+                  <div className="reasoning-trace mb-3">
+                    Block: {selectedItem.blockType}<br />
+                    Med class: {selectedItem.medClass}<br />
+                    Actor: {selectedItem.actor}<br />
+                    Mode: {autonomyMode}<br />
+                    PII: stripped before model call ✓
+                  </div>
+                  <div className="text-xs text-ink-400 mb-3">
+                    Route to: <span className={`badge border ${ACTOR_COLORS[selectedItem.actor] ?? "badge-neutral"}`}>{selectedItem.actor}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    {autonomyMode === "AUTONOMOUS" && (selectedItem.blockType === "MISSING_INFO" || selectedItem.actor === "Staff") ? (
+                      <button onClick={() => handleAction(selectedItem.id, "SEND_MISSING_INFO_SMS")}
+                        className="btn btn-primary flex-1">
+                        <Zap className="h-3.5 w-3.5" /> Auto-Execute
+                      </button>
+                    ) : (
+                      <button onClick={() => handleAction(selectedItem.id, "SEND_PROVIDER_ALERT")}
+                        className="btn btn-primary flex-1">
+                        Confirm & Execute
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {/* Next Action */}
-              <div className="bg-[#f0fdf4] rounded-2xl border border-[#bbf7d0] p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Zap className="h-4 w-4 text-[#22c55e]" />
-                  <span className="font-bold text-[#15803d] text-sm">AI Recommended Action</span>
-                </div>
-                <p className="text-sm text-[#166534] mb-3">{selected.nextAction}</p>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-[#64748b]">Route to:</span>
-                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${ACTOR_COLORS[selected.actor] || ""}`}>
-                    {selected.actor}
-                  </span>
-                </div>
-              </div>
+              {/* Resolve */}
+              {selectedItem.status !== "RESOLVED" && (
+                <button onClick={() => handleResolve(selectedItem.id)}
+                  className="btn btn-secondary w-full justify-center">
+                  <CheckCircle className="h-3.5 w-3.5 text-ok-600" /> Mark Resolved
+                  <span className="text-xs text-ink-400 ml-1">(+{AVG_MANUAL_MINUTES} min saved)</span>
+                </button>
+              )}
 
-              {/* Actions */}
-              <div className="space-y-2">
-                <button className="w-full bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2">
-                  <CheckCircle className="h-4 w-4" /> Mark as Resolved
-                </button>
-                <Link href="/classify" className="w-full bg-white border border-[#e2e8f0] hover:border-[#22c55e] text-[#334155] text-sm font-semibold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2">
-                  <Zap className="h-4 w-4 text-[#22c55e]" /> Re-run AI Classifier
-                </Link>
-                <button className="w-full bg-white border border-[#e2e8f0] text-[#64748b] text-xs font-medium py-2 rounded-xl hover:bg-[#f8fafc] transition-all flex items-center justify-center gap-2">
-                  <Bell className="h-3.5 w-3.5" /> Send Patient SMS Update
-                </button>
-              </div>
+              {selectedItem.status === "RESOLVED" && (
+                <div className="card p-4 border-ok-200 bg-ok-50">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-ok-700">
+                    <CheckCircle className="h-4 w-4" /> Resolved
+                  </div>
+                  <p className="text-xs text-ok-700/70 mt-1">Audit trail logged. Patient notified generically (no medication name).</p>
+                </div>
+              )}
             </div>
           )}
-        </div>
-
-        {/* Bottom CTA */}
-        <div className="mt-6 text-center">
-          <Link href="/classify" className="inline-flex items-center gap-2 bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-bold px-6 py-3 rounded-full shadow-lg transition-all">
-            Classify a New Refill Block with AI <ArrowRight className="h-4 w-4" />
-          </Link>
         </div>
       </div>
     </div>

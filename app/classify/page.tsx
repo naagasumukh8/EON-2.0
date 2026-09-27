@@ -1,138 +1,198 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Zap, RefreshCw, Clock, AlertTriangle, CheckCircle, ChevronDown } from "lucide-react";
+import {
+  ArrowRight, Zap, RefreshCw, CheckCircle, AlertTriangle,
+  Info, ChevronRight, BarChart3, Clock, Shield
+} from "lucide-react";
 
-/* ─── Block classifier logic (mock AI, offline-safe) ── */
+/* ── Nav (inline, shared pattern) ───────────────────────── */
+function Nav() {
+  return (
+    <nav className="top-nav">
+      <div className="top-nav__inner">
+        <Link href="/" className="top-nav__logo">
+          <div className="w-7 h-7 bg-ink-900 rounded flex items-center justify-center flex-shrink-0">
+            <span className="font-mono text-white text-xs font-bold">Rx</span>
+          </div>
+          <span className="top-nav__wordmark">UnStuck Med</span>
+        </Link>
+        <div className="top-nav__links">
+          {(["/", "/workflow", "/dashboard", "/classify", "/security"] as const).map(href => (
+            <Link key={href} href={href}
+              className={`top-nav__link ${href === "/classify" ? "top-nav__link--active" : ""}`}>
+              {href === "/" ? "Home" : href.replace("/", "").charAt(0).toUpperCase() + href.slice(2)}
+            </Link>
+          ))}
+        </div>
+        <div className="top-nav__right">
+          <Link href="/dashboard" className="btn btn-primary btn-sm">
+            Open Queue <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+/* ── Block classifier rules (offline-safe) ──────────────── */
 const BLOCK_RULES = [
   {
     id: "NO_REFILLS",
-    keywords: ["no refills", "no more refills", "zero refills", "refills exhausted", "expired prescription", "needs new rx", "no remaining"],
+    keywords: ["no refill", "no more refill", "zero refill", "refills exhausted", "expired prescription", "needs new rx", "no remaining", "ran out"],
     label: "No Refills Remaining",
-    icon: "🔄",
-    color: "#fee2e2",
-    textColor: "#dc2626",
-    tagClass: "bg-red-100 text-red-700",
     confidence: 94,
     description: "The prescription has zero refills left. A new eRx from the provider is required before the pharmacy can dispense.",
-    nextAction: "Send eRx renewal request to provider — attach last fill date, current dosage, and patient adherence note.",
+    nextAction: "Draft new eRx renewal request to attending provider — attach last fill date, dosage, and adherence history.",
     actor: "Provider",
-    actorColor: "bg-blue-100 text-blue-700",
-    timeline: "< 4 hours with RefillOS routing",
-    timelineOld: "3–7 days manually",
-    reasoning: "Keywords detected: prescription expiry / refill count = 0. Provider must authorize a new Rx.",
+    actorColor: "bg-accent-50 text-accent-700 border border-accent-100",
+    timeline: "Est. < 4 hours with routing",
+    timelineBaseline: "3–7 days manually",
+    blockColor: "bg-warn-50 border-warn-200",
+    textColor: "text-warn-700",
+    reasoning: "Pattern: prescription expiry / refill_count = 0. Provider authorization required for new Rx.",
   },
   {
     id: "INSURANCE",
-    keywords: ["prior auth", "pa required", "insurance denied", "pbm", "step therapy", "not covered", "coverage denied", "authorization"],
+    keywords: ["prior auth", "pa required", "insurance denied", "pbm", "step therapy", "not covered", "coverage denied", "authorization", "formulary"],
     label: "Insurance / PBM Block",
-    icon: "🛡️",
-    color: "#fef3c7",
-    textColor: "#b45309",
-    tagClass: "bg-amber-100 text-amber-700",
     confidence: 91,
-    description: "Insurance or PBM is blocking the fill — prior authorization, step therapy, or coverage denial.",
-    nextAction: "Submit PA form to PBM / appeal step therapy. Attach clinical justification from provider.",
+    description: "Insurance or PBM is blocking the fill — prior authorization, step therapy restriction, or coverage denial.",
+    nextAction: "Submit PA form to PBM. Attach clinical justification from provider. Note: appeal window is typically 72 hours.",
     actor: "Practice Staff",
-    actorColor: "bg-purple-100 text-purple-700",
-    timeline: "< 6 hours with RefillOS routing",
-    timelineOld: "5–10 days manually",
-    reasoning: "Keywords detected: prior auth / PBM / coverage denial. Insurance intervention required before fill.",
+    actorColor: "bg-ink-100 text-ink-700 border border-ink-200",
+    timeline: "Est. < 6 hours with routing",
+    timelineBaseline: "5–10 days manually",
+    blockColor: "bg-warn-50 border-warn-200",
+    textColor: "text-warn-700",
+    reasoning: "Pattern: PBM / prior-auth / coverage denial keywords. Insurance intervention required before dispensing.",
   },
   {
     id: "VISIT",
-    keywords: ["needs a visit", "requires appointment", "visit required", "come in", "see the doctor", "in person", "controlled", "schedule appointment"],
+    keywords: ["needs a visit", "requires appointment", "visit required", "come in", "see the doctor", "in person", "controlled substance", "schedule appointment", "in-person"],
     label: "Provider Visit Required",
-    icon: "🏥",
-    color: "#dbeafe",
-    textColor: "#1d4ed8",
-    tagClass: "bg-blue-100 text-blue-700",
     confidence: 88,
     description: "Provider requires the patient to come in before authorizing a refill — common for controlled substances or when clinical review is needed.",
-    nextAction: "Send appointment scheduling link to patient via SMS. Mark refill as 'Pending Visit'.",
+    nextAction: "Send appointment scheduling link to patient via SMS (generic message — no medication name in body).",
     actor: "Patient",
-    actorColor: "bg-teal-100 text-teal-700",
-    timeline: "Depends on appointment slot",
-    timelineOld: "Patient informed via phone tag (days)",
-    reasoning: "Keywords detected: visit/appointment/in-person. Clinical review by provider needed before dispensing.",
+    actorColor: "bg-ok-50 text-ok-700 border border-ok-200",
+    timeline: "Depends on appointment availability",
+    timelineBaseline: "Patient informed via phone tag (days)",
+    blockColor: "bg-accent-50 border-accent-100",
+    textColor: "text-accent-700",
+    reasoning: "Pattern: visit / appointment / in-person keywords. Clinical review by provider required before dispensing.",
   },
   {
     id: "MISSING_INFO",
-    keywords: ["missing", "incomplete", "unclear", "wrong dob", "no dob", "illegible", "unknown", "no address", "incorrect"],
+    keywords: ["missing", "incomplete", "unclear", "wrong dob", "no dob", "illegible", "incorrect", "mismatch", "doesn't match", "cant find"],
     label: "Missing / Incorrect Information",
-    icon: "❓",
-    color: "#f3e8ff",
-    textColor: "#7e22ce",
-    tagClass: "bg-purple-100 text-purple-700",
     confidence: 89,
-    description: "Critical patient or prescription information is missing or incorrect — pharmacy cannot fill without it.",
-    nextAction: "Contact patient to confirm missing info. Update EHR record. Re-submit to pharmacy.",
+    description: "Critical patient or prescription data is missing or incorrect — pharmacy cannot process without resolving this.",
+    nextAction: "Contact patient to confirm missing data. Update EHR record. Re-submit to pharmacy. (Auto-executable in Autonomous mode.)",
     actor: "Practice Staff",
-    actorColor: "bg-purple-100 text-purple-700",
-    timeline: "< 2 hours with patient SMS",
-    timelineOld: "1–3 days via phone",
-    reasoning: "Keywords detected: missing/incomplete/incorrect. Data gap blocks pharmacy processing.",
+    actorColor: "bg-ink-100 text-ink-700 border border-ink-200",
+    timeline: "Est. < 2 hours with patient SMS",
+    timelineBaseline: "1–3 days via phone",
+    blockColor: "bg-warn-50 border-warn-200",
+    textColor: "text-warn-700",
+    reasoning: "Pattern: missing / incorrect / mismatch keywords. Data gap blocks pharmacy processing.",
   },
   {
     id: "CONDITION",
-    keywords: ["condition review", "labs required", "needs labs", "check labs", "review needed", "clinical review", "condition changed"],
+    keywords: ["condition review", "labs required", "needs labs", "check labs", "review needed", "clinical review", "condition changed", "vitals", "a1c", "blood pressure check"],
     label: "Condition Review Required",
-    icon: "👁️",
-    color: "#dcfce7",
-    textColor: "#15803d",
-    tagClass: "bg-green-100 text-green-700",
     confidence: 85,
     description: "Provider needs to review the patient's current clinical status before authorizing a refill.",
-    nextAction: "Send condition review request to provider with latest patient notes and lab results.",
+    nextAction: "Send condition review request to provider with latest patient notes, labs, and vitals attached.",
     actor: "Provider",
-    actorColor: "bg-blue-100 text-blue-700",
-    timeline: "< 4 hours with context attached",
-    timelineOld: "2–5 days via fax/phone",
-    reasoning: "Keywords detected: condition review / labs. Provider clinical judgment required.",
+    actorColor: "bg-accent-50 text-accent-700 border border-accent-100",
+    timeline: "Est. < 4 hours with context attached",
+    timelineBaseline: "2–5 days via fax/phone",
+    blockColor: "bg-accent-50 border-accent-100",
+    textColor: "text-accent-700",
+    reasoning: "Pattern: condition review / labs / clinical-review keywords. Provider clinical judgment required.",
   },
 ];
 
-const DELIBERATE_FAILURE = {
-  label: "Multi-intent / Ambiguous",
-  icon: "⚠️",
-  color: "#f8fafc",
-  textColor: "#475569",
-  tagClass: "bg-gray-100 text-gray-600",
-  confidence: 38,
-  description: "This query contains mixed signals — multiple block types are possible. A human reviewer should determine the primary block.",
-  nextAction: "Escalate to senior practice staff for manual triage.",
-  actor: "Human Reviewer",
-  actorColor: "bg-gray-100 text-gray-600",
-  reasoning: "Classifier detected conflicting signals — e.g. both 'no refills' and 'prior auth' keywords. Unable to determine primary block with confidence > 70%.",
-};
+/* ── Risk scoring (clinical priority) ───────────────────── */
+const HIGH_RISK_MEDS = ["metformin", "lisinopril", "metoprolol", "atorvastatin", "amlodipine", "warfarin", "insulin", "digoxin", "carvedilol", "losartan", "hydrochlorothiazide"];
+const MED_RISK_MEDS  = ["levothyroxine", "sertraline", "escitalopram", "fluoxetine", "omeprazole", "pantoprazole"];
 
-/* ─── Sample inputs (messy, realistic) ─────────────────── */
-const SAMPLES = [
-  { label: "Sample A — No Refills",      text: "The pharmacy says there are no more refills left on Maria Rivera's Metformin 500mg prescription. It expired 3 weeks ago. She's been on it for 2 years. The pharmacy is asking for a new Rx from Dr. Ahmed." },
-  { label: "Sample B — Insurance Block", text: "James Thompson's Lisinopril 10mg was denied by BlueCross PBM. Needs prior authorization. Pharmacy says it's a step therapy requirement — they want to see if a cheaper ACE inhibitor was tried first." },
-  { label: "Sample C — Visit Required",  text: "Dr. Chen won't refill Aisha Patel's Sertraline 50mg without seeing her first. It's a controlled mood medication and her last appointment was over 6 months ago. Pharmacy is waiting." },
-  { label: "Sample D — Missing Info",    text: "Can't process Robert Wilson's prescription. The date of birth on the Rx doesn't match what we have in the system. Could be a wrong patient. Need to verify before we can fill." },
-  { label: "Sample E — Ambiguous (fails)", text: "The patient called and said they were denied but also haven't been seen in a year and the pharmacy mentioned something about prior auth too. Not sure which issue is the main blocker here." },
-];
-
-function classify(text: string) {
+function scoreRisk(text: string): { score: number; reason: string; medClass: string } {
   const lower = text.toLowerCase();
-  const scores: Array<{ rule: typeof BLOCK_RULES[0]; score: number }> = [];
+  const isHighRisk = HIGH_RISK_MEDS.some(m => lower.includes(m));
+  const isMedRisk  = !isHighRisk && MED_RISK_MEDS.some(m => lower.includes(m));
 
-  for (const rule of BLOCK_RULES) {
-    const hits = rule.keywords.filter(k => lower.includes(k));
-    if (hits.length > 0) scores.push({ rule, score: hits.length });
+  if (isHighRisk) {
+    const med = HIGH_RISK_MEDS.find(m => lower.includes(m));
+    return { score: 85, reason: `Detected high-risk chronic medication (${med}) — cardiac/diabetes/hypertension category. Clinical continuity is time-sensitive.`, medClass: "chronic_high_risk" };
   }
-
-  if (scores.length === 0) return null;
-  if (scores.length > 1 && scores[0].score === scores[1].score) return "ambiguous";
-  scores.sort((a, b) => b.score - a.score);
-  return scores[0].rule;
+  if (isMedRisk) {
+    const med = MED_RISK_MEDS.find(m => lower.includes(m));
+    return { score: 55, reason: `Detected chronic standard medication (${med}). Continuity important; not immediately life-threatening.`, medClass: "chronic_standard" };
+  }
+  return { score: 25, reason: "No high-risk medication detected. Standard priority.", medClass: "acute" };
 }
 
+/* ── DELIBERATE FAILURE ──────────────────────────────────── */
+const AMBIGUOUS_RESULT = {
+  id: "AMBIGUOUS",
+  label: "Ambiguous — Cannot Classify",
+  confidence: 38,
+  description: "This query contains conflicting signals from multiple block categories. The classifier correctly declines to guess when confidence is below 70%.",
+  nextAction: "Escalate to senior practice staff for manual triage.",
+  actor: "Human Reviewer",
+  actorColor: "bg-ink-100 text-ink-400 border border-ink-200",
+  timeline: "Manual review required",
+  timelineBaseline: "N/A",
+  blockColor: "bg-ink-50 border-ink-200",
+  textColor: "text-ink-400",
+  reasoning: "Multiple keyword clusters detected simultaneously (e.g., 'no refills' + 'prior auth'). Conflicting signals prevent confident single-category assignment. This is a known limitation — multi-intent messages require human judgment.",
+  isFailure: true,
+};
+
+/* ── Samples ─────────────────────────────────────────────── */
+const SAMPLES = [
+  {
+    label: "No Refills — Metformin (High Risk)",
+    text: "The pharmacy says there are no more refills left on this patient's Metformin 500mg prescription. It expired 3 weeks ago. She's been on it for 2 years for diabetes management. The pharmacy is requesting a new Rx from the attending physician.",
+  },
+  {
+    label: "Insurance Block — Lisinopril PA",
+    text: "BlueCross PBM denied the Lisinopril 10mg claim. Prior authorization is required. It's a step therapy requirement — they want to confirm a cheaper ACE inhibitor was tried first. PA form needed.",
+  },
+  {
+    label: "Visit Required — Controlled Substance",
+    text: "The prescribing physician won't refill the Sertraline 50mg without an in-person visit first. The patient's last appointment was over 6 months ago. Provider requires a clinical review before approving.",
+  },
+  {
+    label: "Missing Info — DOB Mismatch",
+    text: "Can't process this refill. The date of birth on the prescription doesn't match what we have in the system. There's a mismatch — could be the wrong patient on file. Need to verify before we can proceed.",
+  },
+  {
+    label: "Ambiguous — Multi-Intent (known failure)",
+    text: "The patient called and said the pharmacy denied it but also mentioned something about prior auth AND they haven't been seen in a year AND there's some missing insurance info too. Not sure which issue is the primary blocker.",
+  },
+];
+
+/* ── Classifier engine ───────────────────────────────────── */
+function classify(text: string) {
+  const lower = text.toLowerCase();
+  const scored = BLOCK_RULES.map(rule => ({
+    rule,
+    hits: rule.keywords.filter(k => lower.includes(k)).length,
+  })).filter(r => r.hits > 0).sort((a, b) => b.hits - a.hits);
+
+  if (scored.length === 0) return null;
+  if (scored.length > 1 && scored[0].hits === scored[1].hits) return "ambiguous";
+  return scored[0].rule;
+}
+
+/* ═══════════════════════════════════════════════════════ */
 export default function ClassifyPage() {
   const [input, setInput] = useState("");
   const [result, setResult] = useState<any>(null);
+  const [risk, setRisk]     = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [elapsed, setElapsed] = useState<number | null>(null);
 
@@ -140,15 +200,20 @@ export default function ClassifyPage() {
     if (!input.trim()) return;
     setLoading(true);
     setResult(null);
+    setRisk(null);
     const t0 = Date.now();
-    await new Promise(r => setTimeout(r, 900 + Math.random() * 600));
+    await new Promise(r => setTimeout(r, 700 + Math.random() * 500));
     const t1 = Date.now();
     setElapsed(parseFloat(((t1 - t0) / 1000).toFixed(1)));
+
     const res = classify(input);
+    const riskResult = scoreRisk(input);
+    setRisk(riskResult);
+
     if (res === "ambiguous") {
-      setResult({ ...DELIBERATE_FAILURE, id: "AMBIGUOUS", label: DELIBERATE_FAILURE.label });
+      setResult(AMBIGUOUS_RESULT);
     } else if (res === null) {
-      setResult({ id: "UNKNOWN", label: "Unclassified", icon: "🔍", color: "#f8fafc", textColor: "#475569", tagClass: "bg-gray-100 text-gray-600", confidence: 10, description: "No clear block pattern detected. Please provide more context about the refill situation.", nextAction: "Review manually or add more details to the query.", actor: "Human Reviewer", actorColor: "bg-gray-100 text-gray-600", reasoning: "No keyword patterns matched any block category." });
+      setResult({ ...AMBIGUOUS_RESULT, id: "UNKNOWN", label: "Unclassified — Provide More Context", confidence: 10, description: "No block pattern detected. Add more detail about what the pharmacy or provider said.", reasoning: "Zero keyword matches. Insufficient signal for classification." });
     } else {
       setResult(res);
     }
@@ -156,211 +221,208 @@ export default function ClassifyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
-      {/* Nav */}
-      <nav className="bg-white border-b border-[#e2e8f0] sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-5 flex items-center justify-between h-14">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-1.5 text-[#64748b] hover:text-[#22c55e] text-sm font-medium">
-              <ArrowLeft className="h-4 w-4" /> Back
-            </Link>
-            <span className="text-[#e2e8f0]">|</span>
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-black text-xs" style={{ background: "linear-gradient(135deg,#22c55e,#16a34a)" }}>Rx</div>
-              <span className="font-black text-sm">RefillOS</span>
-              <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold">AI CLASSIFIER</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {[
-              { href: "/", label: "Home" },
-              { href: "/workflow", label: "Workflow" },
-              { href: "/dashboard", label: "Dashboard" },
-              { href: "/classify", label: "AI Classifier", active: true },
-            ].map(l => (
-              <Link key={l.href} href={l.href} className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${(l as any).active ? "bg-[#f3e8ff] text-purple-700" : "text-[#64748b] hover:text-[#22c55e]"}`}>
-                {l.label}
-              </Link>
-            ))}
-          </div>
-          <Link href="/dashboard" className="flex items-center gap-1.5 bg-[#22c55e] hover:bg-[#16a34a] text-white text-xs font-bold px-4 py-2 rounded-full transition-all">
-            Open Dashboard <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-      </nav>
+    <div className="page-frame">
+      <Nav />
 
-      <div className="max-w-5xl mx-auto px-5 py-8">
-
-        {/* ── Header ─────────────────────────────────────────── */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-purple-50 border border-purple-200 rounded-full px-4 py-1.5 text-xs font-bold text-purple-700 mb-4">
-            <Zap className="h-3.5 w-3.5" /> Live AI Block Classifier · Offline-Safe
-          </div>
-          <h1 className="font-black text-3xl text-[#0f172a] mb-2" style={{ fontFamily: "Poppins,sans-serif" }}>
-            Why Is This Refill <span style={{ color: "#22c55e" }}>Stuck?</span>
-          </h1>
-          <p className="text-[#64748b] max-w-lg mx-auto text-sm leading-relaxed">
-            Paste a fax note, phone message, or EHR message. RefillOS classifies the block reason and
-            routes the right action to the right actor — in seconds.
+      <div className="container py-8">
+        {/* Header */}
+        <div className="mb-8 max-w-2xl">
+          <div className="section-label">AI Block Classifier</div>
+          <h1 className="text-4xl font-display font-bold text-ink-900 mb-2">Why is this refill stuck?</h1>
+          <p className="text-sm text-ink-400 leading-relaxed">
+            Paste a fax note, EHR message, or staff description. The classifier identifies the block type,
+            scores clinical risk, and routes the right action to the right actor.
+            Works entirely offline — no API call required.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          {/* Left: Input */}
+          {/* ── Left: Input ────────────────────────────── */}
           <div className="space-y-4">
-            {/* Sample picker */}
-            <div className="bg-white rounded-2xl border border-[#e2e8f0] p-4">
-              <div className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">
-                📋 Try a Sample Input (or type your own below)
+
+            {/* Samples */}
+            <div className="card p-4">
+              <div className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">
+                Sample Inputs — Select or Type Below
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {SAMPLES.map((s, i) => (
-                  <button key={i} onClick={() => { setInput(s.text); setResult(null); }}
-                    className={`w-full text-left text-xs p-3 rounded-xl border transition-all hover:border-[#22c55e] hover:bg-[#f0fdf4] ${input === s.text ? "border-[#22c55e] bg-[#f0fdf4]" : "border-[#f1f5f9] bg-[#f8fafc]"}`}>
-                    <div className="font-semibold text-[#334155] mb-0.5">{s.label}</div>
-                    <div className="text-[#94a3b8] line-clamp-2 leading-relaxed">{s.text}</div>
+                  <button key={i} onClick={() => { setInput(s.text); setResult(null); setRisk(null); }}
+                    className={`w-full text-left px-3 py-2.5 rounded border text-sm transition-all hover:border-accent-600 ${input === s.text ? "border-accent-600 bg-accent-50" : "border-ink-100 bg-ink-50 hover:bg-accent-50/50"}`}>
+                    <div className="font-medium text-ink-900 text-xs mb-0.5">{s.label}</div>
+                    <div className="text-ink-400 text-xs leading-relaxed line-clamp-1">{s.text}</div>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Text input */}
-            <div className="bg-white rounded-2xl border border-[#e2e8f0] p-4">
-              <div className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-2">
-                ✏️ Or Type / Paste Your Refill Situation
-              </div>
+            {/* Textarea */}
+            <div className="card p-4">
+              <label className="text-xs font-semibold text-ink-400 uppercase tracking-wider block mb-2">
+                Or type / paste the refill situation
+              </label>
               <textarea
-                className="w-full h-40 text-sm text-[#0f172a] bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 resize-none outline-none focus:border-[#22c55e] transition-all placeholder:text-[#94a3b8] leading-relaxed"
-                placeholder="e.g. 'The pharmacy says there are no refills remaining on her Metformin prescription. Dr. Ahmed needs to send a new Rx...'"
+                className="input textarea text-sm"
+                rows={5}
+                placeholder="e.g. 'Pharmacy says no refills remain on the Lisinopril prescription. Dr. Chen needs to send a new Rx...'"
                 value={input}
-                onChange={e => { setInput(e.target.value); setResult(null); }}
+                onChange={e => { setInput(e.target.value); setResult(null); setRisk(null); }}
               />
-              <button
-                onClick={runClassifier}
-                disabled={loading || !input.trim()}
-                className="mt-3 w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm text-white transition-all disabled:opacity-50"
-                style={{ background: "linear-gradient(135deg,#22c55e,#16a34a)" }}>
+              <div className="mt-2 text-xs text-ink-400 flex items-center gap-1.5">
+                <Shield className="h-3 w-3 text-ok-600" />
+                PII stripped before model — only block type, med class, days stuck are passed to classifier
+              </div>
+              <button onClick={runClassifier} disabled={loading || !input.trim()}
+                className="btn btn-primary w-full justify-center mt-3 disabled:opacity-50 disabled:cursor-not-allowed">
                 {loading
                   ? <><RefreshCw className="h-4 w-4 animate-spin" /> Classifying...</>
-                  : <><Zap className="h-4 w-4" /> Classify Block Reason</>}
+                  : <><Zap className="h-4 w-4" /> Classify Block</>}
               </button>
             </div>
           </div>
 
-          {/* Right: Result */}
+          {/* ── Right: Result ──────────────────────────── */}
           <div className="space-y-4">
+
             {!result && !loading && (
-              <div className="bg-white rounded-2xl border border-[#e2e8f0] p-8 flex flex-col items-center justify-center text-center h-full min-h-[400px]">
-                <div className="text-5xl mb-4">🧠</div>
-                <div className="font-bold text-[#0f172a] mb-2">Ready to Classify</div>
-                <p className="text-sm text-[#64748b]">Select a sample or paste a refill situation, then click &quot;Classify Block Reason&quot;</p>
+              <div className="card p-12 flex flex-col items-center justify-center text-center">
+                <BarChart3 className="h-8 w-8 text-ink-200 mb-3" />
+                <p className="text-sm font-medium text-ink-900 mb-1">Ready to classify</p>
+                <p className="text-xs text-ink-400">Select a sample or describe the refill situation</p>
               </div>
             )}
 
             {loading && (
-              <div className="bg-white rounded-2xl border border-[#e2e8f0] p-8 flex flex-col items-center justify-center text-center h-full min-h-[400px]">
-                <div className="text-5xl mb-4 animate-pulse">⚡</div>
-                <div className="font-bold text-[#0f172a] mb-2">Analyzing...</div>
-                <p className="text-sm text-[#64748b]">Reading context, matching patterns...</p>
+              <div className="card p-12 flex flex-col items-center justify-center text-center">
+                <RefreshCw className="h-8 w-8 text-accent-600 animate-spin mb-3" />
+                <p className="text-sm text-ink-400">Reading context, matching patterns...</p>
               </div>
             )}
 
             {result && !loading && (
-              <div className="space-y-3">
-                {/* Block result card */}
-                <div className="bg-white rounded-2xl border-2 overflow-hidden"
-                  style={{ borderColor: result.textColor + "33" }}>
-                  <div className="px-5 py-4 flex items-center gap-3" style={{ background: result.color }}>
-                    <span className="text-3xl">{result.icon}</span>
-                    <div className="flex-1">
-                      <div className="font-black text-base" style={{ color: result.textColor }}>{result.label}</div>
-                      <div className="text-xs mt-0.5" style={{ color: result.textColor + "99" }}>
-                        {elapsed}s · {result.confidence}% confidence
+              <>
+                {/* Main result */}
+                <div className={`card p-5 border ${result.blockColor}`}>
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${result.textColor}`}>
+                        Block Classification · {elapsed}s
                       </div>
+                      <h3 className={`text-xl font-display font-bold ${result.textColor}`}>{result.label}</h3>
                     </div>
                     <div className="text-right">
-                      <div className="text-xs font-bold" style={{ color: result.textColor }}>Confidence</div>
-                      <div className="text-2xl font-black" style={{ color: result.textColor }}>{result.confidence}%</div>
+                      <div className="text-xs text-ink-400 mb-0.5">Confidence</div>
+                      <div className={`text-2xl font-display font-bold ${result.textColor}`}>{result.confidence}%</div>
                     </div>
                   </div>
 
-                  <div className="p-5 space-y-4">
-                    {/* Description */}
-                    <div>
-                      <div className="text-xs font-bold text-[#64748b] uppercase tracking-wide mb-1.5">What This Means</div>
-                      <p className="text-sm text-[#334155] leading-relaxed">{result.description}</p>
-                    </div>
+                  <p className="text-sm text-ink-400 leading-relaxed mb-4">{result.description}</p>
 
-                    {/* Reasoning trail */}
-                    <div className="bg-[#f8fafc] rounded-xl p-3 border border-[#f1f5f9]">
-                      <div className="text-xs font-bold text-[#64748b] uppercase tracking-wide mb-1.5">🔍 Why This Classification</div>
-                      <p className="text-xs text-[#64748b] leading-relaxed italic">{result.reasoning}</p>
+                  {/* Reasoning trace */}
+                  <div className="mb-4">
+                    <div className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                      <Info className="h-3 w-3" /> Why This Classification
                     </div>
+                    <div className="reasoning-trace">{result.reasoning}</div>
+                  </div>
 
-                    {/* Next Action */}
-                    <div className="bg-[#f0fdf4] rounded-xl p-3 border border-[#bbf7d0]">
-                      <div className="text-xs font-bold text-[#22c55e] uppercase tracking-wide mb-1.5">⚡ Recommended Next Action</div>
-                      <p className="text-sm text-[#166534] leading-relaxed">{result.nextAction}</p>
-                    </div>
-
-                    {/* Route to + Timeline */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="rounded-xl p-3 border border-[#e2e8f0]">
-                        <div className="text-[10px] font-bold text-[#94a3b8] uppercase mb-1">Route To</div>
-                        <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${result.actorColor}`}>
-                          → {result.actor}
-                        </span>
+                  {/* Action */}
+                  {!result.isFailure && (
+                    <div className="bg-ok-50 border border-ok-200 rounded p-3 mb-4">
+                      <div className="text-xs font-semibold text-ok-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                        <CheckCircle className="h-3 w-3" /> Recommended Next Action
                       </div>
-                      <div className="rounded-xl p-3 border border-[#e2e8f0]">
-                        <div className="text-[10px] font-bold text-[#94a3b8] uppercase mb-1">Resolution Time</div>
-                        <div className="text-xs font-bold text-[#22c55e]">{result.timeline}</div>
-                        {result.timelineOld && (
-                          <div className="text-[10px] text-[#94a3b8] line-through mt-0.5">{result.timelineOld}</div>
-                        )}
-                      </div>
+                      <p className="text-sm text-ok-700 leading-relaxed">{result.nextAction}</p>
                     </div>
+                  )}
 
-                    {/* Deliberate failure note */}
-                    {result.id === "AMBIGUOUS" && (
-                      <div className="bg-amber-50 rounded-xl p-3 border border-amber-200">
-                        <div className="text-xs font-bold text-amber-700 mb-1">⚠️ Known Limitation</div>
-                        <p className="text-xs text-amber-600">This is a deliberate edge case where the classifier correctly declines to guess. Multi-intent queries with conflicting signals need human judgment — the system acknowledges this rather than forcing a wrong answer.</p>
+                  {result.isFailure && (
+                    <div className="bg-warn-50 border border-warn-200 rounded p-3 mb-4">
+                      <div className="text-xs font-semibold text-warn-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                        <AlertTriangle className="h-3 w-3" /> Known Limitation — Deliberate Failure
                       </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex gap-2">
-                      <Link href="/dashboard" className="flex-1 text-center text-xs font-bold py-2.5 rounded-xl text-white transition-all" style={{ background: "linear-gradient(135deg,#22c55e,#16a34a)" }}>
-                        Add to Queue →
-                      </Link>
-                      <button onClick={() => { setInput(""); setResult(null); }}
-                        className="flex-1 text-xs font-semibold py-2.5 rounded-xl border border-[#e2e8f0] text-[#64748b] hover:bg-[#f8fafc] transition-all">
-                        Clear &amp; Retry
-                      </button>
+                      <p className="text-sm text-warn-700 leading-relaxed">
+                        This is a designed behavior: the classifier correctly refuses to guess when multiple conflicting
+                        signals are present. Forcing a wrong classification here would be worse than acknowledging uncertainty.
+                        Multi-intent messages need human judgment.
+                      </p>
                     </div>
+                  )}
+
+                  {/* Route + Timeline */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-ink-50 rounded p-3">
+                      <div className="text-xs text-ink-400 mb-1">Route To</div>
+                      <span className={`badge border text-xs ${result.actorColor}`}>{result.actor}</span>
+                    </div>
+                    <div className="bg-ink-50 rounded p-3">
+                      <div className="text-xs text-ink-400 mb-1">Resolution Time</div>
+                      <div className="text-sm font-semibold text-ok-700">{result.timeline}</div>
+                      <div className="text-xs text-ink-400 line-through mt-0.5">{result.timelineBaseline}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 mt-4">
+                    <Link href="/dashboard" className="btn btn-primary flex-1 justify-center">
+                      Add to Queue <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                    <button onClick={() => { setInput(""); setResult(null); setRisk(null); }}
+                      className="btn btn-secondary flex-1 justify-center">
+                      Clear
+                    </button>
                   </div>
                 </div>
 
-                {/* Block legend */}
-                <div className="bg-white rounded-2xl border border-[#e2e8f0] p-4">
-                  <div className="text-xs font-bold text-[#64748b] uppercase tracking-wide mb-3">All 5 Block Types Classifier Knows</div>
-                  <div className="space-y-2">
-                    {BLOCK_RULES.map(r => (
-                      <div key={r.id} className={`flex items-center gap-2.5 p-2 rounded-lg transition-all ${result.id === r.id ? "ring-2 ring-[#22c55e]" : ""}`}
-                        style={{ background: result.id === r.id ? r.color : "#f8fafc" }}>
-                        <span className="text-base">{r.icon}</span>
-                        <div className="flex-1">
-                          <div className="text-xs font-semibold text-[#0f172a]">{r.label}</div>
-                        </div>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${r.tagClass}`}>{r.confidence}%</span>
-                        {result.id === r.id && <CheckCircle className="h-4 w-4 text-[#22c55e] flex-shrink-0" />}
+                {/* Risk Score card */}
+                {risk && (
+                  <div className={`card p-4 ${risk.score >= 75 ? "border-warn-200 bg-warn-50" : risk.score >= 45 ? "border-accent-100 bg-accent-50" : ""}`}>
+                    <div className="text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5 text-ink-400">
+                      <BarChart3 className="h-3 w-3" /> Clinical Risk Score
+                    </div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="flex-1 h-2 bg-ink-100 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all"
+                          style={{
+                            width: `${risk.score}%`,
+                            background: risk.score >= 75 ? "#DC2626" : risk.score >= 45 ? "#B45309" : "#6E7681"
+                          }} />
                       </div>
-                    ))}
+                      <span className="font-mono text-sm font-bold text-ink-900">{risk.score}/100</span>
+                    </div>
+                    <p className="text-xs text-ink-400 leading-relaxed">{risk.reason}</p>
+                    <div className="mt-2 text-xs text-ink-400">
+                      Med class: <span className="font-mono text-ink-900">{risk.medClass}</span>
+                    </div>
                   </div>
+                )}
+              </>
+            )}
+
+            {/* Block type legend */}
+            <div className="card p-4">
+              <div className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">
+                5 Block Types the Classifier Knows
+              </div>
+              <div className="space-y-2">
+                {BLOCK_RULES.map(r => (
+                  <div key={r.id} className={`flex items-center gap-2.5 p-2 rounded border transition-all ${result?.id === r.id ? "border-accent-600 bg-accent-50" : "border-transparent"}`}>
+                    <div className="flex-1">
+                      <div className="text-xs font-semibold text-ink-900">{r.label}</div>
+                    </div>
+                    <span className="font-mono text-xs text-ink-400">{r.confidence}%</span>
+                    {result?.id === r.id && <CheckCircle className="h-3.5 w-3.5 text-ok-600 flex-shrink-0" />}
+                  </div>
+                ))}
+                <div className={`flex items-center gap-2.5 p-2 rounded border transition-all ${result?.id === "AMBIGUOUS" ? "border-warn-200 bg-warn-50" : "border-transparent"}`}>
+                  <div className="flex-1">
+                    <div className="text-xs font-semibold text-ink-900">Multi-intent / Ambiguous</div>
+                    <div className="text-xs text-ink-400">Known failure — routes to human</div>
+                  </div>
+                  <AlertTriangle className="h-3.5 w-3.5 text-warn-600 flex-shrink-0" />
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

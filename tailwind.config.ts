@@ -6,63 +6,78 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  darkMode: "class",
   theme: {
     extend: {
       colors: {
-        green: {
-          primary: "#22c55e",
-          dark:    "#16a34a",
-          light:   "#dcfce7",
-          pale:    "#f0fdf4",
+        ink: {
+          900: "#0D1117",
+          800: "#161B22",
+          700: "#21262D",
+          600: "#30363D",
+          400: "#6E7681",
+          200: "#C9D1D9",
+          100: "#F0F2F4",
+          50:  "#F8F9FA",
         },
-        brand: {
-          bg:      "#f8fafc",
-          card:    "#ffffff",
-          border:  "#e2e8f0",
-          text:    "#0f172a",
-          body:    "#334155",
-          muted:   "#64748b",
-          light:   "#94a3b8",
+        accent: {
+          700: "#1E40AF",
+          600: "#2563EB",
+          500: "#3B82F6",
+          100: "#DBEAFE",
+          50:  "#EFF6FF",
+        },
+        // Amber = blocked/needs attention ONLY
+        warn: {
+          700: "#92400E",
+          600: "#B45309",
+          200: "#FDE68A",
+          50:  "#FFFBEB",
+        },
+        // Sage = resolved ONLY
+        ok: {
+          700: "#166534",
+          600: "#15803D",
+          200: "#BBF7D0",
+          50:  "#F0FDF4",
         },
       },
       fontFamily: {
-        sans:    ["Inter", "Poppins", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
-        poppins: ["Poppins", "Inter", "sans-serif"],
+        display: ["Sora", "system-ui", "sans-serif"],
+        sans:    ["Inter", "system-ui", "sans-serif"],
         mono:    ["JetBrains Mono", "Fira Code", "monospace"],
       },
-      boxShadow: {
-        card:  "0 4px 16px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04)",
-        green: "0 8px 32px rgba(34,197,94,0.25)",
-        xl:    "0 20px 60px rgba(0,0,0,0.12)",
+      fontSize: {
+        xs:   ["0.75rem",  { lineHeight: "1.5"  }],
+        sm:   ["0.875rem", { lineHeight: "1.5"  }],
+        base: ["1rem",     { lineHeight: "1.6"  }],
+        xl:   ["1.25rem",  { lineHeight: "1.3"  }],
+        "4xl":["2.25rem",  { lineHeight: "1.1"  }],
+        "6xl":["3.75rem",  { lineHeight: "1.0"  }],
       },
       borderRadius: {
+        DEFAULT: "6px",
+        sm:  "4px",
+        md:  "6px",
+        lg:  "8px",
+        xl:  "12px",
         "2xl": "16px",
-        "3xl": "24px",
+        full: "9999px",
       },
-      backgroundImage: {
-        "hero-gradient":    "linear-gradient(145deg, #e8f8f5 0%, #d1f4ea 20%, #c8edfd 50%, #e0f7fa 70%, #f0fdf4 100%)",
-        "app-gradient":     "linear-gradient(135deg, #e8f8f5 0%, #d1f4ea 40%, #c8edfd 80%, #e0f7fa 100%)",
-        "green-gradient":   "linear-gradient(135deg, #22c55e, #16a34a)",
+      boxShadow: {
+        card:   "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08)",
+        panel:  "0 4px 12px rgba(0,0,0,0.15)",
+        focus:  "0 0 0 3px rgba(37,99,235,0.3)",
       },
-      animation: {
-        float:       "float 6s ease-in-out infinite",
-        "pulse-ring": "pulse-ring 1.8s ease-out infinite",
-        "fade-up":    "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) both",
-      },
-      keyframes: {
-        float: {
-          "0%, 100%": { transform: "translateY(0px)" },
-          "50%":      { transform: "translateY(-8px)" },
-        },
-        "pulse-ring": {
-          "0%":   { transform: "scale(1)", opacity: "0.3" },
-          "100%": { transform: "scale(2.2)", opacity: "0" },
-        },
-        "fade-up": {
-          from: { opacity: "0", transform: "translateY(20px)" },
-          to:   { opacity: "1", transform: "translateY(0)" },
-        },
+      spacing: {
+        "0.5": "4px",
+        "1":   "8px",
+        "1.5": "12px",
+        "2":   "16px",
+        "3":   "24px",
+        "4":   "32px",
+        "6":   "48px",
+        "8":   "64px",
+        "12":  "96px",
       },
     },
   },
