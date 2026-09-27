@@ -53,7 +53,7 @@ const BLOCK_RULES = [
     label: "No Refills Remaining",
     confidence: 94,
     description: "The prescription has zero refills left. A new eRx from the provider is required before dispensing.",
-    nextAction: "Draft new eRx renewal request to attending provider — attach last fill date, dosage, and adherence history.",
+    nextAction: "Draft new eRx renewal request to attending provider with last fill date, dosage, and adherence history.",
     actor: "Provider",
     actorColor: "bg-accent-50 text-accent-700 border border-accent-100",
     timeline: "Est. < 4 hours with routing",
@@ -67,7 +67,7 @@ const BLOCK_RULES = [
     keywords: ["prior auth", "pa required", "insurance denied", "pbm", "step therapy", "not covered", "coverage denied", "authorization", "formulary"],
     label: "Insurance / PBM Prior Auth Hold",
     confidence: 91,
-    description: "PBM or health plan has placed a coverage restriction — prior authorization, step therapy, or tier exclusion.",
+    description: "PBM or health plan has placed a coverage restriction: prior authorization, step therapy, or tier exclusion.",
     nextAction: "Submit PA justification form to PBM with clinical diagnosis code and prior treatment history.",
     actor: "Practice Staff",
     actorColor: "bg-ink-100 text-ink-700 border border-ink-200",
@@ -83,7 +83,7 @@ const BLOCK_RULES = [
     label: "Provider Visit Required",
     confidence: 88,
     description: "Provider requires an in-person or telehealth consultation before re-authorizing maintenance therapy.",
-    nextAction: "Send appointment scheduling link to patient portal (generic alert — no medication name in SMS).",
+    nextAction: "Send appointment scheduling link to patient portal (generic alert with no medication name in SMS).",
     actor: "Patient",
     actorColor: "bg-ok-50 text-ok-700 border border-ok-200",
     timeline: "Subject to appointment calendar",
@@ -97,7 +97,7 @@ const BLOCK_RULES = [
     keywords: ["missing", "incomplete", "unclear", "wrong dob", "no dob", "illegible", "incorrect", "mismatch", "doesn't match", "cant find"],
     label: "Missing / Incorrect Information",
     confidence: 89,
-    description: "EHR and pharmacy profile mismatch detected — date of birth, insurance ID, or prescriber NPI discrepancy.",
+    description: "EHR and pharmacy profile mismatch detected for date of birth, insurance ID, or prescriber NPI discrepancy.",
     nextAction: "Contact patient via secure SMS to verify demographic details. Auto-executable in Autonomous Mode.",
     actor: "Practice Staff",
     actorColor: "bg-ink-100 text-ink-700 border border-ink-200",
@@ -137,7 +137,7 @@ function scoreRisk(text: string): { score: number; reason: string; medClass: str
     const med = HIGH_RISK_MEDS.find(m => lower.includes(m));
     return {
       score: 85,
-      reason: `Detected high-risk chronic medication (${med}) — cardiac/diabetes/hypertension category. Clinical continuity is time-sensitive.`,
+      reason: `Detected high-risk chronic medication (${med}) in cardiac, diabetes, or hypertension category. Clinical continuity is time-sensitive.`,
       medClass: "chronic_high_risk",
     };
   }
@@ -159,9 +159,9 @@ function scoreRisk(text: string): { score: number; reason: string; medClass: str
 /* ── Deliberate Failure (Self-Awareness) ─────────────────── */
 const AMBIGUOUS_RESULT = {
   id: "AMBIGUOUS",
-  label: "Ambiguous — Multi-Intent Reversal (Self-Aware Boundary)",
+  label: "Ambiguous: Multi-Intent Reversal (Self-Aware Boundary)",
   confidence: 42,
-  description: "Input contains conflicting signals from multiple block categories (e.g. prior auth denial + visit request). The classifier deliberately refuses to force a low-confidence guess.",
+  description: "Input contains conflicting signals from multiple block categories (e.g. prior auth denial and visit request). The classifier deliberately refuses to force a low-confidence guess.",
   nextAction: "Escalate to human practice triage supervisor with multi-signal summary attached.",
   actor: "Senior Clinician",
   actorColor: "bg-ink-100 text-ink-700 border border-ink-200",
@@ -176,23 +176,23 @@ const AMBIGUOUS_RESULT = {
 /* ── Messy authentic sample inputs ──────────────────────── */
 const SAMPLES = [
   {
-    label: "No Refills — Metformin 500mg (High Risk)",
+    label: "No Refills",
     text: "Pharmacy sent an electronic denial: zero refills remaining on Metformin 500mg. Patient has been on this maintenance dose for 2 years for Type 2 diabetes. Need a new renewal prescription from Dr. Chen before dispensing.",
   },
   {
-    label: "Pharmacy Stock — Amoxicillin Out of Stock",
+    label: "Pharmacy Stock",
     text: "CVS notes medication is currently out of stock with wholesaler backorder lasting 5+ days. Patient needs this antibiotic course started today. Check partner pharmacies in the immediate network.",
   },
   {
-    label: "Insurance Hold — Lisinopril 10mg Prior Auth",
+    label: "Insurance Hold",
     text: "BlueCross PBM rejected claim code 75: Prior Authorization Required. Formulary prefers enalapril as step-1 therapy unless physician provides clinical contraindication notes.",
   },
   {
-    label: "Missing Info — Patient DOB Mismatch",
+    label: "Missing Info",
     text: "Prescription transmission rejected due to patient demographic mismatch. Date of birth on e-prescribing profile does not match health plan master registry.",
   },
   {
-    label: "Ambiguous Edge-Case — Multi-Intent (Deliberate Failure)",
+    label: "Ambiguous Edge Case",
     text: "Patient called stating the pharmacy said no refills remained, but also mentioned their insurance dropped coverage and Dr. Patel said they need an office visit before anything is renewed.",
   },
 ];
@@ -276,7 +276,7 @@ export default function ClassifyPage() {
               <div className="text-xs font-bold text-ink-400 uppercase tracking-wider mb-2.5">
                 Quick-Select Realistic Sample Inputs
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {SAMPLES.map((s, i) => {
                   const isSelected = input === s.text;
                   return (
@@ -287,14 +287,14 @@ export default function ClassifyPage() {
                         setResult(null);
                         setRisk(null);
                       }}
-                      className={`w-full text-left p-2.5 rounded-lg border text-xs transition-all ${
+                      className={`w-full text-left px-3.5 py-2.5 rounded-lg border text-xs transition-all flex items-center justify-between ${
                         isSelected
-                          ? "border-accent-600 bg-accent-50/70 font-medium"
-                          : "border-ink-100 bg-ink-50/60 hover:bg-ink-100/60 text-ink-700"
+                          ? "border-accent-600 bg-accent-50/80 font-semibold text-accent-900 shadow-sm"
+                          : "border-ink-100 bg-white hover:bg-ink-50 text-ink-800 font-medium hover:border-ink-200"
                       }`}
                     >
-                      <div className="font-semibold text-ink-900 mb-0.5">{s.label}</div>
-                      <div className="text-ink-400 line-clamp-1">{s.text}</div>
+                      <span>{s.label}</span>
+                      <ArrowRight className={`h-3 w-3 ${isSelected ? "text-accent-600" : "text-ink-300"}`} />
                     </button>
                   );
                 })}
